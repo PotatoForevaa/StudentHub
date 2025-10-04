@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StudentHub.Application.Interfaces;
+using StudentHub.Application.Services;
 using StudentHub.Infrastructure;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
@@ -43,6 +44,7 @@ namespace StudentHub.Web
                 builder.Services.AddHttpContextAccessor();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
+                builder.Services.AddScoped<IUserService, UserService>();
                 builder.Services.AddScoped<IAuthService, AuthService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
