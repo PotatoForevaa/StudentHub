@@ -2,11 +2,6 @@
 using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StudentHub.Application.Services
 {
@@ -27,7 +22,7 @@ namespace StudentHub.Application.Services
         public async Task<UserDto?> GetByLoginAsync(string login)
         {
             var user = await _userRepository.GetByLoginAsync(login);
-            if (user == null) return null;    
+            if (user == null) return null;
 
             var userDto = new UserDto
             {
