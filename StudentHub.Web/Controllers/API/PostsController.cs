@@ -46,7 +46,7 @@ namespace StudentHub.Web.Controllers.API
         }
 
         [Authorize]
-        [HttpPost("Update")]
+        [HttpPut("Update")]
         public async Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             if (!ModelState.IsValid)

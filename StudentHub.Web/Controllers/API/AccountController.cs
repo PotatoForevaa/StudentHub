@@ -30,9 +30,9 @@ namespace StudentHub.Web.Controllers.API
                 Username = registerRequest.Username
             };
 
-            await _userService.RegisterAsync(registerDto);
-
-            return Created();
+            var result = await _userService.RegisterAsync(registerDto);
+            if (result) return Created();
+            return BadRequest("Something went wrong");
         }
 
         [HttpPost("Login")]

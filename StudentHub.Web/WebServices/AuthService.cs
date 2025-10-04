@@ -39,7 +39,8 @@ namespace StudentHub.Web.WebServices
 
         public async Task SignOutAsync()
         {
-            await _httpContextAccessor.HttpContext!.SignOutAsync();
+            await _httpContextAccessor.HttpContext!.SignOutAsync(
+                IdentityConstants.ApplicationScheme);
         }
     }
 }

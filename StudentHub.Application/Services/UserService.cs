@@ -34,7 +34,7 @@ namespace StudentHub.Application.Services
             return userDto;
         }
 
-        public Task RegisterAsync(RegisterUserRequest request)
+        public Task<bool> RegisterAsync(RegisterUserRequest request)
         {
             var user = new User
             {

@@ -41,6 +41,26 @@ namespace StudentHub.Web
                     .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();
 
+                builder.Services.ConfigureApplicationCookie(options =>
+                {
+                    options.Cookie.HttpOnly = true;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+
+                    options.LoginPath = "/api/Account/Login";
+                    options.AccessDeniedPath = "/api/Account/Login";
+                    options.SlidingExpiration = true;
+                    options.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    };
+                });
+
                 builder.Services.AddHttpContextAccessor();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
@@ -48,18 +68,7 @@ namespace StudentHub.Web
                 builder.Services.AddScoped<IAuthService, AuthService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();
-
-                // Cookie settings
-                builder.Services.ConfigureApplicationCookie(options =>
-                {
-                    options.Cookie.HttpOnly = true;
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-
-                    options.LoginPath = "/api/Account/Login";
-                    options.AccessDeniedPath = "/api/Account/AccessDenied";
-                    options.SlidingExpiration = true;
-                });
+                builder.Services.AddSwaggerGen();                
 
                 var app = builder.Build();
 
