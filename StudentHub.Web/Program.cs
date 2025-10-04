@@ -29,7 +29,7 @@ namespace StudentHub.Web
                 builder.Services.AddSerilog();
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppDbContext>()
@@ -56,6 +56,7 @@ namespace StudentHub.Web
 
                 var app = builder.Build();
 
+                app.UseSerilogRequestLogging();
 
                 if (builder.Environment.IsDevelopment())
                 {
@@ -66,6 +67,7 @@ namespace StudentHub.Web
                         options.RoutePrefix = string.Empty;
                     });
                 }
+
 
                 app.UseRouting();
 

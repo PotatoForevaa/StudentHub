@@ -2,15 +2,18 @@
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace StudentHub.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
+        private readonly ILogger<UserRepository> _logger;
         private readonly UserManager<AppUser> _userManager;
 
-        public UserRepository(UserManager<AppUser> userManager)
+        public UserRepository(ILogger<UserRepository> logger, UserManager<AppUser> userManager)
         {
+            _logger = logger;
             _userManager = userManager;
         }
 
@@ -25,7 +28,7 @@ namespace StudentHub.Infrastructure.Repositories
             return appUser == null ? null : Map(appUser);
         }
 
-        public async Task AddAsync(User user, string password)
+        public async Task<bool> AddAsync(User user, string password)
         {
             var appUser = new AppUser
             {
@@ -33,12 +36,18 @@ namespace StudentHub.Infrastructure.Repositories
                 FullName = user.FullName
             };
 
-            await _userManager.CreateAsync(appUser, password);
+            var result = await _userManager.CreateAsync(appUser, password);
+            if (!result.Succeeded)
+                _logger.LogWarning($"Failed to create user: {user.Username}, {result.Errors.Select(e => e.Description)}");
+            else
+                _logger.LogInformation($"User created: {user.Username}");
+
+            return result.Succeeded;
         }
 
         public async Task<bool> CheckPasswordAsync(User user, string password)
         {
-            var appUser = await _userManager.FindByNameAsync(user.UserName);
+            var appUser = await _userManager.FindByNameAsync(user.Username);
             return appUser != null && await _userManager.CheckPasswordAsync(appUser, password);
         }
 
