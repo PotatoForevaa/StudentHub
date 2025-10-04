@@ -68,6 +68,7 @@ namespace StudentHub.Web
                     });
                 }
 
+                app.Urls.Add("http://0.0.0.0:5000");
 
                 app.UseRouting();
 
