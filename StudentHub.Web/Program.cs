@@ -83,8 +83,10 @@ namespace StudentHub.Web
                         options.RoutePrefix = string.Empty;
                     });
                 }
-
-                app.Urls.Add("http://0.0.0.0:5000");
+                if (builder.Environment.IsProduction())
+                {
+                    app.Urls.Add("http://0.0.0.0:5000");
+                }
 
                 app.UseRouting();
 
