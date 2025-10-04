@@ -32,7 +32,7 @@ namespace StudentHub.Infrastructure.Repositories
         {
             var appUser = new AppUser
             {
-                UserName = user.UserName,
+                UserName = user.Username,
                 FullName = user.FullName
             };
 
@@ -54,7 +54,7 @@ namespace StudentHub.Infrastructure.Repositories
         private User Map(AppUser appUser) => new User
         {
             Id = appUser.Id,
-            UserName = appUser.UserName!,
+            Username = appUser.UserName!,
             FullName = appUser.FullName
         };
     }

@@ -26,7 +26,7 @@ namespace StudentHub.Web.Controllers.API
             var user = new User
             {
                 FullName = registrationRequest.FullName,
-                UserName = registrationRequest.Username
+                Username = registrationRequest.Username
             };
 
             await _userRepository.AddAsync(user, registrationRequest.Password);
