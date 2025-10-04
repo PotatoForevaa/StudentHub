@@ -1,8 +1,7 @@
-﻿using StudentHub.Application.Interfaces;
-using StudentHub.Domain.Entities;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using StudentHub.Application.Interfaces;
 using System.Security.Claims;
 
 namespace StudentHub.Web.WebServices
@@ -15,12 +14,12 @@ namespace StudentHub.Web.WebServices
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task SignInAsync(User user)
+        public async Task SignInAsync(Guid id, string username)
         {
             var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username!)
+                    new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                    new Claim(ClaimTypes.Name, username)
                 };
 
             var claimsIdentity = new ClaimsIdentity(

@@ -1,7 +1,7 @@
-﻿using StudentHub.Application.Interfaces;
-using StudentHub.Domain.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
+using StudentHub.Application.DTOs.Requests;
+using StudentHub.Application.Interfaces;
 using StudentHub.Web.DTOs.Requests;
-using Microsoft.AspNetCore.Mvc;
 
 namespace StudentHub.Web.Controllers.API
 {
@@ -9,27 +9,29 @@ namespace StudentHub.Web.Controllers.API
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
         private readonly IAuthService _authService;
-        public AccountController(IUserRepository userRepository, IAuthService authService)
+        private readonly IUserService _userService;
+        public AccountController(IAuthService authService, IUserService userService)
         {
-            _userRepository = userRepository;
             _authService = authService;
+            _userService = userService;
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(RegistrationRequest registrationRequest)
+        public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = new User
+            var registerDto = new RegisterUserRequest
             {
-                FullName = registrationRequest.FullName,
-                Username = registrationRequest.Username
+                FullName = registerRequest.FullName,
+                Password = registerRequest.Password,
+                Username = registerRequest.Username
             };
 
-            await _userRepository.AddAsync(user, registrationRequest.Password);
+            await _userService.RegisterAsync(registerDto);
+
             return Created();
         }
 
@@ -39,15 +41,15 @@ namespace StudentHub.Web.Controllers.API
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userRepository.GetByLoginAsync(loginRequest.Login);
+            var user = await _userService.GetByLoginAsync(loginRequest.Login);
             if (user == null)
                 return NotFound("User not found");
 
-            var passwordResult = await _userRepository.CheckPasswordAsync(user, loginRequest.Password);
+            var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Login, loginRequest.Password);
             if (passwordResult == false)
                 return Unauthorized("Wrong password");
 
-            await _authService.SignInAsync(user);
+            await _authService.SignInAsync(user.Id, user.Login);
 
             return Ok();
         }

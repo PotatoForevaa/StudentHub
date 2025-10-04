@@ -1,8 +1,8 @@
-﻿using StudentHub.Application.Interfaces;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Web.DTOs.Requests;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace StudentHub.Web.Controllers.API

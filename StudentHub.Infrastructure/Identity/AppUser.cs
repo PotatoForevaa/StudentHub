@@ -1,5 +1,5 @@
-﻿using StudentHub.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using StudentHub.Domain.Entities;
 
 namespace StudentHub.Infrastructure.Identity
 {

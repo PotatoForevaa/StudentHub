@@ -1,8 +1,8 @@
-﻿using StudentHub.Application.Interfaces;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace StudentHub.Infrastructure.Repositories
 {

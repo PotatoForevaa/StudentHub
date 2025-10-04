@@ -2,7 +2,7 @@
 
 namespace StudentHub.Web.DTOs.Requests
 {
-    public class RegistrationRequest
+    public class RegisterRequest
     {
         [Required]
         public string Username { get; set; }
