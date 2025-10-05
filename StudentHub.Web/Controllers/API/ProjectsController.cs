@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
@@ -42,7 +41,8 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Create")]
         public async Task<IActionResult> CreateProject(CreateProjectRequest createProjectRequest)
         {
-            if (!ModelState.IsValid) UnprocessableEntity(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -69,7 +69,8 @@ namespace StudentHub.Web.Controllers.API
         [HttpPut("Update")]
         public async Task<IActionResult> UpdateProject(UpdateProjectRequest updateProjectRequest)
         {
-            if (!ModelState.IsValid) UnprocessableEntity(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
