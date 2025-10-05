@@ -11,32 +11,41 @@ namespace StudentHub.Web.Controllers.API
     [ApiController]
     public class PostsController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
         private readonly IPostRepository _postRepository;
-        public PostsController(IUserRepository userRepository, IPostRepository postRepository)
+        public PostsController(IPostRepository postRepository)
         {
-            _userRepository = userRepository;
             _postRepository = postRepository;
         }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPost([FromRoute] Guid id)
+        {
+            var post = await _postRepository.GetByIdAsync(id);
+            if (post == null) return NotFound("Post not found");
+            return Ok(post);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetPosts()
+        {
+            var posts = await _postRepository.GetAllAsync();
+            return Ok(posts);
+        }   
+
 
         [Authorize]
         [HttpPost("Create")]
         public async Task<IActionResult> CreatePost(CreatePostRequest createPostRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-                return Unauthorized();
-
-            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
-            if (user == null)
-                return NotFound("User not found");
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var post = new Post()
             {
-                AuthorId = user.Id,
+                AuthorId = userId,
                 Description = createPostRequest.Description,
                 Title = createPostRequest.Title
             };
@@ -49,20 +58,13 @@ namespace StudentHub.Web.Controllers.API
         [HttpPut("Update")]
         public async Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-                return Unauthorized();
-
-            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
-            if (user == null)
-                return NotFound("User not found");
-
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var post = await _postRepository.GetByIdAsync(updatePostRequest.PostId);
-            if (user.Id != post.AuthorId)
-                return Unauthorized();
+
+            if (post == null) return NotFound("Post not found");
+            if (userId != post.AuthorId) return Forbid();
 
             post.Description = updatePostRequest.Description;
             post.Title = updatePostRequest.Title;
@@ -75,20 +77,11 @@ namespace StudentHub.Web.Controllers.API
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeletePost([FromRoute] Guid id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-                return Unauthorized();
-
-            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
-            if (user == null)
-                return NotFound("User not found");
-
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var post = await _postRepository.GetByIdAsync(id);
-            if (post == null)
-                return NotFound("Post not found");
 
-            if (user.Id != post.AuthorId)
-                return Unauthorized();
+            if (post == null) return NotFound("Post not found");
+            if (userId != post.AuthorId) return Forbid();
 
             await _postRepository.DeleteAsync(id);
             return Ok();

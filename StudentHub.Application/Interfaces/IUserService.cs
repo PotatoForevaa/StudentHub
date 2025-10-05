@@ -8,5 +8,6 @@ namespace StudentHub.Application.Interfaces
         Task<bool> RegisterAsync(RegisterUserRequest request);
         Task<bool> CheckPasswordAsync(string login, string password);
         Task<UserDto?> GetByLoginAsync(string login);
+        Task<UserDto?> GetByIdAsync(Guid id);
     }
 }

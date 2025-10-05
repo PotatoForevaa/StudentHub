@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Web.DTOs.Requests;
@@ -12,14 +13,29 @@ namespace StudentHub.Web.Controllers.API
     public class ProjectsController : ControllerBase
     {
 
-        private readonly IUserRepository _userRepository;
         private readonly IProjectRepository _projectRepository;
         private readonly IFileStorageService _fileStorageService;
-        public ProjectsController(IUserRepository userRepository, IProjectRepository projectRepository, IFileStorageService fileStorageService)
+        public ProjectsController(IProjectRepository projectRepository, IFileStorageService fileStorageService)
         {
-            _userRepository = userRepository;
             _projectRepository = projectRepository;
             _fileStorageService = fileStorageService;
+        }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProject([FromRoute] Guid id)
+        {
+            var project = await _projectRepository.GetByIdAsync(id);
+            if (project == null) return NotFound("Project not found");
+            return Ok(project);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetProjects()
+        {
+            var projects = await _projectRepository.GetAllAsync();
+            return Ok(projects);
         }
 
         [Authorize]
@@ -29,30 +45,21 @@ namespace StudentHub.Web.Controllers.API
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-                return Unauthorized();
-
-            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
-            if (user == null)
-                return NotFound("User not found");
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var project = new Project()
             {
                 Name = createProjectRequest.Name,
                 Description = createProjectRequest.Description,
-                ExternalUrl = createProjectRequest.ExternalUrl
+                ExternalUrl = createProjectRequest.ExternalUrl,
+                AuthorId = userId,
             };
 
-            foreach (string base64 in createProjectRequest.Base64Images)
+            if (createProjectRequest.Base64Images?.Count > 0)
+            foreach (string base64 in createProjectRequest.Base64Images!)
             {
                 var path = await _fileStorageService.SaveImageAsync(base64);
-
-                var image = new Image()
-                {
-                    Path = path
-                };
-                project.Images.Add(image);
+                project.Images.Add(new Image { Path = path });
             }
 
             await _projectRepository.AddAsync(project);
@@ -66,22 +73,19 @@ namespace StudentHub.Web.Controllers.API
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-                return Unauthorized();
-
-            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
-            if (user == null)
-                return NotFound("User not found");
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var project = await _projectRepository.GetByIdAsync(updateProjectRequest.ProjectId);
-            if (user.Id != project.AuthorId)
-                return Unauthorized();
+
+            if (project == null) return NotFound("Project not found");
+            if (userId != project.AuthorId) return Forbid();
 
             project.Name = updateProjectRequest.Name;
             project.Description = updateProjectRequest.Description;
 
             var newImages = new List<Image>();
+            
+            if (updateProjectRequest.Base64Images?.Count > 0)
             foreach (var base64 in updateProjectRequest.Base64Images)
             {
                 var path = await _fileStorageService.SaveImageAsync(base64);
@@ -90,6 +94,20 @@ namespace StudentHub.Web.Controllers.API
             project.Images = newImages;
 
             await _projectRepository.UpdateAsync(project);
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpDelete("Delete/{id}")]
+        public async Task<IActionResult> DeleteProject([FromRoute] Guid id)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var project = await _projectRepository.GetByIdAsync(id);
+
+            if (project == null) return NotFound("Project not found");
+            if (userId != project.AuthorId) return Forbid();
+
+            await _projectRepository.DeleteAsync(id);
             return Ok();
         }
     }

@@ -19,6 +19,21 @@ namespace StudentHub.Application.Services
             return await _userRepository.CheckPasswordAsync(user, password);
         }
 
+        public async Task<UserDto?> GetByIdAsync(Guid id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null) return null;
+
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Login = user.Username
+            };
+
+            return userDto;
+        }
+
         public async Task<UserDto?> GetByLoginAsync(string login)
         {
             var user = await _userRepository.GetByLoginAsync(login);

@@ -20,8 +20,7 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var registerDto = new RegisterUserRequest
             {
@@ -38,16 +37,13 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = await _userService.GetByLoginAsync(loginRequest.Login);
-            if (user == null)
-                return NotFound("User not found");
+            if (user == null) return NotFound("User not found");
 
             var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Login, loginRequest.Password);
-            if (passwordResult == false)
-                return Unauthorized("Wrong password");
+            if (passwordResult == false) return Unauthorized("Wrong password");
 
             await _authService.SignInAsync(user.Id, user.Login);
 
