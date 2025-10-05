@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
@@ -15,6 +16,14 @@ namespace StudentHub.Infrastructure.Repositories
         {
             _logger = logger;
             _userManager = userManager;
+        }
+
+        public async Task<List<User>> GetAllAsync()
+        {
+            var users = await _userManager.Users
+                .Select(u => Map(u))
+                .ToListAsync();
+            return users;
         }
 
         public async Task<User?> GetByLoginAsync(string login)
