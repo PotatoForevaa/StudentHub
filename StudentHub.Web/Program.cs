@@ -35,7 +35,8 @@ namespace StudentHub.Web
                 builder.Services.AddSerilog();
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")))
+                    ;
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppDbContext>()
@@ -62,6 +63,7 @@ namespace StudentHub.Web
                 });
 
                 builder.Services.AddHttpContextAccessor();
+                builder.Services.AddScoped<DbSeeder>();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
                 builder.Services.AddScoped<IUserService, UserService>();
@@ -69,10 +71,29 @@ namespace StudentHub.Web
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
-
+                               
                 var app = builder.Build();
 
                 app.UseSerilogRequestLogging();
+
+                try
+                {
+                    using var scope = app.Services.CreateScope();
+
+                    var services = scope.ServiceProvider;
+
+                    // Database migration
+                    var context = services.GetRequiredService<AppDbContext>();
+                    await context.Database.MigrateAsync();
+
+                    // Database seeding
+                    var seeder = services.GetRequiredService<DbSeeder>();
+                    await seeder.SeedAdminAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                }
 
                 if (builder.Environment.IsDevelopment())
                 {
