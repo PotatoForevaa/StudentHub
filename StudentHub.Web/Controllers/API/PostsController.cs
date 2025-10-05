@@ -32,7 +32,7 @@ namespace StudentHub.Web.Controllers.API
         {
             var posts = await _postRepository.GetAllAsync();
             return Ok(posts);
-        }   
+        }
 
 
         [Authorize]

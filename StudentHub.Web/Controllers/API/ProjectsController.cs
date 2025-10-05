@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Web.DTOs.Requests;
@@ -56,11 +55,11 @@ namespace StudentHub.Web.Controllers.API
             };
 
             if (createProjectRequest.Base64Images?.Count > 0)
-            foreach (string base64 in createProjectRequest.Base64Images!)
-            {
-                var path = await _fileStorageService.SaveImageAsync(base64);
-                project.Images.Add(new Image { Path = path });
-            }
+                foreach (string base64 in createProjectRequest.Base64Images!)
+                {
+                    var path = await _fileStorageService.SaveImageAsync(base64);
+                    project.Images.Add(new Image { Path = path });
+                }
 
             await _projectRepository.AddAsync(project);
             return Created();
@@ -84,13 +83,13 @@ namespace StudentHub.Web.Controllers.API
             project.Description = updateProjectRequest.Description;
 
             var newImages = new List<Image>();
-            
+
             if (updateProjectRequest.Base64Images?.Count > 0)
-            foreach (var base64 in updateProjectRequest.Base64Images)
-            {
-                var path = await _fileStorageService.SaveImageAsync(base64);
-                newImages.Add(new Image { Path = path });
-            }
+                foreach (var base64 in updateProjectRequest.Base64Images)
+                {
+                    var path = await _fileStorageService.SaveImageAsync(base64);
+                    newImages.Add(new Image { Path = path });
+                }
             project.Images = newImages;
 
             await _projectRepository.UpdateAsync(project);

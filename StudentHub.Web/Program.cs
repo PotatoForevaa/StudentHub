@@ -68,7 +68,7 @@ namespace StudentHub.Web
                 builder.Services.AddScoped<IAuthService, AuthService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();                
+                builder.Services.AddSwaggerGen();
 
                 var app = builder.Build();
 
