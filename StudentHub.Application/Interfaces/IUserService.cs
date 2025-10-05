@@ -9,5 +9,6 @@ namespace StudentHub.Application.Interfaces
         Task<bool> CheckPasswordAsync(string login, string password);
         Task<UserDto?> GetByLoginAsync(string login);
         Task<UserDto?> GetByIdAsync(Guid id);
+        Task<List<UserDto>> GetAllAsync();
     }
 }
