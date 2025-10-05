@@ -39,8 +39,6 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Create")]
         public async Task<IActionResult> CreatePost(CreatePostRequest createPostRequest)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var post = new Post()
@@ -58,8 +56,6 @@ namespace StudentHub.Web.Controllers.API
         [HttpPut("Update")]
         public async Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var post = await _postRepository.GetByIdAsync(updatePostRequest.PostId);
 

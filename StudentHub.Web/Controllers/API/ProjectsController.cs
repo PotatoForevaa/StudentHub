@@ -41,9 +41,6 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Create")]
         public async Task<IActionResult> CreateProject(CreateProjectRequest createProjectRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var project = new Project()
@@ -69,9 +66,6 @@ namespace StudentHub.Web.Controllers.API
         [HttpPut("Update")]
         public async Task<IActionResult> UpdateProject(UpdateProjectRequest updateProjectRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var project = await _projectRepository.GetByIdAsync(updateProjectRequest.ProjectId);
@@ -107,7 +101,7 @@ namespace StudentHub.Web.Controllers.API
             if (userId != project.AuthorId) return Forbid();
 
             await _projectRepository.DeleteAsync(id);
-            return Ok();
+            return NoContent();
         }
     }
 }
