@@ -35,7 +35,14 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Post?> GetByIdAsync(Guid id) =>
             await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
 
-        public async Task<List<Post>> GetAllAsync() =>
-            await _dbContext.Posts.ToListAsync();
+        public async Task<List<Post>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Post?> GetByIdWithAuthorAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

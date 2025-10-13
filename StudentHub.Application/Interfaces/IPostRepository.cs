@@ -8,6 +8,7 @@ namespace StudentHub.Application.Interfaces
         Task UpdateAsync(Post post);
         Task DeleteAsync(Guid id);
         Task<Post?> GetByIdAsync(Guid id);
+        Task<Post?> GetByIdWithAuthorAsync(Guid id);
         Task<List<Post>> GetAllAsync();
     }
 }

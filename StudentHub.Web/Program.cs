@@ -35,8 +35,7 @@ namespace StudentHub.Web
                 builder.Services.AddSerilog();
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")))
-                    ;
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppDbContext>()
