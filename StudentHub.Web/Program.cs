@@ -75,23 +75,30 @@ namespace StudentHub.Web
 
                 app.UseSerilogRequestLogging();
 
-                try
+                using (var scope = app.Services.CreateScope())
                 {
-                    using var scope = app.Services.CreateScope();
-
                     var services = scope.ServiceProvider;
+                    try
+                    {
+                        // Database migration
+                        var context = services.GetRequiredService<AppDbContext>();
+                        await context.Database.MigrateAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex.Message);
+                    }
 
-                    // Database migration
-                    var context = services.GetRequiredService<AppDbContext>();
-                    await context.Database.MigrateAsync();
-
-                    // Database seeding
-                    var seeder = services.GetRequiredService<DbSeeder>();
-                    await seeder.SeedAdminAsync();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.Message);
+                    try
+                    {
+                        // Database seeding
+                        var seeder = services.GetRequiredService<DbSeeder>();
+                        await seeder.SeedAdminAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex.Message);
+                    }
                 }
 
                 if (builder.Environment.IsDevelopment())
