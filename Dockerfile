@@ -11,13 +11,13 @@ RUN dotnet restore
 
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
+COPY . .
 RUN dotnet ef migrations bundle \
     --project StudentHub.Infrastructure \
     --startup-project StudentHub.Web \
     --output /src/migrate \
     --configuration Release
 
-COPY . .
 
 WORKDIR /src/StudentHub.Web
 
