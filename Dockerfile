@@ -13,6 +13,7 @@ RUN dotnet tool install --global dotnet-ef \
 	&& export PATH="$PATH:/root/.dotnet/tools" \
 	&& dotnet ef migrations bundle \
 		--project StudentHub.Infrastructure \
+		--startup-project StudentHub.Web \
 		--output /src/migrate \
 		--configuration Release
 
