@@ -8,21 +8,23 @@ namespace StudentHub.Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IIdentityUserRepository _identityUserRepository;
+        public UserService(IUserRepository userRepository, IIdentityUserRepository identityUserRepository)
         {
             _userRepository = userRepository;
+            _identityUserRepository = identityUserRepository;
         }
 
-        public async Task<bool> CheckPasswordAsync(string login, string password)
+        public async Task<bool> CheckPasswordAsync(string username, string password)
         {
-            var user = await _userRepository.GetByLoginAsync(login);
-            return await _userRepository.CheckPasswordAsync(user, password);
+            var user = await _userRepository.GetByUsernameAsync(username);
+            return await _identityUserRepository.CheckPasswordAsync(user, password);
         }
 
         public async Task<List<UserDto>> GetAllAsync()
         {
             var users = await _userRepository.GetAllAsync();
-            var userDtos = users.Select(u => new UserDto { FullName = u.FullName, Id = u.Id, Login = u.Username }).ToList();
+            var userDtos = users.Select(u => new UserDto { FullName = u.FullName, Id = u.Id, Username = u.Username }).ToList();
             return userDtos;
         }
 
@@ -35,22 +37,22 @@ namespace StudentHub.Application.Services
             {
                 Id = user.Id,
                 FullName = user.FullName,
-                Login = user.Username
+                Username = user.Username
             };
 
             return userDto;
         }
 
-        public async Task<UserDto?> GetByLoginAsync(string login)
+        public async Task<UserDto?> GetByUsernameAsync(string username)
         {
-            var user = await _userRepository.GetByLoginAsync(login);
+            var user = await _userRepository.GetByUsernameAsync(username);
             if (user == null) return null;
 
             var userDto = new UserDto
             {
                 Id = user.Id,
                 FullName = user.FullName,
-                Login = user.Username
+                Username = user.Username
             };
 
             return userDto;
@@ -64,7 +66,7 @@ namespace StudentHub.Application.Services
                 Username = request.Username
             };
 
-            return _userRepository.AddAsync(user, request.Password);
+            return _identityUserRepository.AddAsync(user, request.Password);
         }
     }
 }

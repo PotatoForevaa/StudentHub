@@ -35,13 +35,13 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            var user = await _userService.GetByLoginAsync(loginRequest.Login);
+            var user = await _userService.GetByUsernameAsync(loginRequest.Username);
             if (user == null) return NotFound("User not found");
 
-            var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Login, loginRequest.Password);
+            var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Username, loginRequest.Password);
             if (passwordResult == false) return Unauthorized("Wrong password");
 
-            await _authService.SignInAsync(user.Id, user.Login);
+            await _authService.SignInAsync(user.Id, user.Username);
 
             return Ok();
         }

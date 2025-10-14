@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StudentHub.Application.Interfaces;
 using StudentHub.Application.Services;
-using StudentHub.Infrastructure;
+using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Web.WebServices;
@@ -37,8 +37,11 @@ namespace StudentHub.Web
                 builder.Services.AddDbContext<AppDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
 
+                builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
+
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
-                    .AddEntityFrameworkStores<AppDbContext>()
+                    .AddEntityFrameworkStores<AppIdentityDbContext>()
                     .AddDefaultTokenProviders();
 
                 builder.Services.ConfigureApplicationCookie(options =>

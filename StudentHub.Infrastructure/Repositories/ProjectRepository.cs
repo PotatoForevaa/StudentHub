@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
+using StudentHub.Infrastructure.Data;
 
 namespace StudentHub.Infrastructure.Repositories
 {

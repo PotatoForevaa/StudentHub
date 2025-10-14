@@ -5,10 +5,9 @@ namespace StudentHub.Application.Interfaces
     public interface IUserRepository
     {
         Task<List<User>> GetAllAsync();
-        Task<User?> GetByLoginAsync(string login);
+        Task<User?> GetByUsernameAsync(string username);
         Task<User?> GetByIdAsync(Guid id);
-        Task<bool> AddAsync(User user, string password);
-        Task<bool> CheckPasswordAsync(User user, string password);
+        Task<bool> AddAsync(User user);
     }
 
 }

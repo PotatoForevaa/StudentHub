@@ -1,0 +1,20 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using StudentHub.Domain.Entities;
+using StudentHub.Infrastructure.Identity;
+
+namespace StudentHub.Infrastructure.Data
+{
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options) { }
+
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<PostRating> PostRatings { get; set; }
+        public DbSet<Image> Images { get; set; }
+        public DbSet<User> Users { get; set; }
+    }
+}

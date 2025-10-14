@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using StudentHub.Infrastructure.Identity;
 
-namespace StudentHub.Infrastructure
+namespace StudentHub.Infrastructure.Data
 {
     public class DbSeeder
     {

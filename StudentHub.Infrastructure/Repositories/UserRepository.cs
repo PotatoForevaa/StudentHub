@@ -3,68 +3,35 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
-using StudentHub.Infrastructure.Identity;
+using StudentHub.Infrastructure.Data;
 
 namespace StudentHub.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
         private readonly ILogger<UserRepository> _logger;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly AppDbContext _db;
 
-        public UserRepository(ILogger<UserRepository> logger, UserManager<AppUser> userManager)
+        public UserRepository(ILogger<UserRepository> logger, AppDbContext db)
         {
             _logger = logger;
-            _userManager = userManager;
+            _db = db;
         }
 
-        public async Task<List<User>> GetAllAsync()
+        public async Task<List<User>> GetAllAsync() => 
+            await _db.Users.ToListAsync();
+
+        public async Task<User?> GetByUsernameAsync(string username) =>
+            await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+        public async Task<User?> GetByIdAsync(Guid id) =>
+            await _db.Users.FindAsync(id);
+
+        public async Task<bool> AddAsync(User user)
         {
-            var users = await _userManager.Users
-                .Select(u => Map(u))
-                .ToListAsync();
-            return users;
+            if (await _db.Users.AnyAsync(u => u.Username == user.Username)) return false;
+            await _db.Users.AddAsync(user);
+            return true;           
         }
-
-        public async Task<User?> GetByLoginAsync(string login)
-        {
-            var appUser = await _userManager.FindByNameAsync(login);
-            return appUser == null ? null : Map(appUser);
-        }
-        public async Task<User?> GetByIdAsync(Guid id)
-        {
-            var appUser = await _userManager.FindByIdAsync(id.ToString());
-            return appUser == null ? null : Map(appUser);
-        }
-
-        public async Task<bool> AddAsync(User user, string password)
-        {
-            var appUser = new AppUser
-            {
-                UserName = user.Username,
-                FullName = user.FullName
-            };
-
-            var result = await _userManager.CreateAsync(appUser, password);
-            if (!result.Succeeded)
-                _logger.LogWarning($"Failed to create user: {user.Username}, {result.Errors.Select(e => e.Description)}");
-            else
-                _logger.LogInformation($"User created: {user.Username}");
-
-            return result.Succeeded;
-        }
-
-        public async Task<bool> CheckPasswordAsync(User user, string password)
-        {
-            var appUser = await _userManager.FindByNameAsync(user.Username);
-            return appUser != null && await _userManager.CheckPasswordAsync(appUser, password);
-        }
-
-        private User Map(AppUser appUser) => new User
-        {
-            Id = appUser.Id,
-            Username = appUser.UserName!,
-            FullName = appUser.FullName
-        };
     }
 }
