@@ -10,7 +10,7 @@ COPY StudentHub.Web/*.csproj ./StudentHub.Web/
 RUN dotnet restore
 
 RUN dotnet tool install --global dotnet-ef \
-	&& export PATH="$PATH:/roolt/.dotnet/tools" \
+	&& export PATH="$PATH:/root/.dotnet/tools" \
 	&& dotnet ef migrations bundle \
 		--project StudentHub.Infrastructure \
 		--output /src/migrate \
