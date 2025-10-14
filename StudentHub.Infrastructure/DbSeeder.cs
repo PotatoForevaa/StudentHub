@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using StudentHub.Infrastructure.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StudentHub.Infrastructure
 {
@@ -43,7 +38,7 @@ namespace StudentHub.Infrastructure
                 await _userManager.CreateAsync(adminUser, password);
                 await _userManager.AddToRoleAsync(adminUser, "Admin");
             }
-                
+
         }
     }
 }

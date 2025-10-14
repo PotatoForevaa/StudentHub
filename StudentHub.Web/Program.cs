@@ -70,7 +70,7 @@ namespace StudentHub.Web
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
-                               
+
                 var app = builder.Build();
 
                 app.UseSerilogRequestLogging();
@@ -78,16 +78,16 @@ namespace StudentHub.Web
                 using (var scope = app.Services.CreateScope())
                 {
                     var services = scope.ServiceProvider;
-                    try
-                    {
-                        // Database migration
-                        var context = services.GetRequiredService<AppDbContext>();
-                        await context.Database.MigrateAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex.Message);
-                    }
+                    //try
+                    //{
+                    //    // Database migration
+                    //    var context = services.GetRequiredService<AppDbContext>();
+                    //    await context.Database.MigrateAsync();
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Log.Error(ex.Message);
+                    //}
 
                     try
                     {
