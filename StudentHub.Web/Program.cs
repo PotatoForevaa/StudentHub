@@ -81,17 +81,7 @@ namespace StudentHub.Web
                 using (var scope = app.Services.CreateScope())
                 {
                     var services = scope.ServiceProvider;
-                    //try
-                    //{
-                    //    // Database migration
-                    //    var context = services.GetRequiredService<AppDbContext>();
-                    //    await context.Database.MigrateAsync();
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.Error(ex.Message);
-                    //}
-
+                    
                     try
                     {
                         // Database seeding

@@ -13,12 +13,14 @@ namespace StudentHub.Infrastructure.Repositories
         private readonly ILogger<UserRepository> _logger;
         private readonly AppDbContext _db;
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-        public UserRepository(ILogger<UserRepository> logger, AppDbContext db, UserManager<AppUser> userManager)
+        public UserRepository(ILogger<UserRepository> logger, AppDbContext db, UserManager<AppUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
         {
             _logger = logger;
             _db = db;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<List<User>> GetAllAsync() => 
@@ -51,6 +53,28 @@ namespace StudentHub.Infrastructure.Repositories
             var appUser = await _userManager.FindByNameAsync(userName);
             if (appUser == null) return false;
             return await _userManager.CheckPasswordAsync(appUser, password);
+        }
+
+        public async Task<bool> AddToRoleAsync(string username, string role)
+        {
+            var appUser = await _userManager.FindByNameAsync(username);
+            if (appUser == null) return false;
+            
+            return (await _userManager.AddToRoleAsync(appUser, role)).Succeeded;
+        }
+
+        public async Task<bool> CreateRole(string roleName)
+        {
+            if (await _roleManager.Roles.AnyAsync(r => r.Name == roleName)) return false;
+
+            var role = new IdentityRole<Guid>
+            {
+                Id = Guid.NewGuid(),
+                Name = roleName,
+                NormalizedName = roleName
+            };
+
+            return (await _roleManager.CreateAsync(role)).Succeeded;            
         }
     }
 }
