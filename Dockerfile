@@ -15,7 +15,15 @@ COPY . .
 RUN dotnet ef migrations bundle \
     --project StudentHub.Infrastructure \
     --startup-project StudentHub.Web \
-    --output /src/migrate \
+    --context BusinessDbContext \
+    --output /src/migrate-business \
+    --configuration Release
+
+RUN dotnet ef migrations bundle \
+    --project StudentHub.Infrastructure \
+    --startup-project StudentHub.Web \
+    --context IdentityDbContext \
+    --output /src/migrate-identity \
     --configuration Release
 
 
@@ -29,4 +37,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=build /src/migrate ./migrate
 
-ENTRYPOINT ["bash", "-c", "./migrate && dotnet StudentHub.Web.dll"]
+ENTRYPOINT ["bash", "-c", "./migrate-business && /migrate-identity && dotnet StudentHub.Web.dll"]

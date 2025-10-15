@@ -8,18 +8,13 @@ namespace StudentHub.Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IIdentityUserRepository _identityUserRepository;
-        public UserService(IUserRepository userRepository, IIdentityUserRepository identityUserRepository)
+        public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            _identityUserRepository = identityUserRepository;
         }
 
-        public async Task<bool> CheckPasswordAsync(string username, string password)
-        {
-            var user = await _userRepository.GetByUsernameAsync(username);
-            return await _identityUserRepository.CheckPasswordAsync(user, password);
-        }
+        public async Task<bool> CheckPasswordAsync(string username, string password) =>            
+            await _userRepository.CheckPasswordAsync(username, password);
 
         public async Task<List<UserDto>> GetAllAsync()
         {
@@ -66,7 +61,7 @@ namespace StudentHub.Application.Services
                 Username = request.Username
             };
 
-            return _identityUserRepository.AddAsync(user, request.Password);
+            return _userRepository.AddAsync(user, request.Password);
         }
     }
 }

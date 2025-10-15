@@ -31,8 +31,7 @@ namespace StudentHub.Infrastructure.Data
             {
                 var adminUser = new AppUser
                 {
-                    UserName = username,
-                    FullName = fullName
+                    UserName = username
                 };
 
                 await _userManager.CreateAsync(adminUser, password);

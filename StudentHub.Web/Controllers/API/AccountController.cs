@@ -29,7 +29,7 @@ namespace StudentHub.Web.Controllers.API
 
             var result = await _userService.RegisterAsync(registerDto);
             if (result) return Created();
-            return BadRequest("Something went wrong");
+            return BadRequest("Registration went wrong");
         }
 
         [HttpPost("Login")]
