@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
@@ -32,49 +33,59 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<User?> GetByIdAsync(Guid id) =>
             await _db.Users.FindAsync(id);
 
-        public async Task<bool> AddAsync(User user, string password)
+        public async Task<Result<string, string>> AddAsync(User user, string password)
         {
-            if (await _db.Users.AnyAsync(u => u.Username == user.Username)) 
-                return false;
-
             await _db.Users.AddAsync(user);
 
             var appUser = new AppUser { Id = user.Id, UserName = user.Username };
             var result = await _userManager.CreateAsync(appUser, password);
 
             if (result.Succeeded)
-                return true;
+            {
+                await _db.SaveChangesAsync();
+                return Result<string, string>.Success($"User {user.Username} created");
+            }
 
-            return false;           
+            return Result<string, string>.Failure(string.Join(',', result.Errors.Select(e => e.Description)));
         }
 
-        public async Task<bool> CheckPasswordAsync(string userName, string password)
+        public async Task<Result<string, string>> CheckPasswordAsync(string userName, string password)
         {
             var appUser = await _userManager.FindByNameAsync(userName);
-            if (appUser == null) return false;
-            return await _userManager.CheckPasswordAsync(appUser, password);
+            if (appUser == null)
+                return Result<string, string>.Failure($"User {userName} not found", ErrorType.NotFound);
+
+            var result = await _userManager.CheckPasswordAsync(appUser, password);
+            return result ?
+                 Result<string, string>.Success("Password verified") :
+                 Result<string, string>.Failure("Wrong password", ErrorType.Unauthorized);
         }
 
-        public async Task<bool> AddToRoleAsync(string username, string role)
+        public async Task<Result<string, string>> AddToRoleAsync(string username, string role)
         {
             var appUser = await _userManager.FindByNameAsync(username);
-            if (appUser == null) return false;
-            
-            return (await _userManager.AddToRoleAsync(appUser, role)).Succeeded;
+            if (appUser == null)
+                return Result<string, string>.Failure($"User {username} not found", ErrorType.NotFound);
+
+            var result = await _userManager.AddToRoleAsync(appUser, role);
+            return result.Succeeded ? 
+                Result<string, string>.Success($"User {username} added to role {role}") :
+                Result<string, string>.Failure(string.Join(',', result.Errors.Select(e => e.Description)));
         }
 
-        public async Task<bool> CreateRole(string roleName)
+        public async Task<Result<string, string>> CreateRole(string roleName)
         {
-            if (await _roleManager.Roles.AnyAsync(r => r.Name == roleName)) return false;
-
             var role = new IdentityRole<Guid>
             {
                 Id = Guid.NewGuid(),
                 Name = roleName,
-                NormalizedName = roleName
+                NormalizedName = roleName.ToUpper()
             };
 
-            return (await _roleManager.CreateAsync(role)).Succeeded;            
+            var result = await _roleManager.CreateAsync(role);
+            return result.Succeeded ?
+                Result<string, string>.Success(role.Id.ToString()) : 
+                Result<string, string>.Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
     }
 }

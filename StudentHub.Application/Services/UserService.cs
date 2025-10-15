@@ -13,7 +13,7 @@ namespace StudentHub.Application.Services
             _userRepository = userRepository;
         }
 
-        public async Task<bool> CheckPasswordAsync(string username, string password) =>            
+        public async Task<Result<string, string>> CheckPasswordAsync(string username, string password) =>            
             await _userRepository.CheckPasswordAsync(username, password);
 
         public async Task<List<UserDto>> GetAllAsync()
@@ -53,7 +53,7 @@ namespace StudentHub.Application.Services
             return userDto;
         }
 
-        public Task<bool> RegisterAsync(RegisterUserRequest request)
+        public Task<Result<string, string>> RegisterAsync(RegisterUserRequest request)
         {
             var user = new User
             {

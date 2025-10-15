@@ -2,6 +2,8 @@
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces;
 using StudentHub.Web.DTOs.Requests;
+using StudentHub.Application.DTOs.Responses;
+using System.Security.Claims;
 
 namespace StudentHub.Web.Controllers.API
 {
@@ -28,24 +30,34 @@ namespace StudentHub.Web.Controllers.API
             };
 
             var result = await _userService.RegisterAsync(registerDto);
-            if (result) return Created();
-            return BadRequest("Registration went wrong");
+            if (result.IsSuccess) return Created();
+
+            return BadRequest(result.Error);
         }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            var user = await _userService.GetByUsernameAsync(loginRequest.Username);
-            if (user == null) return NotFound("User not found");
-
             var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Username, loginRequest.Password);
-            if (passwordResult == false) return Unauthorized("Wrong password");
 
-            await _authService.SignInAsync(user.Id, user.Username);
+            if (!passwordResult.IsSuccess)
+            {
+                switch (passwordResult.ErrorType)
+                {
+                    case ErrorType.Unauthorized:
+                        return Unauthorized(passwordResult.Error);
+                    case ErrorType.NotFound:
+                        return NotFound(passwordResult.Error);
+                    default: return StatusCode(500);
+                }
+            }
+            var user = await _userService.GetByUsernameAsync(loginRequest.Username);
+            var userId = user.Id;
+
+            await _authService.SignInAsync(user.Id, loginRequest.Password);
 
             return Ok();
         }
-
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {

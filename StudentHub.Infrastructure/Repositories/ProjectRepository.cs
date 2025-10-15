@@ -22,6 +22,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task DeleteAsync(Guid id)
         {
             var project = await _dbContext.Projects.FindAsync(id);
+            if (project == null) return;
             _dbContext.Projects.Remove(project);
             await _dbContext.SaveChangesAsync();
         }
