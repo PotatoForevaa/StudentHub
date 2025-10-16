@@ -1,4 +1,5 @@
-﻿using StudentHub.Application.DTOs.Requests;
+﻿using StudentHub.Application.DTOs;
+using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
@@ -13,7 +14,7 @@ namespace StudentHub.Application.Services
             _userRepository = userRepository;
         }
 
-        public async Task<Result<string, string>> CheckPasswordAsync(string username, string password) =>            
+        public async Task<Result> CheckPasswordAsync(string username, string password) =>
             await _userRepository.CheckPasswordAsync(username, password);
 
         public async Task<List<UserDto>> GetAllAsync()
@@ -23,11 +24,12 @@ namespace StudentHub.Application.Services
             return userDtos;
         }
 
-        public async Task<UserDto?> GetByIdAsync(Guid id)
+        public async Task<Result<UserDto?>> GetByIdAsync(Guid id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null) return null;
+            var userResult = await _userRepository.GetByIdAsync(id);
+            if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Error, userResult.ErrorType);
 
+            var user = userResult.Value;
             var userDto = new UserDto
             {
                 Id = user.Id,
@@ -35,14 +37,15 @@ namespace StudentHub.Application.Services
                 Username = user.Username
             };
 
-            return userDto;
+            return Result<UserDto?>.Success(userDto);
         }
 
-        public async Task<UserDto?> GetByUsernameAsync(string username)
+        public async Task<Result<UserDto?>> GetByUsernameAsync(string username)
         {
-            var user = await _userRepository.GetByUsernameAsync(username);
-            if (user == null) return null;
+            var userResult = await _userRepository.GetByUsernameAsync(username);
+            if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Error, userResult.ErrorType);
 
+            var user = userResult.Value;
             var userDto = new UserDto
             {
                 Id = user.Id,
@@ -50,18 +53,28 @@ namespace StudentHub.Application.Services
                 Username = user.Username
             };
 
-            return userDto;
+            return Result<UserDto?>.Success(userDto);
         }
 
-        public Task<Result<string, string>> RegisterAsync(RegisterUserRequest request)
+        public async Task<Result<UserDto?>> RegisterAsync(RegisterUserCommand request)
         {
             var user = new User
             {
                 FullName = request.FullName,
                 Username = request.Username
             };
+            var userResult = await _userRepository.AddAsync(user, request.Password);
+            if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Error, userResult.ErrorType);
 
-            return _userRepository.AddAsync(user, request.Password);
+            user = userResult.Value;
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Username = user.Username
+            };
+
+            return Result<UserDto?>.Success(userDto);
         }
     }
 }

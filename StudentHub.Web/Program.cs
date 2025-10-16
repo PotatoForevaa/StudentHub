@@ -81,7 +81,7 @@ namespace StudentHub.Web
                 using (var scope = app.Services.CreateScope())
                 {
                     var services = scope.ServiceProvider;
-                    
+
                     try
                     {
                         // Database seeding

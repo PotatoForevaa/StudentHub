@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using StudentHub.Application.DTOs.Responses;
+using StudentHub.Application.DTOs;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
@@ -24,16 +24,29 @@ namespace StudentHub.Infrastructure.Repositories
             _roleManager = roleManager;
         }
 
-        public async Task<List<User>> GetAllAsync() => 
-            await _db.Users.ToListAsync();
+        public async Task<List<User>> GetAllAsync(int page = 0, int pageSize = 0)
+        {
+            if (page == 0 && pageSize == 0) return await _db.Users.ToListAsync();
+            return await _db.Users.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        }
 
-        public async Task<User?> GetByUsernameAsync(string username) =>
-            await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        public async Task<Result<User?>> GetByUsernameAsync(string username)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null) return Result<User?>.Failure($"User {username} not found", ErrorType.NotFound);
+            return Result<User?>.Success(user);
+        }
 
-        public async Task<User?> GetByIdAsync(Guid id) =>
-            await _db.Users.FindAsync(id);
 
-        public async Task<Result<string, string>> AddAsync(User user, string password)
+        public async Task<Result<User?>> GetByIdAsync(Guid id)
+        {
+            var user = await _db.Users.FindAsync(id);
+            if (user == null) return Result<User?>.Failure($"User {id} not found", ErrorType.NotFound);
+            return Result<User?>.Success(user);
+        }
+
+
+        public async Task<Result<User?>> AddAsync(User user, string password)
         {
             await _db.Users.AddAsync(user);
 
@@ -43,37 +56,37 @@ namespace StudentHub.Infrastructure.Repositories
             if (result.Succeeded)
             {
                 await _db.SaveChangesAsync();
-                return Result<string, string>.Success($"User {user.Username} created");
+                return Result<User>.Success(user);
             }
 
-            return Result<string, string>.Failure(string.Join(',', result.Errors.Select(e => e.Description)));
+            return Result<User?>.Failure(string.Join(',', result.Errors.Select(e => e.Description)));
         }
 
-        public async Task<Result<string, string>> CheckPasswordAsync(string userName, string password)
+        public async Task<Result> CheckPasswordAsync(string userName, string password)
         {
             var appUser = await _userManager.FindByNameAsync(userName);
             if (appUser == null)
-                return Result<string, string>.Failure($"User {userName} not found", ErrorType.NotFound);
+                return Result.Failure($"User {userName} not found", ErrorType.NotFound);
 
             var result = await _userManager.CheckPasswordAsync(appUser, password);
             return result ?
-                 Result<string, string>.Success("Password verified") :
-                 Result<string, string>.Failure("Wrong password", ErrorType.Unauthorized);
+                 Result.Success() :
+                 Result.Failure("Wrong password", ErrorType.Unauthorized);
         }
 
-        public async Task<Result<string, string>> AddToRoleAsync(string username, string role)
+        public async Task<Result> AddToRoleAsync(string username, string role)
         {
             var appUser = await _userManager.FindByNameAsync(username);
             if (appUser == null)
-                return Result<string, string>.Failure($"User {username} not found", ErrorType.NotFound);
+                return Result.Failure($"User {username} not found", ErrorType.NotFound);
 
             var result = await _userManager.AddToRoleAsync(appUser, role);
-            return result.Succeeded ? 
-                Result<string, string>.Success($"User {username} added to role {role}") :
-                Result<string, string>.Failure(string.Join(',', result.Errors.Select(e => e.Description)));
+            return result.Succeeded ?
+                Result.Success() :
+                Result.Failure(string.Join(',', result.Errors.Select(e => e.Description)));
         }
 
-        public async Task<Result<string, string>> CreateRole(string roleName)
+        public async Task<Result> CreateRole(string roleName)
         {
             var role = new IdentityRole<Guid>
             {
@@ -84,8 +97,8 @@ namespace StudentHub.Infrastructure.Repositories
 
             var result = await _roleManager.CreateAsync(role);
             return result.Succeeded ?
-                Result<string, string>.Success(role.Id.ToString()) : 
-                Result<string, string>.Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
+                Result.Success() :
+                Result.Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
     }
 }

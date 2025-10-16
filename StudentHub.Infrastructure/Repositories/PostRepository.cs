@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StudentHub.Application.DTOs;
 using StudentHub.Application.Interfaces;
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
@@ -14,36 +15,40 @@ namespace StudentHub.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task AddAsync(Post post)
+        public async Task<Result<Post?>> AddAsync(Post post)
         {
             await _dbContext.Posts.AddAsync(post);
             await _dbContext.SaveChangesAsync();
+
+            return Result<Post?>.Success(post);
         }
 
-        public async Task UpdateAsync(Post post)
+        public async Task<Result<Post?>> UpdateAsync(Post post)
         {
             _dbContext.Posts.Update(post);
             await _dbContext.SaveChangesAsync();
+            return Result<Post?>.Success(post);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<Result> DeleteAsync(Guid id)
         {
             var post = await _dbContext.Posts.FindAsync(id);
             _dbContext.Posts.Remove(post);
             await _dbContext.SaveChangesAsync();
+            return Result.Success();
         }
 
-        public async Task<Post?> GetByIdAsync(Guid id) =>
-            await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
-
-        public async Task<List<Post>> GetAllAsync()
+        public async Task<Result<Post?>> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
+            if (post == null) return Result<Post?>.Failure($"Post {id} not found", ErrorType.NotFound);
+            return Result<Post?>.Success(post);
         }
 
-        public async Task<Post?> GetByIdWithAuthorAsync(Guid id)
+        public async Task<List<Post>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            throw new NotImplementedException();
+            if (page == 0 && pageSize == 0) return await _dbContext.Posts.ToListAsync();
+            return await _dbContext.Posts.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
         }
     }
 }

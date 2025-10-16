@@ -1,14 +1,14 @@
-﻿using StudentHub.Domain.Entities;
+﻿using StudentHub.Application.DTOs;
+using StudentHub.Domain.Entities;
 
 namespace StudentHub.Application.Interfaces
 {
     public interface IPostRepository
     {
-        Task AddAsync(Post post);
-        Task UpdateAsync(Post post);
-        Task DeleteAsync(Guid id);
-        Task<Post?> GetByIdAsync(Guid id);
-        Task<Post?> GetByIdWithAuthorAsync(Guid id);
-        Task<List<Post>> GetAllAsync();
+        Task<Result<Post?>> AddAsync(Post post);
+        Task<Result<Post?>> UpdateAsync(Post post);
+        Task<Result> DeleteAsync(Guid id);
+        Task<Result<Post?>> GetByIdAsync(Guid id);
+        Task<List<Post>> GetAllAsync(int page, int pagesize);
     }
 }

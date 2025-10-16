@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces;
 using StudentHub.Web.DTOs.Requests;
-using StudentHub.Application.DTOs.Responses;
-using System.Security.Claims;
 
 namespace StudentHub.Web.Controllers.API
 {
@@ -22,7 +21,7 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
-            var registerDto = new RegisterUserRequest
+            var registerDto = new RegisterUserCommand
             {
                 FullName = registerRequest.FullName,
                 Password = registerRequest.Password,
@@ -51,7 +50,8 @@ namespace StudentHub.Web.Controllers.API
                     default: return StatusCode(500);
                 }
             }
-            var user = await _userService.GetByUsernameAsync(loginRequest.Username);
+            var userResult = await _userService.GetByUsernameAsync(loginRequest.Username);
+            var user = userResult.Value;
             var userId = user.Id;
 
             await _authService.SignInAsync(user.Id, loginRequest.Password);

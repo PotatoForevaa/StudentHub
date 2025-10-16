@@ -1,16 +1,16 @@
-﻿using StudentHub.Application.DTOs.Responses;
+﻿using StudentHub.Application.DTOs;
 using StudentHub.Domain.Entities;
 
 namespace StudentHub.Application.Interfaces
 {
     public interface IUserRepository
     {
-        Task<List<User>> GetAllAsync();
-        Task<User?> GetByUsernameAsync(string username);
-        Task<User?> GetByIdAsync(Guid id);
-        Task<Result<string, string>> AddAsync(User user, string password);
-        Task<Result<string, string>> CreateRole(string roleName);
-        Task<Result<string, string>> AddToRoleAsync(string username, string role);
-        Task<Result<string, string>> CheckPasswordAsync(string username, string password);
+        Task<List<User>> GetAllAsync(int page = 0, int pageSize = 0);
+        Task<Result<User?>> GetByUsernameAsync(string username);
+        Task<Result<User?>> GetByIdAsync(Guid id);
+        Task<Result<User?>> AddAsync(User user, string password);
+        Task<Result> CreateRole(string roleName);
+        Task<Result> AddToRoleAsync(string username, string role);
+        Task<Result> CheckPasswordAsync(string username, string password);
     }
 }

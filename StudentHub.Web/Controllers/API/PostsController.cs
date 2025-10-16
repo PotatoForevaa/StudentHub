@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces;
-using StudentHub.Domain.Entities;
 using StudentHub.Web.DTOs.Requests;
 using System.Security.Claims;
 
@@ -11,18 +11,18 @@ namespace StudentHub.Web.Controllers.API
     [ApiController]
     public class PostsController : ControllerBase
     {
-        private readonly IPostRepository _postRepository;
-        public PostsController(IPostRepository postRepository)
+        private readonly IPostService _postService;
+        public PostsController(IPostService postService)
         {
-            _postRepository = postRepository;
+            _postService = postService;
         }
 
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost([FromRoute] Guid id)
         {
-            var post = await _postRepository.GetByIdAsync(id);
-            if (post == null) return NotFound("Post not found");
+            var post = await _postService.GetByIdAsync(id);
+            if (post == null) return NotFound($"Post {id} not found");
             return Ok(post);
         }
 
@@ -30,7 +30,7 @@ namespace StudentHub.Web.Controllers.API
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
-            var posts = await _postRepository.GetAllAsync();
+            var posts = await _postService.GetAllAsync();
             return Ok(posts);
         }
 
@@ -41,15 +41,15 @@ namespace StudentHub.Web.Controllers.API
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var post = new Post()
+            var post = new CreatePostCommand
             {
-                AuthorId = userId,
                 Description = createPostRequest.Description,
-                Title = createPostRequest.Title
+                Title = createPostRequest.Title,
+                AuthorId = userId,
             };
 
-            await _postRepository.AddAsync(post);
-            return Created();
+            await _postService.CreateAsync(post);
+            return CreatedAtAction(nameof(GetPost), post);
         }
 
         [Authorize]
@@ -57,15 +57,20 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var post = await _postRepository.GetByIdAsync(updatePostRequest.PostId);
+            var postResult = await _postService.GetByIdAsync(updatePostRequest.PostId);
+            var post = postResult.Value;
 
             if (post == null) return NotFound("Post not found");
-            if (userId != post.AuthorId) return Forbid();
+            if (userId != post.Author) return Forbid();
 
-            post.Description = updatePostRequest.Description;
-            post.Title = updatePostRequest.Title;
+            var updatedPost = new CreatePostCommand
+            {
+                AuthorId = userId,
+                Description = updatePostRequest.Description,
+                Title = updatePostRequest.Title,
+            };
 
-            await _postRepository.UpdateAsync(post);
+            await _postService.UpdateAsync(updatedPost);
             return Ok();
         }
 
@@ -74,12 +79,13 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> DeletePost([FromRoute] Guid id)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var post = await _postRepository.GetByIdAsync(id);
+            var postResult = await _postService.GetByIdAsync(id);
+            var post = postResult.Value;
 
             if (post == null) return NotFound("Post not found");
-            if (userId != post.AuthorId) return Forbid();
+            if (userId != post.Author) return Forbid();
 
-            await _postRepository.DeleteAsync(id);
+            await _postService.DeleteAsync(id);
             return Ok();
         }
     }

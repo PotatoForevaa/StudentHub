@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using StudentHub.Domain.Entities;
-using StudentHub.Infrastructure.Identity;
 
 namespace StudentHub.Infrastructure.Data
 {
