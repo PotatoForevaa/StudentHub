@@ -6,6 +6,7 @@ using StudentHub.Application.Services;
 using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
+using StudentHub.Infrastructure.Services;
 using StudentHub.Web.WebServices;
 
 namespace StudentHub.Web
@@ -65,7 +66,6 @@ namespace StudentHub.Web
                 });
 
                 builder.Services.AddHttpContextAccessor();
-                builder.Services.AddScoped<DbSeeder>();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
                 builder.Services.AddScoped<IUserService, UserService>();
@@ -75,24 +75,17 @@ namespace StudentHub.Web
                 builder.Services.AddSwaggerGen();
 
                 var app = builder.Build();
+                try
+                {
+                    await DbSeeder.SeedAdmin(app.Services);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex.Message);
+                }
+
 
                 app.UseSerilogRequestLogging();
-
-                using (var scope = app.Services.CreateScope())
-                {
-                    var services = scope.ServiceProvider;
-
-                    try
-                    {
-                        // Database seeding
-                        var seeder = services.GetRequiredService<DbSeeder>();
-                        await seeder.SeedAdminAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex.Message);
-                    }
-                }
 
                 if (builder.Environment.IsDevelopment())
                 {
