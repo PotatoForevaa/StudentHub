@@ -1,7 +1,8 @@
 ﻿using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.DTOs.Responses;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Repositories;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Domain.Entities;
 
 namespace StudentHub.Application.Services

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Services;
 using System.Security.Claims;
 
 namespace StudentHub.Web.WebServices

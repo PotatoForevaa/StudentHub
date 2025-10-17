@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Services;
 
 namespace StudentHub.Web.Controllers.API
 {

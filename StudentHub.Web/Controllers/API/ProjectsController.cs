@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.DTOs;
+using StudentHub.Application.DTOs.Commands;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Domain.Entities;
 using StudentHub.Web.DTOs.Requests;
 using System.Security.Claims;
@@ -12,11 +14,11 @@ namespace StudentHub.Web.Controllers.API
     public class ProjectsController : ControllerBase
     {
 
-        private readonly IProjectRepository _projectRepository;
+        private readonly IProjectService _projectService;
         private readonly IFileStorageService _fileStorageService;
-        public ProjectsController(IProjectRepository projectRepository, IFileStorageService fileStorageService)
+        public ProjectsController(IProjectService projectService, IFileStorageService fileStorageService)
         {
-            _projectRepository = projectRepository;
+            _projectService = projectService;
             _fileStorageService = fileStorageService;
         }
 
@@ -24,8 +26,19 @@ namespace StudentHub.Web.Controllers.API
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProject([FromRoute] Guid id)
         {
-            var project = await _projectRepository.GetByIdAsync(id);
-            if (project == null) return NotFound("Project not found");
+            var projectResult = await _projectService.GetByIdAsync(id);
+            if (!projectResult.IsSuccess)
+            {
+                switch (projectResult.ErrorType)
+                {
+                    case ErrorType.NotFound:
+                        return NotFound(projectResult.Error);
+                    default:
+                        return StatusCode(500);
+                }
+            }
+
+            var project = projectResult.Value;
             return Ok(project);
         }
 
@@ -33,7 +46,7 @@ namespace StudentHub.Web.Controllers.API
         [HttpGet]
         public async Task<IActionResult> GetProjects()
         {
-            var projects = await _projectRepository.GetAllAsync();
+            var projects = await _projectService.GetAllAsync();
             return Ok(projects);
         }
 
@@ -43,23 +56,32 @@ namespace StudentHub.Web.Controllers.API
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var project = new Project()
+            var filePaths = new List<string>();
+            if (createProjectRequest.Base64Images?.Count > 0)
+                filePaths = await _fileStorageService.SaveImagesAsync(createProjectRequest.Base64Images);
+
+            var createProject = new CreateProjectCommand
             {
                 Name = createProjectRequest.Name,
                 Description = createProjectRequest.Description,
-                ExternalUrl = createProjectRequest.ExternalUrl,
                 AuthorId = userId,
+                FilePaths = filePaths,
+                Url = createProjectRequest.ExternalUrl
             };
 
-            if (createProjectRequest.Base64Images?.Count > 0)
-                foreach (string base64 in createProjectRequest.Base64Images!)
+            var createResult = await _projectService.CreateAsync(createProject);
+            if (!createResult.IsSuccess)
+            {
+                switch (createResult.ErrorType)
                 {
-                    var path = await _fileStorageService.SaveImageAsync(base64);
-                    project.Images.Add(new Image { Path = path });
+                    case ErrorType.NotFound:
+                        return NotFound(createResult.Error);
+                    default:
+                        return StatusCode(500);
                 }
+            }
 
-            await _projectRepository.AddAsync(project);
-            return Created();
+            return CreatedAtAction(nameof(GetProject), new { id = createResult.Value.Id }, createResult.Value);
         }
 
         [Authorize]
@@ -68,25 +90,32 @@ namespace StudentHub.Web.Controllers.API
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var project = await _projectRepository.GetByIdAsync(updateProjectRequest.ProjectId);
-
-            if (project == null) return NotFound("Project not found");
-            if (userId != project.AuthorId) return Forbid();
-
-            project.Name = updateProjectRequest.Name;
-            project.Description = updateProjectRequest.Description;
-
-            var newImages = new List<Image>();
-
+            var filePaths = new List<string>();
             if (updateProjectRequest.Base64Images?.Count > 0)
-                foreach (var base64 in updateProjectRequest.Base64Images)
-                {
-                    var path = await _fileStorageService.SaveImageAsync(base64);
-                    newImages.Add(new Image { Path = path });
-                }
-            project.Images = newImages;
+                filePaths = await _fileStorageService.SaveImagesAsync(updateProjectRequest.Base64Images);
 
-            await _projectRepository.UpdateAsync(project);
+            var createProject = new CreateProjectCommand
+            {
+                Name = updateProjectRequest.Name,
+                Description = updateProjectRequest.Description,
+                AuthorId = userId,
+                FilePaths = filePaths,
+                Url = updateProjectRequest.ExternalUrl
+            };
+
+            var createResult = await _projectService.UpdateAsync(createProject);
+            if (!createResult.IsSuccess)
+            {
+                switch (createResult.ErrorType)
+                {
+                    case ErrorType.NotFound:
+                        return NotFound(createResult.Error);
+                    case ErrorType.Unauthorized:
+                        return Unauthorized(createResult.Error);
+                    default:
+                        return StatusCode(500);
+                }
+            }
             return Ok();
         }
 
@@ -94,14 +123,20 @@ namespace StudentHub.Web.Controllers.API
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteProject([FromRoute] Guid id)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var project = await _projectRepository.GetByIdAsync(id);
-
-            if (project == null) return NotFound("Project not found");
-            if (userId != project.AuthorId) return Forbid();
-
-            await _projectRepository.DeleteAsync(id);
-            return NoContent();
+            var deleteResult = await _projectService.DeleteAsync(id);
+            if (!deleteResult.IsSuccess)
+            {
+                switch (deleteResult.ErrorType)
+                {
+                    case ErrorType.NotFound:
+                        return NotFound(deleteResult.Error);
+                    case ErrorType.Unauthorized:
+                        return Unauthorized(deleteResult.Error);
+                    default:
+                        return StatusCode(500);
+                }
+            }
+            return Ok();
         }
     }
 }

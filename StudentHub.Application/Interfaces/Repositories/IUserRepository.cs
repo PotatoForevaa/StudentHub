@@ -1,7 +1,7 @@
 ﻿using StudentHub.Application.DTOs;
 using StudentHub.Domain.Entities;
 
-namespace StudentHub.Application.Interfaces
+namespace StudentHub.Application.Interfaces.Repositories
 {
     public interface IUserRepository
     {

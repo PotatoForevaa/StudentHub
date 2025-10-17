@@ -2,7 +2,7 @@
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.DTOs.Responses;
 
-namespace StudentHub.Application.Interfaces
+namespace StudentHub.Application.Interfaces.Services
 {
     public interface IPostService
     {

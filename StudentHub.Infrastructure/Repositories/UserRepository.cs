@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudentHub.Application.DTOs;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;

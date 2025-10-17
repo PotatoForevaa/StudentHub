@@ -1,7 +1,8 @@
 ﻿using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.DTOs.Responses;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Repositories;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Domain.Entities;
 
 namespace StudentHub.Application.Services
@@ -14,8 +15,12 @@ namespace StudentHub.Application.Services
             _userRepository = userRepository;
         }
 
-        public async Task<Result> CheckPasswordAsync(string username, string password) =>
-            await _userRepository.CheckPasswordAsync(username, password);
+        public async Task<Result> CheckPasswordAsync(string username, string password)
+        {
+
+            var a = await _userRepository.CheckPasswordAsync(username, password);
+            return a;
+        }
 
         public async Task<List<UserDto>> GetAllAsync()
         {

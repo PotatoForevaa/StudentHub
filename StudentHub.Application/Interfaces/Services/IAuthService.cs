@@ -1,4 +1,4 @@
-﻿namespace StudentHub.Application.Interfaces
+﻿namespace StudentHub.Application.Interfaces.Services
 {
     public interface IAuthService
     {

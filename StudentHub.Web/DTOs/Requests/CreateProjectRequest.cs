@@ -8,7 +8,7 @@ namespace StudentHub.Web.DTOs.Requests
         public string Name { get; set; }
         [Required]
         public string Description { get; set; }
-        public Uri? ExternalUrl { get; set; }
+        public string? ExternalUrl { get; set; }
         public List<string>? Base64Images { get; set; }
     }
 }

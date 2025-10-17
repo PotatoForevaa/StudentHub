@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentHub.Application.DTOs;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
 

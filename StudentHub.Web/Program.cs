@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Repositories;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Services;
 using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;

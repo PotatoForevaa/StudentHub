@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Application.DTOs.Requests;
-using StudentHub.Application.Interfaces;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Web.DTOs.Requests;
 using System.Security.Claims;
 
