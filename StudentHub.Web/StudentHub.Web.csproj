@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	  
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,8 +30,14 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
   </ItemGroup>
 
-  <ItemGroup>
+   <ItemGroup>
     <ProjectReference Include="..\StudentHub.Infrastructure\StudentHub.Infrastructure.csproj" />
-  </ItemGroup>
+   </ItemGroup>
+	<PropertyGroup>
+		<NeutralLanguage>en</NeutralLanguage>
+		<SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
+		<CopySatelliteAssembliesDuringPublish>false</CopySatelliteAssembliesDuringPublish>
+	</PropertyGroup>
+	
 
 </Project>
