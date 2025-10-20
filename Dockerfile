@@ -35,7 +35,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .
-COPY --from=build /src/migrate-identity ./migrate-business
-COPY --from=build /src/migrate-business ./migrate-identity
+COPY --from=build /src/migrate-identity ./migrate-identity
+COPY --from=build /src/migrate-business ./migrate-business
 
 ENTRYPOINT ["bash", "-c", "./migrate-business && /migrate-identity && dotnet StudentHub.Web.dll"]
