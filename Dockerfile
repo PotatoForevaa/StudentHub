@@ -21,6 +21,7 @@ RUN dotnet ef migrations bundle \
     --context AppDbContext \
     --output /src/migrate-business \
     --configuration Release
+    --verbose
 
 RUN dotnet ef migrations bundle \
     --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
@@ -28,6 +29,7 @@ RUN dotnet ef migrations bundle \
     --context AppIdentityDbContext \
     --output /src/migrate-identity \
     --configuration Release
+    --verbose
 
 WORKDIR /src/StudentHub.Web
 
