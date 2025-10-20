@@ -20,7 +20,7 @@ RUN dotnet ef migrations bundle \
     --startup-project ./StudentHub.Web/StudentHub.Web.csproj \
     --context AppDbContext \
     --output /src/migrate-business \
-    --configuration Release
+    --configuration Release \
     --verbose
 
 RUN dotnet ef migrations bundle \
@@ -28,7 +28,7 @@ RUN dotnet ef migrations bundle \
     --startup-project ./StudentHub.Web/StudentHub.Web.csproj \
     --context AppIdentityDbContext \
     --output /src/migrate-identity \
-    --configuration Release
+    --configuration Release \
     --verbose
 
 WORKDIR /src/StudentHub.Web
