@@ -40,4 +40,4 @@ COPY --from=build /app/publish .
 COPY --from=build /src/migrate-identity ./migrate-identity
 COPY --from=build /src/migrate-business ./migrate-business
 
-ENTRYPOINT ["bash", "-c", "./migrate-business && /migrate-identity && dotnet StudentHub.Web.dll"]
+ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business && /migrate-identity && dotnet StudentHub.Web.dll"]
