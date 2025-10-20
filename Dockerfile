@@ -13,21 +13,19 @@ RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
 COPY . .
 
-RUN ls -R /src
 RUN dotnet ef migrations bundle \
-    --project StudentHub.Infrastructure \
-    --startup-project StudentHub.Web \
+    --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
+    --startup-project ./StudentHub.Web/StudentHub.Web.csproj \
     --context AppDbContext \
     --output /src/migrate-business \
     --configuration Release
 
 RUN dotnet ef migrations bundle \
-    --project StudentHub.Infrastructure \
-    --startup-project StudentHub.Web \
+    --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
+    --startup-project ./StudentHub.Web/StudentHub.Web.csproj \
     --context AppIdentityDbContext \
     --output /src/migrate-identity \
     --configuration Release
-
 
 WORKDIR /src/StudentHub.Web
 
