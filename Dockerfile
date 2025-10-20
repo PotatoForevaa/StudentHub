@@ -13,8 +13,6 @@ RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
 COPY . .
 
-RUN ls -R /src
-
 RUN dotnet ef migrations bundle \
     --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
     --startup-project ./StudentHub.Web/StudentHub.Web.csproj \

@@ -8,22 +8,32 @@ namespace StudentHub.Infrastructure.Data
     {
         public AppDbContext CreateDbContext(string[] args)
         {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            try
+            {
+                var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../StudentHub.Web");
-            var config = new ConfigurationBuilder()
-                .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env}.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
+                var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../StudentHub.Web");
+                var config = new ConfigurationBuilder()
+                    .SetBasePath(basePath)
+                    .AddJsonFile("appsettings.json")
+                    .AddJsonFile($"appsettings.{env}.json", optional: true)
+                    .AddEnvironmentVariables()
+                    .Build();
 
-            var connectionString = config.GetConnectionString("PgSql");
+                var connectionString = config.GetConnectionString("PgSql");
 
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseNpgsql(connectionString);
+                var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+                optionsBuilder.UseNpgsql(connectionString);
 
-            return new AppDbContext(optionsBuilder.Options);
+                return new AppDbContext(optionsBuilder.Options);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("AppDbContext creation error:");
+                Console.WriteLine(ex);
+                throw;
+            }
         }
+
     }
 }
