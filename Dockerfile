@@ -15,14 +15,14 @@ COPY . .
 RUN dotnet ef migrations bundle \
     --project StudentHub.Infrastructure \
     --startup-project StudentHub.Web \
-    --context BusinessDbContext \
+    --context AppDbContext \
     --output /src/migrate-business \
     --configuration Release
 
 RUN dotnet ef migrations bundle \
     --project StudentHub.Infrastructure \
     --startup-project StudentHub.Web \
-    --context IdentityDbContext \
+    --context AppIdentityDbContext \
     --output /src/migrate-identity \
     --configuration Release
 
