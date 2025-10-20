@@ -5,6 +5,7 @@ using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.Interfaces.Services;
 using StudentHub.Domain.Entities;
 using StudentHub.Web.DTOs.Requests;
+using StudentHub.Web.Extensions;
 using System.Security.Claims;
 
 namespace StudentHub.Web.Controllers.API
@@ -27,16 +28,7 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> GetProject([FromRoute] Guid id)
         {
             var projectResult = await _projectService.GetByIdAsync(id);
-            if (!projectResult.IsSuccess)
-            {
-                switch (projectResult.ErrorType)
-                {
-                    case ErrorType.NotFound:
-                        return NotFound(projectResult.Error);
-                    default:
-                        return StatusCode(500);
-                }
-            }
+            if (!projectResult.IsSuccess) return projectResult.ToActionResult();
 
             var project = projectResult.Value;
             return Ok(project);
@@ -60,28 +52,12 @@ namespace StudentHub.Web.Controllers.API
             if (createProjectRequest.Base64Images?.Count > 0)
                 filePaths = await _fileStorageService.SaveImagesAsync(createProjectRequest.Base64Images);
 
-            var createProject = new CreateProjectCommand
-            {
-                Name = createProjectRequest.Name,
-                Description = createProjectRequest.Description,
-                AuthorId = userId,
-                FilePaths = filePaths,
-                Url = createProjectRequest.ExternalUrl
-            };
+            var createProject = new CreateProjectCommand(createProjectRequest.Name, createProjectRequest.Description, userId, filePaths, createProjectRequest.ExternalUrl);
 
             var createResult = await _projectService.CreateAsync(createProject);
-            if (!createResult.IsSuccess)
-            {
-                switch (createResult.ErrorType)
-                {
-                    case ErrorType.NotFound:
-                        return NotFound(createResult.Error);
-                    default:
-                        return StatusCode(500);
-                }
-            }
+            if (!createResult.IsSuccess) return createResult.ToActionResult();
 
-            return CreatedAtAction(nameof(GetProject), new { id = createResult.Value.Id }, createResult.Value);
+            return Ok(createResult.Value);
         }
 
         [Authorize]
@@ -94,28 +70,10 @@ namespace StudentHub.Web.Controllers.API
             if (updateProjectRequest.Base64Images?.Count > 0)
                 filePaths = await _fileStorageService.SaveImagesAsync(updateProjectRequest.Base64Images);
 
-            var createProject = new CreateProjectCommand
-            {
-                Name = updateProjectRequest.Name,
-                Description = updateProjectRequest.Description,
-                AuthorId = userId,
-                FilePaths = filePaths,
-                Url = updateProjectRequest.ExternalUrl
-            };
+            var createProject = new CreateProjectCommand(updateProjectRequest.Name, updateProjectRequest.Description, userId, filePaths, updateProjectRequest.ExternalUrl);
 
             var createResult = await _projectService.UpdateAsync(createProject);
-            if (!createResult.IsSuccess)
-            {
-                switch (createResult.ErrorType)
-                {
-                    case ErrorType.NotFound:
-                        return NotFound(createResult.Error);
-                    case ErrorType.Unauthorized:
-                        return Unauthorized(createResult.Error);
-                    default:
-                        return StatusCode(500);
-                }
-            }
+            if (!createResult.IsSuccess) return createResult.ToActionResult();
             return Ok();
         }
 
@@ -124,18 +82,7 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> DeleteProject([FromRoute] Guid id)
         {
             var deleteResult = await _projectService.DeleteAsync(id);
-            if (!deleteResult.IsSuccess)
-            {
-                switch (deleteResult.ErrorType)
-                {
-                    case ErrorType.NotFound:
-                        return NotFound(deleteResult.Error);
-                    case ErrorType.Unauthorized:
-                        return Unauthorized(deleteResult.Error);
-                    default:
-                        return StatusCode(500);
-                }
-            }
+            if (!deleteResult.IsSuccess) return deleteResult.ToActionResult();            
             return Ok();
         }
     }

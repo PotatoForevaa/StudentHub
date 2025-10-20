@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces.Services;
 using StudentHub.Web.DTOs.Requests;
+using StudentHub.Web.Extensions;
 using System.Security.Claims;
 
 namespace StudentHub.Web.Controllers.API
@@ -21,9 +23,9 @@ namespace StudentHub.Web.Controllers.API
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost([FromRoute] Guid id)
         {
-            var post = await _postService.GetByIdAsync(id);
-            if (post == null) return NotFound($"Post {id} not found");
-            return Ok(post);
+            var postResult = await _postService.GetByIdAsync(id);
+            if (!postResult.IsSuccess) return postResult.ToActionResult();
+            return Ok(postResult.Value);
         }
 
         [Authorize]
@@ -40,37 +42,30 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> CreatePost(CreatePostRequest createPostRequest)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var post = new CreatePostCommand(createPostRequest.Title, createPostRequest.Description, userId);
 
-            var post = new CreatePostCommand
-            {
-                Description = createPostRequest.Description,
-                Title = createPostRequest.Title,
-                AuthorId = userId,
-            };
+            var result = await _postService.CreateAsync(post);
+            if (!result.IsSuccess) return result.ToActionResult();
 
-            await _postService.CreateAsync(post);
-            return CreatedAtAction(nameof(GetPost), post);
+            return Ok(post);
         }
 
         [Authorize]
         [HttpPut("Update")]
         public async Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
+            var postResult = await _postService.GetByIdAsync(updatePostRequest.PostId);            
+            if (!postResult.IsSuccess) return postResult.ToActionResult();
+
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var postResult = await _postService.GetByIdAsync(updatePostRequest.PostId);
+            if (postResult.Value.AuthorId != userId) return Forbid();
+
             var post = postResult.Value;
 
-            if (post == null) return NotFound("Post not found");
-            if (userId != post.Author) return Forbid();
+            var updatePost = new UpdatePostCommand(post.Id, updatePostRequest.Title, updatePostRequest.Description, userId);
 
-            var updatedPost = new CreatePostCommand
-            {
-                AuthorId = userId,
-                Description = updatePostRequest.Description,
-                Title = updatePostRequest.Title,
-            };
-
-            await _postService.UpdateAsync(updatedPost);
+            var updateResult = await _postService.UpdateAsync(updatePost);
+            if (!updateResult.IsSuccess) return updateResult.ToActionResult();
             return Ok();
         }
 
@@ -78,12 +73,13 @@ namespace StudentHub.Web.Controllers.API
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeletePost([FromRoute] Guid id)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var postResult = await _postService.GetByIdAsync(id);
+            if (!postResult.IsSuccess) return postResult.ToActionResult();
+
             var post = postResult.Value;
 
-            if (post == null) return NotFound("Post not found");
-            if (userId != post.Author) return Forbid();
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (post.AuthorId != userId) return Forbid();
 
             await _postService.DeleteAsync(id);
             return Ok();

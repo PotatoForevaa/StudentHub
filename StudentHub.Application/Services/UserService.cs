@@ -25,7 +25,7 @@ namespace StudentHub.Application.Services
         public async Task<List<UserDto>> GetAllAsync()
         {
             var users = await _userRepository.GetAllAsync();
-            var userDtos = users.Select(u => new UserDto { FullName = u.FullName, Id = u.Id, Username = u.Username }).ToList();
+            var userDtos = users.Select(u => new UserDto(u.Id, u.Username, u.FullName)).ToList();
             return userDtos;
         }
 
@@ -35,12 +35,7 @@ namespace StudentHub.Application.Services
             if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Error, userResult.ErrorType);
 
             var user = userResult.Value;
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                FullName = user.FullName,
-                Username = user.Username
-            };
+            var userDto = new UserDto(user.Id, user.Username, user.FullName);
 
             return Result<UserDto?>.Success(userDto);
         }
@@ -51,12 +46,7 @@ namespace StudentHub.Application.Services
             if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Error, userResult.ErrorType);
 
             var user = userResult.Value;
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                FullName = user.FullName,
-                Username = user.Username
-            };
+            var userDto = new UserDto(user.Id, user.Username, user.FullName);
 
             return Result<UserDto?>.Success(userDto);
         }
@@ -72,12 +62,7 @@ namespace StudentHub.Application.Services
             if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Error, userResult.ErrorType);
 
             user = userResult.Value;
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                FullName = user.FullName,
-                Username = user.Username
-            };
+            var userDto = new UserDto(user.Id, user.Username, user.FullName);
 
             return Result<UserDto?>.Success(userDto);
         }

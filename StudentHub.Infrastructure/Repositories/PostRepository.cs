@@ -25,7 +25,10 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<Post?>> UpdateAsync(Post post)
         {
-            _dbContext.Posts.Update(post);
+            var dbPost = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == post.Id);
+            dbPost.Description = post.Description;
+            dbPost.Title = post.Title;
+            _dbContext.Posts.Update(dbPost);
             await _dbContext.SaveChangesAsync();
             return Result<Post?>.Success(post);
         }

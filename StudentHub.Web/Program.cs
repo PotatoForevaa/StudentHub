@@ -71,6 +71,7 @@ namespace StudentHub.Web
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
                 builder.Services.AddScoped<IUserService, UserService>();
                 builder.Services.AddScoped<IAuthService, AuthService>();
+                builder.Services.AddScoped<IPostService, PostService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();

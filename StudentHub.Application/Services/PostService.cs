@@ -1,4 +1,5 @@
 ﻿using StudentHub.Application.DTOs;
+using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces.Repositories;
@@ -28,14 +29,7 @@ namespace StudentHub.Application.Services
             if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Error, postResult.ErrorType);
 
             post = postResult.Value;
-            var postDto = new PostDto
-            {
-                Id = post.Id,
-                CreatedAt = post.CreatedAt,
-                Title = post.Title,
-                Description = post.Description,
-                Author = post.AuthorId
-            };
+            var postDto = new PostDto(post.Id, post.Title, post.Description, post.AuthorId, post.CreatedAt);
 
             return Result<PostDto?>.Success(postDto);
         }
@@ -45,14 +39,9 @@ namespace StudentHub.Application.Services
         public async Task<List<PostDto>> GetAllAsync(int page = 0, int pagesize = 10)
         {
             var postList = await _postRepository.GetAllAsync(page, pagesize);
-            var postDtos = postList.Select(p => new PostDto
-            {
-                Id = p.Id,
-                CreatedAt = p.CreatedAt,
-                Title = p.Title,
-                Description = p.Description,
-                Author = p.AuthorId
-            }).ToList();
+            var postDtos = postList
+                .Select(p => new PostDto(p.Id, p.Title, p.Description, p.AuthorId, p.CreatedAt))
+                .ToList();
             return postDtos;
         }
 
@@ -62,39 +51,26 @@ namespace StudentHub.Application.Services
             if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Error, postResult.ErrorType);
 
             var post = postResult.Value;
-            var postDto = new PostDto
-            {
-                Author = post.AuthorId,
-                CreatedAt = post.CreatedAt,
-                Title = post.Title,
-                Description = post.Description,
-                Id = post.Id,
-            };
+            var postDto = new PostDto(post.Id, post.Title, post.Description, post.AuthorId, post.CreatedAt);
 
             return Result<PostDto?>.Success(postDto);
         }
 
-        public async Task<Result<PostDto?>> UpdateAsync(CreatePostCommand createPostCommand)
+        public async Task<Result<PostDto?>> UpdateAsync(UpdatePostCommand updatePostCommand)
         {
             var post = new Post
             {
-                AuthorId = createPostCommand.AuthorId,
-                Description = createPostCommand.Description,
-                Title = createPostCommand.Title,
+                Id = updatePostCommand.Id,
+                AuthorId = updatePostCommand.AuthorId,
+                Description = updatePostCommand.Description,
+                Title = updatePostCommand.Title,
             };
 
             var postResult = await _postRepository.UpdateAsync(post);
             if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Error, postResult.ErrorType);
 
             post = postResult.Value;
-            var postDto = new PostDto
-            {
-                Author = post.AuthorId,
-                CreatedAt = post.CreatedAt,
-                Title = post.Title,
-                Description = post.Description,
-                Id = post.Id
-            };
+            var postDto = new PostDto(post.Id, post.Title, post.Description, post.AuthorId, post.CreatedAt);
             return Result<PostDto?>.Success(postDto);
         }
     }

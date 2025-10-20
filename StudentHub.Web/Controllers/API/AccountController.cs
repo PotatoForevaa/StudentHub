@@ -22,13 +22,7 @@ namespace StudentHub.Web.Controllers.API
         [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
-            var registerDto = new RegisterUserCommand
-            {
-                FullName = registerRequest.FullName,
-                Password = registerRequest.Password,
-                Username = registerRequest.Username
-            };
-
+            var registerDto = new RegisterUserCommand(registerRequest.Username, registerRequest.Password, registerRequest.FullName);
             var result = await _userService.RegisterAsync(registerDto);
             if (result.IsSuccess) return Created();
 

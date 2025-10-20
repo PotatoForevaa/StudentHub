@@ -7,8 +7,6 @@ namespace StudentHub.Web.Extensions
     {
         public static IActionResult ToActionResult<T>(this Result<T> result)
         {
-            if (result.IsSuccess) return new OkObjectResult(result.Value);
-
             return result.ErrorType switch
             {
                 ErrorType.NotFound => new NotFoundObjectResult(result.Error),
