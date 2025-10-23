@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StudentHub.Api.DTOs.Requests;
+using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces.Services;
-using StudentHub.Web.DTOs.Requests;
-using StudentHub.Web.Extensions;
 using System.Security.Claims;
 
-namespace StudentHub.Web.Controllers.API
+namespace StudentHub.Api.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -54,7 +54,7 @@ namespace StudentHub.Web.Controllers.API
         [HttpPut("Update")]
         public async Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
-            var postResult = await _postService.GetByIdAsync(updatePostRequest.PostId);            
+            var postResult = await _postService.GetByIdAsync(updatePostRequest.PostId);
             if (!postResult.IsSuccess) return postResult.ToActionResult();
 
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

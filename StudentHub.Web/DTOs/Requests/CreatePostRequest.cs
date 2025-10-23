@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StudentHub.Web.DTOs.Requests
+namespace StudentHub.Api.DTOs.Requests
 {
     public class CreatePostRequest
     {

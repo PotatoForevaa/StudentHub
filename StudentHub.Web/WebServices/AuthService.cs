@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using StudentHub.Application.Interfaces.Services;
 using System.Security.Claims;
 
-namespace StudentHub.Web.WebServices
+namespace StudentHub.Api.WebServices
 {
     public class AuthService : IAuthService
     {

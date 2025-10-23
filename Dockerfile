@@ -5,7 +5,7 @@ COPY *.sln .
 COPY StudentHub.Domain/*.csproj ./StudentHub.Domain/
 COPY StudentHub.Application/*.csproj ./StudentHub.Application/
 COPY StudentHub.Infrastructure/*.csproj ./StudentHub.Infrastructure/
-COPY StudentHub.Web/*.csproj ./StudentHub.Web/
+COPY StudentHub.Api/*.csproj ./StudentHub.Api/
 
 RUN dotnet restore
 
@@ -23,7 +23,7 @@ RUN dotnet ef migrations bundle \
     --context AppIdentityDbContext \
     --output /src/migrate-identity 
 
-WORKDIR /src/StudentHub.Web
+WORKDIR /src/StudentHub.Api
 
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
@@ -34,4 +34,4 @@ COPY --from=build /app/publish .
 COPY --from=build /src/migrate-identity ./migrate-identity
 COPY --from=build /src/migrate-business ./migrate-business
 
-ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business --verbose && /migrate-identity --verbose && dotnet StudentHub.Web.dll"]
+ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business --verbose && /migrate-identity --verbose && dotnet StudentHub.Api.dll"]

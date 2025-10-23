@@ -1,20 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StudentHub.Application.DTOs;
+using StudentHub.Api.DTOs.Requests;
+using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.Interfaces.Services;
-using StudentHub.Domain.Entities;
-using StudentHub.Web.DTOs.Requests;
-using StudentHub.Web.Extensions;
 using System.Security.Claims;
 
-namespace StudentHub.Web.Controllers.API
+namespace StudentHub.Api.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ProjectsController : ControllerBase
     {
-
         private readonly IProjectService _projectService;
         private readonly IFileStorageService _fileStorageService;
         public ProjectsController(IProjectService projectService, IFileStorageService fileStorageService)
@@ -82,7 +79,7 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> DeleteProject([FromRoute] Guid id)
         {
             var deleteResult = await _projectService.DeleteAsync(id);
-            if (!deleteResult.IsSuccess) return deleteResult.ToActionResult();            
+            if (!deleteResult.IsSuccess) return deleteResult.ToActionResult();
             return Ok();
         }
     }

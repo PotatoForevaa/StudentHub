@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Services;
@@ -8,9 +9,8 @@ using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Infrastructure.Services;
-using StudentHub.Web.WebServices;
 
-namespace StudentHub.Web
+namespace StudentHub.Api
 {
     public class Program
     {

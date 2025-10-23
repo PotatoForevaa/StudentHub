@@ -12,7 +12,7 @@ namespace StudentHub.Infrastructure.Repositories
         public ProjectRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
-        }   
+        }
 
         public async Task<Result<Project?>> AddAsync(Project project)
         {

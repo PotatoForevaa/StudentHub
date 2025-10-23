@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentHub.Application.DTOs;
 
-namespace StudentHub.Web.Extensions
+namespace StudentHub.Api.Extensions
 {
     public static class ResultExtension
     {

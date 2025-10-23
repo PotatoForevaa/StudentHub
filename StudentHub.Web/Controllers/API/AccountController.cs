@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StudentHub.Application.DTOs;
+using StudentHub.Api.DTOs.Requests;
+using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces.Services;
-using StudentHub.Web.DTOs.Requests;
-using StudentHub.Web.Extensions;
 
-namespace StudentHub.Web.Controllers.API
+namespace StudentHub.Api.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -33,11 +32,11 @@ namespace StudentHub.Web.Controllers.API
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
             var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Username, loginRequest.Password);
-            if (!passwordResult.IsSuccess) return passwordResult.ToActionResult();            
+            if (!passwordResult.IsSuccess) return passwordResult.ToActionResult();
 
             var userResult = await _userService.GetByUsernameAsync(loginRequest.Username);
             if (!userResult.IsSuccess) return passwordResult.ToActionResult();
-            
+
             var user = userResult.Value;
             var userId = user.Id;
 

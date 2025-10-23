@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Application.Interfaces.Services;
 
-namespace StudentHub.Web.Controllers.API
+namespace StudentHub.Api.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]

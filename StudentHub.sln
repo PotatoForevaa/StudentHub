@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Application", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Infrastructure", "StudentHub.Infrastructure\StudentHub.Infrastructure.csproj", "{D700367D-5925-0A09-E800-1E8EB3EBB364}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Web", "StudentHub.Web\StudentHub.Web.csproj", "{F5145AC2-C3C8-7905-1FDF-2454430FF491}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Api", "StudentHub.Web\StudentHub.Api.csproj", "{F5145AC2-C3C8-7905-1FDF-2454430FF491}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{754FC069-D67B-A9D7-50A1-8D1CA196D8F1}"
 	ProjectSection(SolutionItems) = preProject

@@ -1,12 +1,6 @@
 ﻿using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Commands;
-using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.DTOs.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StudentHub.Application.Interfaces.Services
 {
