@@ -9,12 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Application", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Infrastructure", "StudentHub.Infrastructure\StudentHub.Infrastructure.csproj", "{D700367D-5925-0A09-E800-1E8EB3EBB364}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Api", "StudentHub.Web\StudentHub.Api.csproj", "{F5145AC2-C3C8-7905-1FDF-2454430FF491}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{754FC069-D67B-A9D7-50A1-8D1CA196D8F1}"
 	ProjectSection(SolutionItems) = preProject
 		Dockerfile = Dockerfile
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Api", "StudentHub.Api\StudentHub.Api.csproj", "{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +34,10 @@ Global
 		{D700367D-5925-0A09-E800-1E8EB3EBB364}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D700367D-5925-0A09-E800-1E8EB3EBB364}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D700367D-5925-0A09-E800-1E8EB3EBB364}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5145AC2-C3C8-7905-1FDF-2454430FF491}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5145AC2-C3C8-7905-1FDF-2454430FF491}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5145AC2-C3C8-7905-1FDF-2454430FF491}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5145AC2-C3C8-7905-1FDF-2454430FF491}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
