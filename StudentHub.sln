@@ -11,14 +11,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Infrastructure",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Api", "Backend\StudentHub.Api\StudentHub.Api.csproj", "{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "studenthub.web", "Frontend\StudentHub.Web\studenthub.web.esproj", "{CC944F0F-6264-AE43-FDD9-641306CFD743}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
 	ProjectSection(SolutionItems) = preProject
 		Backend\Dockerfile = Backend\Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{47BC283C-0C91-4359-91EF-661A417235D0}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "studenthub.web", "studenthub.web\studenthub.web.esproj", "{CC944F0F-6264-AE43-FDD9-641306CFD743}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
