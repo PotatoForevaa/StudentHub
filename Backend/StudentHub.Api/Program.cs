@@ -66,6 +66,15 @@ namespace StudentHub.Api
                     };
                 });
 
+                builder.Services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowAll", policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                    });
+                });
                 builder.Services.AddHttpContextAccessor();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
@@ -108,6 +117,7 @@ namespace StudentHub.Api
                 app.UseAuthentication();
                 app.UseAuthorization();
 
+                app.UseCors("AllowAll");
                 app.MapControllers();
 
                 app.Run();

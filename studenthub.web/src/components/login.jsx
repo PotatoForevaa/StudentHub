@@ -1,4 +1,4 @@
-import { useState } from 'react';
+п»їimport { useState } from 'react';
 import { authService } from '../services/api/authService';
 
 export const Login = () => {
@@ -12,31 +12,40 @@ export const Login = () => {
 
         try {
             const response = await authService.login(username, password);
-            console.log('Успешный вход:', response.data);
-            window.location.href = '/dashboard';
-        } catch (error) {
-            console.error('Ошибка входа:', error.response?.data);
-            alert('Неверные данные');
+            console.log('РЈСЃРїРµС€РЅС‹Р№ РІС…РѕРґ:', response.data);
+            window.location.href = '/feed';
+        } catch (error)
+        {
+            if (error.response) {
+                console.error('РћС€РёР±РєР° РѕС‚РІРµС‚Р°:', error.response);
+                alert('РќРµРІРµСЂРЅС‹Рµ РґР°РЅРЅС‹Рµ');
+            } else if (error.request) {
+                console.error('РћС€РёР±РєР° Р·Р°РїСЂРѕСЃР°', error.request);
+            } else {
+                console.error('error', error.message)
+            }
         } finally {
-            setLoading(false);
+            setLoading(false);  
         }
     };
 
     return (
         <form onSubmit={handleLogin}>
+            <label>Р›РѕРіРёРЅ</label>
             <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Логин"
+                placeholder="Р›РѕРіРёРЅ"
             />
+            <label>РџР°СЂРѕР»СЊ</label>
             <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Пароль"
+                placeholder="РџР°СЂРѕР»СЊ"
             />
             <button disabled={loading}>
-                {loading ? 'Вход...' : 'Войти'}
+                {loading ? 'Р’С…РѕРґ...' : 'Р’РѕР№С‚Рё'}
             </button>
         </form>
     );
