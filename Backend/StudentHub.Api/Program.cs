@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -9,6 +10,8 @@ using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Infrastructure.Services;
+using System.Net.Mime;
+using System.Text.Json;
 
 namespace StudentHub.Api
 {
@@ -120,6 +123,7 @@ namespace StudentHub.Api
                 app.UseCors("AllowAll");
                 app.MapControllers();
 
+               
                 app.Run();
             }
             catch (Exception ex)

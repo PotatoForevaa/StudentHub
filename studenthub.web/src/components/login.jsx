@@ -1,32 +1,21 @@
 ﻿import { useState } from 'react';
-import { authService } from '../services/api/authService';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom'
 
 export const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+    const { login, loading } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        const result = await login(username, password);
 
-        try {
-            const response = await authService.login(username, password);
-            console.log('Успешный вход:', response.data);
-            window.location.href = '/feed';
-        } catch (error)
-        {
-            if (error.response) {
-                console.error('Ошибка ответа:', error.response);
-                alert('Неверные данные');
-            } else if (error.request) {
-                console.error('Ошибка запроса', error.request);
-            } else {
-                console.error('error', error.message)
-            }
-        } finally {
-            setLoading(false);  
+        if (result.success) {
+            navigate('/dashboard'); 
         }
+
     };
 
     return (
