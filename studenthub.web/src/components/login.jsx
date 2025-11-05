@@ -1,6 +1,14 @@
 ﻿import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { styled } from 'styled-components';
+
+
+const Form = styled.form`
+     display: flex;
+     justify-content: center;
+     align-items: center;
+`;
 
 export const Login = () => {
     const [username, setUsername] = useState('');
@@ -13,13 +21,15 @@ export const Login = () => {
         const result = await login(username, password);
 
         if (result.success) {
-            navigate('/dashboard'); 
-        }
+            navigate('/dashboard');
+        } else {
+            alert(result.error)
+        }     
 
     };
 
     return (
-        <form onSubmit={handleLogin}>
+        <Form onSubmit={handleLogin}>
             <label>Логин</label>
             <input
                 value={username}
@@ -36,6 +46,6 @@ export const Login = () => {
             <button disabled={loading}>
                 {loading ? 'Вход...' : 'Войти'}
             </button>
-        </form>
+        </Form>
     );
 };

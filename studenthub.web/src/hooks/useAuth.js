@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+п»їimport { useState, useEffect } from 'react'
 import { authService } from '../services/api/authService'
 
 export const useAuth = () => {
@@ -6,12 +6,12 @@ export const useAuth = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Проверяем авторизацию при загрузке приложения
+    // РџСЂРѕРІРµСЂСЏРµРј Р°РІС‚РѕСЂРёР·Р°С†РёСЋ РїСЂРё Р·Р°РіСЂСѓР·РєРµ РїСЂРёР»РѕР¶РµРЅРёСЏ
     useEffect(() => {
         checkAuth();
     }, []);
 
-    // Проверить авторизацию (профиль пользователя)
+    // РџСЂРѕРІРµСЂРёС‚СЊ Р°РІС‚РѕСЂРёР·Р°С†РёСЋ (РїСЂРѕС„РёР»СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ)
     const checkAuth = async () => {
         try {
             const response = await authService.getProfile();
@@ -23,7 +23,7 @@ export const useAuth = () => {
         }
     };
 
-    // Вход в систему
+    // Р’С…РѕРґ РІ СЃРёСЃС‚РµРјСѓ
     const login = async (username, password) => {
         setLoading(true);
         setError(null);
@@ -33,7 +33,7 @@ export const useAuth = () => {
             setUser(response.data.user);
             return { success: true };
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Ошибка входа';
+            const errorMessage = Object.values(error.response.data.errors)[0];
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -41,7 +41,7 @@ export const useAuth = () => {
         }
     };
 
-    // Регистрация
+    // Р РµРіРёСЃС‚СЂР°С†РёСЏ
     const register = async (username, password, fullName) => {
         setLoading(true);
         setError(null);
@@ -50,7 +50,7 @@ export const useAuth = () => {
             const response = await authService.register(username, password, fullName);
             return { success: true, data: response.data };
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Ошибка регистрации';
+            const errorMessage = Object.values(error.response.data.errors)[0];
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -58,29 +58,29 @@ export const useAuth = () => {
         }
     };
 
-    // Выход из системы
+    // Р’С‹С…РѕРґ РёР· СЃРёСЃС‚РµРјС‹
     const logout = async () => {
         try {
             await authService.logout();
         } catch (error) {
-            console.error('Ошибка при выходе:', error);
+            console.error('РћС€РёР±РєР° РїСЂРё РІС‹С…РѕРґРµ:', error);
         } finally {
             setUser(null);
             setError(null);
         }
     };
 
-    // Очистить ошибку
+    // РћС‡РёСЃС‚РёС‚СЊ РѕС€РёР±РєСѓ
     const clearError = () => setError(null);
 
     return {
-        // Состояния
+        // РЎРѕСЃС‚РѕСЏРЅРёСЏ
         user,
         loading,
         error,
         isAuthenticated: !!user,
 
-        // Методы
+        // РњРµС‚РѕРґС‹
         login,
         register,
         logout,
