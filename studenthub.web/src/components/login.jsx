@@ -2,12 +2,7 @@
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
-
-const Form = styled.form`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
+import { AuthForm } from "./authForm";
 
 export const Login = () => {
   const [username, setUsername] = useState("");
@@ -27,21 +22,23 @@ export const Login = () => {
   };
 
   return (
-    <Form onSubmit={handleLogin}>
-      <label>Логин</label>
-      <input
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Логин"
-      />
-      <label>Пароль</label>
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Пароль"
-      />
-      <button disabled={loading}>{loading ? "Вход..." : "Войти"}</button>
-    </Form>
+    <AuthForm
+      buttonText="Войти"
+      onSubmit={handleLogin}
+      fields={[
+        {
+          name: "Логин",
+          type: "text",
+          placeholder: "Введите логин",
+          onChange: (e) => setUsername(e.target.value),
+        },
+        {
+          name: "Пароль",
+          type: "password",
+          placeholder: "Введите пароль",
+          onChange: (e) => setPassword(e.target.value),
+        },
+      ]}
+    />
   );
 };
