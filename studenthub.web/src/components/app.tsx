@@ -1,23 +1,24 @@
-import { Login } from "./login.jsx";
-import { Header } from "./header.jsx";
+import { Login } from "./login";
+import { Header } from "./header";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Registration } from "./registration.jsx";
-import { AuthForm } from "./authForm.jsx";
+import { Registration } from "./registration";
+import { AuthForm } from "./authForm";
 import { styled } from "styled-components";
 import { createGlobalStyle } from "styled-components";
+import React from 'react';
 
 function App() {
   const GlobalStyles = createGlobalStyle`
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        
-        * {
-            box-sizing: border-box;
-            font-family: calibri;
-        }
-    `;
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    
+    * {
+      box-sizing: border-box;
+      font-family: calibri;
+    }
+  `;
 
   const AppContainer = styled.div`
     min-height: 100vh;
@@ -30,24 +31,23 @@ function App() {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #4ECDC4;
+    background: #0C0032;
   `;
 
   return (
-    <>
+    <BrowserRouter>
       <GlobalStyles />
       <AppContainer>
         <Header />
         <MainContent>
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="login" element={<Login />} />
-            <Route path="registration" element={<Registration />} />
-            <Route path="auth" element={<AuthForm />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/registration" element={<Registration />} />
           </Routes>
         </MainContent>
       </AppContainer>
-    </>
+    </BrowserRouter>
   );
 }
 

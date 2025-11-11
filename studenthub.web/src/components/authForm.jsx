@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 const Form = styled.div`
-  background: #f8f9fa;
+  background: #190061;
   max-width: 500px;
   border-radius: 25px;
   padding: 10px 15px 15px 15px;
@@ -8,7 +8,7 @@ const Form = styled.div`
 `;
 
 const Label = styled.label`
-  color: #212529;
+  color: #FFFFFF;
   margin: 0 0 0 5px;
 `;
 
@@ -17,7 +17,7 @@ const Input = styled.input`
   width: 100%;
   border-radius: 10px;
   height: 30px;
-  font-size: 24px;
+  font-size: 22px;
   margin-bottom: 10px;
   border: 1px solid;
   padding: 0 0 0 5px;
@@ -25,7 +25,7 @@ const Input = styled.input`
 
 const Button = styled.button`
   width: 100%;
-  background: #2c5aa0;
+  background: #3500D3;
   border: none;
   border-radius: 15px;
   height: 45px;
@@ -34,7 +34,8 @@ const Button = styled.button`
   margin: 10px 0 0 0;
 
   &:hover {
-    background: black;
+    background: #4A1AFF;
+    cursor: pointer;
   }
 `;
 
