@@ -1,7 +1,7 @@
 ﻿import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth.ts";
 import { useNavigate } from "react-router-dom";
-import { AuthForm } from "./authForm";
+import { AuthForm } from "./AuthForm";
 
 export const Registration = () => {
   const [username, setUsername] = useState("");

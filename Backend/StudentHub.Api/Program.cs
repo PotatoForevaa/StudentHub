@@ -73,11 +73,13 @@ namespace StudentHub.Api
                 {
                     options.AddPolicy("AllowAll", policy =>
                     {
-                        policy.AllowAnyOrigin()
+                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                     });
                 });
+
                 builder.Services.AddHttpContextAccessor();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();

@@ -31,11 +31,11 @@ namespace StudentHub.Api.Controllers.API
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Username, loginRequest.Password);
-            if (!passwordResult.IsSuccess) return passwordResult.ToActionResult();
-
             var userResult = await _userService.GetByUsernameAsync(loginRequest.Username);
             if (!userResult.IsSuccess) return userResult.ToActionResult();
+
+            var passwordResult = await _userService.CheckPasswordAsync(loginRequest.Username, loginRequest.Password);
+            if (!passwordResult.IsSuccess) return passwordResult.ToActionResult();
 
             var user = userResult.Value;
             var userId = user.Id;

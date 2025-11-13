@@ -1,8 +1,8 @@
-import { Login } from "./login";
-import { Header } from "./header";
+import { Login } from "./AuthForm/Login";
+import { Header } from "./Header";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Registration } from "./registration";
-import { AuthForm } from "./authForm";
+import { Registration } from "./AuthForm/Registration";
+import { AuthForm } from "./AuthForm/AuthForm";
 import { styled } from "styled-components";
 import { createGlobalStyle } from "styled-components";
 import React from 'react';

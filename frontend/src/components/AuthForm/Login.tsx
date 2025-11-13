@@ -1,23 +1,22 @@
 ﻿import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { styled } from "styled-components";
-import { AuthForm } from "./authForm";
+import { AuthForm } from "./AuthForm";
+import { useAuth } from "../../hooks/useAuth";
 
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading } = useAuth();
+  const { login, error } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await login(username, password);
 
-    if (result.success) {
+    if (result) {
       navigate("/dashboard");
     } else {
-      alert(result.error);
+      alert(error);
     }
   };
 
@@ -30,13 +29,15 @@ export const Login = () => {
           name: "Логин",
           type: "text",
           placeholder: "Введите логин",
-          onChange: (e) => setUsername(e.target.value),
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+            setUsername(e.target.value),
         },
         {
           name: "Пароль",
           type: "password",
           placeholder: "Введите пароль",
-          onChange: (e) => setPassword(e.target.value),
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value),
         },
       ]}
     />
