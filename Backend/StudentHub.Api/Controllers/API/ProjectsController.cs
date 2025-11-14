@@ -52,9 +52,7 @@ namespace StudentHub.Api.Controllers.API
             var createProject = new CreateProjectCommand(createProjectRequest.Name, createProjectRequest.Description, userId, filePaths, createProjectRequest.ExternalUrl);
 
             var createResult = await _projectService.CreateAsync(createProject);
-            if (!createResult.IsSuccess) return createResult.ToActionResult();
-
-            return Ok(createResult.Value);
+            return createResult.ToActionResult();
         }
 
         [Authorize]
@@ -70,8 +68,7 @@ namespace StudentHub.Api.Controllers.API
             var createProject = new CreateProjectCommand(updateProjectRequest.Name, updateProjectRequest.Description, userId, filePaths, updateProjectRequest.ExternalUrl);
 
             var createResult = await _projectService.UpdateAsync(createProject);
-            if (!createResult.IsSuccess) return createResult.ToActionResult();
-            return Ok();
+            return createResult.ToActionResult();
         }
 
         [Authorize]
@@ -79,8 +76,7 @@ namespace StudentHub.Api.Controllers.API
         public async Task<IActionResult> DeleteProject([FromRoute] Guid id)
         {
             var deleteResult = await _projectService.DeleteAsync(id);
-            if (!deleteResult.IsSuccess) return deleteResult.ToActionResult();
-            return Ok();
+            return deleteResult.ToActionResult();     
         }
     }
 }

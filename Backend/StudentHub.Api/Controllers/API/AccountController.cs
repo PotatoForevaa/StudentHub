@@ -23,9 +23,9 @@ namespace StudentHub.Api.Controllers.API
         {
             var registerDto = new RegisterUserCommand(registerRequest.Username, registerRequest.Password, registerRequest.FullName);
             var result = await _userService.RegisterAsync(registerDto);
-            if (result.IsSuccess) return Created();
+            
+            return result.ToActionResult();
 
-            return BadRequest(result.Error);
         }
 
         [HttpPost("Login")]

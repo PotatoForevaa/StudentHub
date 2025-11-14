@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StudentHub.Api.Extensions;
 using StudentHub.Application.Interfaces.Services;
 
 namespace StudentHub.Api.Controllers.API
@@ -18,9 +19,8 @@ namespace StudentHub.Api.Controllers.API
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser([FromRoute] Guid id)
         {
-            var user = await _userService.GetByIdAsync(id);
-            if (user == null) return NotFound("User not found");
-            return Ok(user);
+            var result = await _userService.GetByIdAsync(id);
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = "Admin")]

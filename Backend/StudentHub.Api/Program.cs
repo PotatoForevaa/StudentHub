@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using StudentHub.Api.Middlewares;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Application.Interfaces.Services;
@@ -125,6 +126,7 @@ namespace StudentHub.Api
                 app.UseCors("AllowAll");
                 app.MapControllers();
 
+                app.UseMiddleware<ValidationErrorMiddleware>();
                
                 app.Run();
             }

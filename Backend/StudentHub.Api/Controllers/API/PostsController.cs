@@ -24,8 +24,7 @@ namespace StudentHub.Api.Controllers.API
         public async Task<IActionResult> GetPost([FromRoute] Guid id)
         {
             var postResult = await _postService.GetByIdAsync(id);
-            if (!postResult.IsSuccess) return postResult.ToActionResult();
-            return Ok(postResult.Value);
+            return postResult.ToActionResult();
         }
 
         [Authorize]
@@ -45,9 +44,7 @@ namespace StudentHub.Api.Controllers.API
             var post = new CreatePostCommand(createPostRequest.Title, createPostRequest.Description, userId);
 
             var result = await _postService.CreateAsync(post);
-            if (!result.IsSuccess) return result.ToActionResult();
-
-            return Ok(post);
+            return result.ToActionResult();
         }
 
         [Authorize]
@@ -65,8 +62,7 @@ namespace StudentHub.Api.Controllers.API
             var updatePost = new UpdatePostCommand(post.Id, updatePostRequest.Title, updatePostRequest.Description, userId);
 
             var updateResult = await _postService.UpdateAsync(updatePost);
-            if (!updateResult.IsSuccess) return updateResult.ToActionResult();
-            return Ok();
+            return updateResult.ToActionResult();
         }
 
         [Authorize]

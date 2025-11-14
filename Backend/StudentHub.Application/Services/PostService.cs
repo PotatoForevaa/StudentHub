@@ -26,7 +26,7 @@ namespace StudentHub.Application.Services
             };
 
             var postResult = await _postRepository.AddAsync(post);
-            if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Error, postResult.ErrorType);
+            if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Errors, postResult.ErrorType);
 
             post = postResult.Value;
             var postDto = new PostDto(post.Id, post.Title, post.Description, post.AuthorId, post.CreatedAt);
@@ -48,7 +48,7 @@ namespace StudentHub.Application.Services
         public async Task<Result<PostDto?>> GetByIdAsync(Guid id)
         {
             var postResult = await _postRepository.GetByIdAsync(id);
-            if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Error, postResult.ErrorType);
+            if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Errors, postResult.ErrorType);
 
             var post = postResult.Value;
             var postDto = new PostDto(post.Id, post.Title, post.Description, post.AuthorId, post.CreatedAt);
@@ -67,7 +67,7 @@ namespace StudentHub.Application.Services
             };
 
             var postResult = await _postRepository.UpdateAsync(post);
-            if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Error, postResult.ErrorType);
+            if (!postResult.IsSuccess) return Result<PostDto?>.Failure(postResult.Errors, postResult.ErrorType);
 
             post = postResult.Value;
             var postDto = new PostDto(post.Id, post.Title, post.Description, post.AuthorId, post.CreatedAt);

@@ -10,7 +10,9 @@ namespace StudentHub.Api.Extensions
             if (result.IsSuccess)
                 return new OkObjectResult(result.Value);
 
-            return CreateErrorResult(result.ErrorType, result.Error);
+            var errorType = result.ErrorType;
+
+            return CreateErrorResult(errorType, result.Errors);
         }
 
         public static IActionResult ToActionResult(this Result result)
@@ -18,21 +20,28 @@ namespace StudentHub.Api.Extensions
             if (result.IsSuccess)
                 return new OkResult();
 
-            return CreateErrorResult(result.ErrorType, result.Error);
+            var errorType = result.ErrorType;
+
+            return CreateErrorResult(errorType, result.Errors);
         }
 
-        private static IActionResult CreateErrorResult(ErrorType type, string? message)
+
+        private static IActionResult CreateErrorResult(ErrorType type, List<Error> errors)
         {
-            var problem = new ProblemDetails
+            var problem = new
             {
-                Title = GetTitle(type),
-                Status = GetStatusCode(type),
-                Detail = message
+                title = GetTitle(type),
+                status = GetStatusCode(type),
+                errors = errors.Select(e => new
+                {
+                    message = e.Message,
+                    field = e.Field
+                })
             };
 
             return new ObjectResult(problem)
-            {   
-                StatusCode = problem.Status
+            {
+                StatusCode = GetStatusCode(type)
             };
         }
 

@@ -4,39 +4,46 @@
 
     public class Result
     {
-        public bool IsSuccess { get; set; }
-        public string? Error { get; set; }
+        public bool IsSuccess => Errors.Count == 0;
         public ErrorType ErrorType { get; set; }
-        protected Result(bool isSuccess, string? error, ErrorType errorType)
-        {
-            IsSuccess = isSuccess;
-            Error = error;
-            ErrorType = errorType;
-        }
+        public List<Error> Errors { get; set; } = new();
 
-        public static Result Success() => new Result(true, null, default);
-        public static Result Failure(string? error, ErrorType errorType = ErrorType.ServerError)
-            => new Result(false, error, errorType);
+        public static Result Success() => new Result();
 
+        public static Result Failure(string message, string? field = null, ErrorType errorType = ErrorType.ServerError)
+            => new Result
+            {
+                ErrorType = errorType,
+                Errors = { new Error { Message = message, Field = field } }
+            };
+
+        public static Result Failure(List<Error> errors, ErrorType errorType = ErrorType.ServerError)
+            => new Result
+            {
+                ErrorType = errorType,
+                Errors = errors
+            };
     }
 
-    public class Result<TValue> : Result
+    public class Result<T> : Result
     {
-        public TValue? Value { get; set; }
+        public T? Value { get; set; }
 
-        private Result(TValue value) : base(true, null, default)
-        {
-            Value = value;
-        }
+        public static Result<T> Success(T value) =>
+            new Result<T> { Value = value };
 
-        private Result(string? error, ErrorType errorType) : base(false, error, errorType)
-        {
-            Value = default;
-        }
+        public static Result<T> Failure(string message, string? field = null, ErrorType errorType = ErrorType.ServerError) =>
+            new Result<T>
+            {
+                ErrorType = errorType,
+                Errors = { new Error { Message = message, Field = field } }
+            };
 
-        public static Result<TValue> Success(TValue value) => new Result<TValue>(value);
-
-        public static Result<TValue> Failure(string? error, ErrorType errorType = ErrorType.ServerError)
-            => new Result<TValue>(error, errorType);
+        public static Result<T> Failure(List<Error> errors, ErrorType errorType = ErrorType.ServerError) =>
+            new Result<T>
+            {
+                ErrorType = errorType,
+                Errors = errors
+            };
     }
 }
