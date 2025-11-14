@@ -126,7 +126,7 @@ namespace StudentHub.Api
                 app.UseCors("AllowAll");
                 app.MapControllers();
 
-                app.UseMiddleware<ValidationErrorMiddleware>();
+                //app.UseMiddleware<ValidationErrorMiddleware>();
                
                 app.Run();
             }

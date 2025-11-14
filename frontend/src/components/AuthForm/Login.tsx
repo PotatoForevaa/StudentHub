@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { login, error } = useAuth();
+  const { login, logout, loading, formError, fieldErrors} = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -16,7 +16,7 @@ export const Login = () => {
     if (result) {
       navigate("/dashboard");
     } else {
-      alert(error);
+      alert(formError);
     }
   };
 
