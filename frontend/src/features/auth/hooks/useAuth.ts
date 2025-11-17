@@ -1,7 +1,8 @@
 import { useState } from "react";
-import authService from "../services/api/authService";
 import type { AxiosError } from "axios";
-import type { ApiErrorResponse, FieldErrors } from "../types/api.types";
+import authService from "../../../services/api/authService";
+import type { FieldErrors } from "../types/AuthForm.types";
+import type { ApiErrorResponse } from "../../../services/api/api.types";
 
 
 export function useAuth() {
@@ -27,12 +28,8 @@ export function useAuth() {
         const value = data.errors[key];
         fields[key] = Array.isArray(value) ? value.join(", ") : String(value);
       }
-
       setFieldErrors(fields);
 
-      if (Object.keys(fields).length === 0 && data.detail) {
-        setFormError(data.detail);
-      }
     } else if (data.detail) {
       setFormError(data.detail);
     } else {
@@ -52,6 +49,18 @@ export function useAuth() {
     }
   };
 
+  const register = async (fullName: string, username: string, password: string) => {
+    setLoading(true);
+    try {
+      const res = await authService.register(username, password, fullName);
+      return res.data;
+    } catch (err: unknown) {
+      handleError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -63,5 +72,5 @@ export function useAuth() {
     }
   };
 
-  return { login, logout, loading, formError, fieldErrors };
+  return { login, register, logout, loading, formError, fieldErrors };
 }

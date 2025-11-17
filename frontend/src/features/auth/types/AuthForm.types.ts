@@ -1,7 +1,9 @@
 export interface AuthFormProps{
     buttonText: string,
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void,
-    fields: Field[]
+    fields: Field[],
+    fieldErrors?: FieldErrors;
+    formError?: string | null;
 };
 
 export interface Field{
@@ -11,3 +13,4 @@ export interface Field{
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 };
 
+export type FieldErrors = Record<string, string>;

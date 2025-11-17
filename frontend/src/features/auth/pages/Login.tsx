@@ -1,7 +1,7 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthForm } from "./AuthForm";
-import { useAuth } from "../../hooks/useAuth";
+import { AuthForm } from "../components/AuthForm";
+import { useAuth } from "../hooks/useAuth";
 
 export const Login = () => {
   const [username, setUsername] = useState("");
@@ -16,7 +16,6 @@ export const Login = () => {
     if (result) {
       navigate("/dashboard");
     } else {
-      alert(formError);
     }
   };
 
@@ -24,22 +23,23 @@ export const Login = () => {
     <AuthForm
       buttonText="Войти"
       onSubmit={handleLogin}
+      fieldErrors={fieldErrors}
+      formError={formError}
       fields={[
         {
-          name: "Логин",
+          name: "Username",
           type: "text",
           placeholder: "Введите логин",
-          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-            setUsername(e.target.value),
+          onChange: (e) => setUsername(e.target.value),
         },
         {
-          name: "Пароль",
+          name: "Password",
           type: "password",
           placeholder: "Введите пароль",
-          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-            setPassword(e.target.value),
+          onChange: (e) => setPassword(e.target.value),
         },
       ]}
     />
+
   );
 };

@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import type { AuthFormProps } from "./AuthForm.types";
+import type { AuthFormProps } from "../types/AuthForm.types";
 
 const Form = styled.form`
   background: #190061;
@@ -41,7 +41,16 @@ const Button = styled.button`
   }
 `;
 
+const FieldError = styled.div`
+  width: 100%;
+  background: red;
+  border-radius: 15px;
+  height: 45px;
+`;
+
 export const AuthForm = (props: AuthFormProps) => {
+  const { fieldErrors, formError } = props;
+
   return (
     <Form onSubmit={props.onSubmit}>
       {props.fields.map((field) => (
@@ -52,9 +61,16 @@ export const AuthForm = (props: AuthFormProps) => {
             placeholder={field.placeholder}
             onChange={field.onChange}
           />
+          {fieldErrors?.[field.name] && (
+            <FieldError>{fieldErrors[field.name]}</FieldError>
+          )}
         </div>
       ))}
+
+      {formError && <FieldError>{formError}</FieldError>}
+
       <Button type="submit">{props.buttonText}</Button>
     </Form>
   );
 };
+

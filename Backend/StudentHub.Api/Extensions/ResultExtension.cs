@@ -25,18 +25,20 @@ namespace StudentHub.Api.Extensions
             return CreateErrorResult(errorType, result.Errors);
         }
 
-
         private static IActionResult CreateErrorResult(ErrorType type, List<Error> errors)
         {
+            var errorDict = errors
+                .GroupBy(e => e.Field)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.Message).ToArray()
+                );
+
             var problem = new
             {
                 title = GetTitle(type),
                 status = GetStatusCode(type),
-                errors = errors.Select(e => new
-                {
-                    message = e.Message,
-                    field = e.Field
-                })
+                errors = errorDict
             };
 
             return new ObjectResult(problem)

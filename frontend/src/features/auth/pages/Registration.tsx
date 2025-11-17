@@ -1,7 +1,7 @@
-﻿import { useState } from "react";
-import { useAuth } from "../../hooks/useAuth.ts";
+﻿import { useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthForm } from "./AuthForm";
+import { useAuth } from "../hooks/useAuth";
+import { AuthForm } from "../components/AuthForm";
 
 export const Registration = () => {
   const [username, setUsername] = useState("");
@@ -10,7 +10,7 @@ export const Registration = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleRegistration = async (e) => {
+  const handleRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = await register(username, password, fullName);
 
@@ -30,20 +30,21 @@ export const Registration = () => {
           name: "Логин",
           type: "text",
           placeholder: "Введите логин",
-          onChange: (e) => setUsername(e.target.value)
+          onChange: (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value),
         },
         {
           name: "ФИО",
           type: "text",
           placeholder: "Введите ФИО",
-          onChange: (e) => setFullName(e.target.value)
+          onChange: (e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value),
         },
         {
           name: "Пароль",
           type: "password",
           placeholder: "Введите пароль",
-          onChange: (e) => setPassword(e.target.value)
+          onChange: (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value),
         },
-      ]}/>
+      ]}
+    />
   );
 };

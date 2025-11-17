@@ -1,11 +1,8 @@
-import { Login } from "./AuthForm/Login";
+import { Login, Registration } from "../features/auth/pages";
 import { Header } from "./Header";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Registration } from "./AuthForm/Registration";
-import { AuthForm } from "./AuthForm/AuthForm";
 import { styled } from "styled-components";
 import { createGlobalStyle } from "styled-components";
-import React from 'react';
 
 function App() {
   const GlobalStyles = createGlobalStyle`
@@ -31,7 +28,7 @@ function App() {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #0C0032;
+    background: #0c0032;
   `;
 
   return (
