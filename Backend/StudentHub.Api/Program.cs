@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using StudentHub.Api.Extensions;
 using StudentHub.Api.Middlewares;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
@@ -48,6 +49,7 @@ namespace StudentHub.Api
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppIdentityDbContext>()
+                    .AddErrorDescriber<CustomIdentityErrorDescriberRu>() //локализация ошибок identity
                     .AddDefaultTokenProviders();
 
                 builder.Services.ConfigureApplicationCookie(options =>

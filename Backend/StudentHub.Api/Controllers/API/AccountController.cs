@@ -44,10 +44,17 @@ namespace StudentHub.Api.Controllers.API
 
             return Ok();
         }
+
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
             await _authService.SignOutAsync();
+            return Ok();
+        }
+
+        [HttpPost("Me")]
+        public async Task<IActionResult> CheckAuth()
+        {
             return Ok();
         }
     }

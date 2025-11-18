@@ -6,16 +6,15 @@ import { useAuth } from "../hooks/useAuth";
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { login, logout, loading, formError, fieldErrors} = useAuth();
+  const { login, formError, fieldErrors } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await login(username, password);
+    await login(username, password);
 
-    if (result) {
+    if (!formError && !fieldErrors[0]) {
       navigate("/dashboard");
-    } else {
     }
   };
 
@@ -27,12 +26,14 @@ export const Login = () => {
       formError={formError}
       fields={[
         {
+          displayName: "Имя пользователя",
           name: "Username",
           type: "text",
           placeholder: "Введите логин",
           onChange: (e) => setUsername(e.target.value),
         },
         {
+          displayName: "Пароль",
           name: "Password",
           type: "password",
           placeholder: "Введите пароль",
@@ -40,6 +41,5 @@ export const Login = () => {
         },
       ]}
     />
-
   );
 };

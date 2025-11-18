@@ -4,8 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { styled } from "styled-components";
 import { createGlobalStyle } from "styled-components";
 
-function App() {
-  const GlobalStyles = createGlobalStyle`
+const GlobalStyles = createGlobalStyle`
     body {
       margin: 0;
       padding: 0;
@@ -17,20 +16,21 @@ function App() {
     }
   `;
 
-  const AppContainer = styled.div`
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  `;
+const AppContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
 
-  const MainContent = styled.main`
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #0c0032;
-  `;
+const MainContent = styled.main`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0c0032;
+`;
 
+function App() {
   return (
     <BrowserRouter>
       <GlobalStyles />
@@ -38,7 +38,6 @@ function App() {
         <Header />
         <MainContent>
           <Routes>
-            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registration" element={<Registration />} />
           </Routes>

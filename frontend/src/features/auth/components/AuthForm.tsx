@@ -1,5 +1,6 @@
 import { styled } from "styled-components";
 import type { AuthFormProps } from "../types/AuthForm.types";
+import { FieldError } from "./FieldError";
 
 const Form = styled.form`
   background: #190061;
@@ -11,7 +12,7 @@ const Form = styled.form`
 
 const Label = styled.label`
   color: #FFFFFF;
-  margin: 0 0 0 5px;
+  margin: 0 0 0 10px;
 `;
 
 const Input = styled.input`
@@ -20,9 +21,8 @@ const Input = styled.input`
   border-radius: 10px;
   height: 30px;
   font-size: 22px;
-  margin-bottom: 10px;
   border: 1px solid;
-  padding: 0 0 0 5px;
+  padding: 0 0 0 10px;
 `;
 
 const Button = styled.button`
@@ -33,7 +33,7 @@ const Button = styled.button`
   height: 45px;
   color: #f8f8f8;
   font-size: 20px;
-  margin: 10px 0 0 0;
+  margin: 0 0 0 0;
 
   &:hover {
     background: #4A1AFF;
@@ -41,12 +41,10 @@ const Button = styled.button`
   }
 `;
 
-const FieldError = styled.div`
-  width: 100%;
-  background: red;
-  border-radius: 15px;
-  height: 45px;
+const FieldContainer = styled.div`
+  margin: 0 0 10px 0;
 `;
+
 
 export const AuthForm = (props: AuthFormProps) => {
   const { fieldErrors, formError } = props;
@@ -54,20 +52,20 @@ export const AuthForm = (props: AuthFormProps) => {
   return (
     <Form onSubmit={props.onSubmit}>
       {props.fields.map((field) => (
-        <div key={field.name}>
-          <Label>{field.name}</Label>
+        <FieldContainer key={field.name}>
+          <Label>{field.displayName}</Label>
           <Input
             type={field.type}
             placeholder={field.placeholder}
             onChange={field.onChange}
           />
           {fieldErrors?.[field.name] && (
-            <FieldError>{fieldErrors[field.name]}</FieldError>
+            <FieldError message={fieldErrors[field.name]} />
           )}
-        </div>
+        </FieldContainer>
       ))}
 
-      {formError && <FieldError>{formError}</FieldError>}
+      {formError && <FieldError message={formError} />}
 
       <Button type="submit">{props.buttonText}</Button>
     </Form>

@@ -4,10 +4,9 @@ namespace StudentHub.Api.DTOs.Requests
 {
     public class LoginRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Введите имя пользователя")]
         public string Username { get; set; }
-        [Required]
-        [Length(8, 32, ErrorMessage = "Пароль должен быть от 8 до 32 символов")]
+        [Required(ErrorMessage = "Введите пароль")]        
         public string Password { get; set; }
     }
 }

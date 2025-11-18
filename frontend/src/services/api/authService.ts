@@ -11,7 +11,10 @@ export const authService = {
     api.post(''),
 
   logout: () =>
-    api.post('/api/account/logout')
+    api.post('/api/account/logout'),
+
+  getCurrentUser: () =>
+    api.post('api/account/me')
 };
 
 export default authService;

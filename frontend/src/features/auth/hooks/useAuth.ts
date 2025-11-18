@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AxiosError } from "axios";
 import authService from "../../../services/api/authService";
 import type { FieldErrors } from "../types/AuthForm.types";
@@ -9,6 +9,23 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const res = await authService.getCurrentUser();
+        setUser(res.data);   
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleError = (err: unknown) => {
     setFormError(null);
@@ -72,5 +89,17 @@ export function useAuth() {
     }
   };
 
-  return { login, register, logout, loading, formError, fieldErrors };
+  const getUser = async () => {
+    setLoading(true);
+    try {
+      const res = await authService.getCurrentUser();
+      setUser(res.data); 
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { login, register, logout, getUser, user, loading, formError, fieldErrors };
 }

@@ -7,6 +7,7 @@ export interface AuthFormProps{
 };
 
 export interface Field{
+    displayName: string,
     name: string,
     type: string,
     placeholder: string,

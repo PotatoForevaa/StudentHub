@@ -32,7 +32,7 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<User?>> GetByUsernameAsync(string username)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username.ToUpper() == username.ToUpper());
             if (user == null) return Result<User?>.Failure($"User {username} not found", "username", ErrorType.NotFound);
             return Result<User?>.Success(user);
         }
@@ -61,6 +61,7 @@ namespace StudentHub.Infrastructure.Repositories
 
             return Result<User?>.Failure(result.Errors.Select(e => new Error
             {
+                Field = "Password",
                 Message = e.Description
             }).ToList());
         }
