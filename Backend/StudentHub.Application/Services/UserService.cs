@@ -66,5 +66,10 @@ namespace StudentHub.Application.Services
 
             return Result<UserDto?>.Success(userDto);
         }
+
+        //public async Task<Result<UserInfoDto?>> GetInfoById(Guid id)
+        //{
+
+        //} 
     }
 }

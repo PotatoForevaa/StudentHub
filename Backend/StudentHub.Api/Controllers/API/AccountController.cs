@@ -4,6 +4,7 @@ using StudentHub.Api.DTOs.Requests;
 using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Requests;
 using StudentHub.Application.Interfaces.Services;
+using System.Security.Claims;
 
 namespace StudentHub.Api.Controllers.API
 {
@@ -55,8 +56,10 @@ namespace StudentHub.Api.Controllers.API
 
         [Authorize]
         [HttpPost("Me")]
-        public async Task<IActionResult> CheckAuth()
+        public async Task<IActionResult> GetAccountInfo()
         {
+            var userResult = await _userService.GetByIdAsync(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
+
             return Ok();
         }
     }
