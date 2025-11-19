@@ -1,28 +1,32 @@
-﻿import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import { useContext, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { AuthForm } from "../components/AuthForm";
+import { AuthContext } from "../../../shared/context/AuthContext";
 
 export const Registration = () => {
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const { register, fieldErrors, formError } = useAuth();
+  const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+  
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await register(fullName, username, password);
-
-    if (result) {
-      navigate("/dashboard");
-    };
+    const success = await register(fullName, username, password);
+    if (success) {
+      setAuth(true);
+      navigate(from);
+    }
   };
 
   return (
     <AuthForm
       buttonText="Зарегистрироваться"
-      onSubmit={handleRegistration}      
+      onSubmit={handleRegistration}
       fieldErrors={fieldErrors}
       formError={formError}
       fields={[

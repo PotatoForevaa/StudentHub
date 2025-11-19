@@ -59,8 +59,8 @@ export const AuthForm = (props: AuthFormProps) => {
             placeholder={field.placeholder}
             onChange={field.onChange}
           />
-          {fieldErrors?.[field.name] && (
-            <FieldError message={fieldErrors[field.name]} />
+          {fieldErrors?.[field.name.toLowerCase()] && (
+            <FieldError message={fieldErrors[field.name.toLowerCase()]} />
           )}
         </FieldContainer>
       ))}

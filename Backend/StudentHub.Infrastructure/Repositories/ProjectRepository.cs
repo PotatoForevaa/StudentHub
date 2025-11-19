@@ -25,7 +25,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result> DeleteAsync(Guid id)
         {
             var project = await _dbContext.Projects.FindAsync(id);
-            if (project == null) return Result.Failure($"Project {id} not found", "id", ErrorType.NotFound);
+            if (project == null) return Result.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             _dbContext.Projects.Remove(project);
             await _dbContext.SaveChangesAsync();
             return Result.Success();
@@ -40,7 +40,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<Project?>> GetByIdAsync(Guid id)
         {
             var project = await _dbContext.Projects.FindAsync(id);
-            if (project == null) return Result<Project?>.Failure($"Project {id} not found", "id", ErrorType.NotFound);
+            if (project == null) return Result<Project?>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             return Result<Project?>.Success(project);
         }
 

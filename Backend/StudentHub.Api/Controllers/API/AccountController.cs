@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StudentHub.Api.DTOs.Requests;
 using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Requests;
@@ -52,6 +53,7 @@ namespace StudentHub.Api.Controllers.API
             return Ok();
         }
 
+        [Authorize]
         [HttpPost("Me")]
         public async Task<IActionResult> CheckAuth()
         {

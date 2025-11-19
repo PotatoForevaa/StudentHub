@@ -33,7 +33,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<User?>> GetByUsernameAsync(string username)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Username.ToUpper() == username.ToUpper());
-            if (user == null) return Result<User?>.Failure($"User {username} not found", "username", ErrorType.NotFound);
+            if (user == null) return Result<User?>.Failure($"Пользователь {username} не найден", "username", ErrorType.NotFound);
             return Result<User?>.Success(user);
         }
 
@@ -41,7 +41,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<User?>> GetByIdAsync(Guid id)
         {
             var user = await _db.Users.FindAsync(id);
-            if (user == null) return Result<User?>.Failure($"User {id} not found", "id", ErrorType.NotFound);
+            if (user == null) return Result<User?>.Failure($"Пользователь {id} не найден", "id", ErrorType.NotFound);
             return Result<User?>.Success(user);
         }
 
@@ -70,19 +70,19 @@ namespace StudentHub.Infrastructure.Repositories
         {
             var appUser = await _userManager.FindByNameAsync(userName);
             if (appUser == null)
-                return Result.Failure($"User {userName} not found", "username", ErrorType.NotFound);
+                return Result.Failure($"Пользователь {userName} не найден", "username", ErrorType.NotFound);
 
             var result = await _userManager.CheckPasswordAsync(appUser, password);
             return result ?
                  Result.Success() :
-                 Result.Failure("Wrong password", "password", ErrorType.Unauthorized);
+                 Result.Failure("Неверный пароль", "password", ErrorType.Unauthorized);
         }
 
         public async Task<Result> AddToRoleAsync(string username, string role)
         {
             var appUser = await _userManager.FindByNameAsync(username);
             if (appUser == null)
-                return Result.Failure($"User {username} not found", "username", ErrorType.NotFound);
+                return Result.Failure($"Пользователь  {username}  не найден", "username", ErrorType.NotFound);
 
             var result = await _userManager.AddToRoleAsync(appUser, role);
             return result.Succeeded ?

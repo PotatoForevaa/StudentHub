@@ -1,6 +1,7 @@
 ﻿import { NavLink } from "react-router-dom";
 import { styled } from "styled-components";
-import { useAuth } from "../features/auth/hooks/useAuth";
+import { AuthContext } from "../shared/context/AuthContext";
+import { useContext } from "react";
 
 const StyledHeader = styled.header`
   background: linear-gradient(135deg, #190061 0%, #0c0032 100%);
@@ -102,7 +103,7 @@ const RightSection = styled.div`
 `;
 
 export const Header = () => {
-  const { user } = useAuth();
+  const { isAuthenticated } = useContext(AuthContext);
   return (
     <StyledHeader>
       <Nav>
@@ -130,7 +131,7 @@ export const Header = () => {
 
         <RightSection>
           <Ul>
-            {!user && (
+            {!isAuthenticated && (
               <>
                 <Li>
                   <NavLinkStyled

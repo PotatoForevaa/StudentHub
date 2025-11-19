@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { AxiosError } from "axios";
 import authService from "../../../services/api/authService";
 import type { FieldErrors } from "../types/AuthForm.types";
 import type { ApiErrorResponse } from "../../../services/api/api.types";
-
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -11,25 +10,8 @@ export function useAuth() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      setLoading(true);
-      try {
-        const res = await authService.getCurrentUser();
-        setUser(res.data);   
-      } catch (err) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   const handleError = (err: unknown) => {
-    setFormError(null);
-    setFieldErrors({});
+    setLoading(false);
 
     const axiosError = err as AxiosError<ApiErrorResponse>;
     const data = axiosError.response?.data;
@@ -43,10 +25,11 @@ export function useAuth() {
       const fields: FieldErrors = {};
       for (const key in data.errors) {
         const value = data.errors[key];
-        fields[key] = Array.isArray(value) ? value.join(", ") : String(value);
+        fields[key.toLowerCase()] = Array.isArray(value)
+          ? value.join("\n")
+          : String(value);
       }
       setFieldErrors(fields);
-
     } else if (data.detail) {
       setFormError(data.detail);
     } else {
@@ -58,21 +41,32 @@ export function useAuth() {
     setLoading(true);
     try {
       const res = await authService.login(username, password);
-      return res.data;
+      setUser(res.data.user ?? null);
+      setFieldErrors({});
+      setFormError(null);
+      return true;
     } catch (err: unknown) {
       handleError(err);
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (fullName: string, username: string, password: string) => {
+  const register = async (
+    fullName: string,
+    username: string,
+    password: string
+  ) => {
     setLoading(true);
     try {
-      const res = await authService.register(username, password, fullName);
-      return res.data;
+      await authService.register(username, password, fullName);
+      setFieldErrors({});
+      setFormError(null);
+      return true;
     } catch (err: unknown) {
       handleError(err);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -80,6 +74,8 @@ export function useAuth() {
 
   const logout = async () => {
     setLoading(true);
+    setFieldErrors({});
+    setFormError(null);
     try {
       await authService.logout();
     } catch (err: unknown) {
@@ -91,9 +87,11 @@ export function useAuth() {
 
   const getUser = async () => {
     setLoading(true);
+    setFieldErrors({});
+    setFormError(null);
     try {
       const res = await authService.getCurrentUser();
-      setUser(res.data); 
+      setUser(res.data);
     } catch (err) {
       setUser(null);
     } finally {
@@ -101,5 +99,14 @@ export function useAuth() {
     }
   };
 
-  return { login, register, logout, getUser, user, loading, formError, fieldErrors };
+  return {
+    login,
+    register,
+    logout,
+    getUser,
+    user,
+    loading,
+    formError,
+    fieldErrors,
+  };
 }

@@ -1,21 +1,25 @@
-﻿import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import { useContext, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthForm } from "../components/AuthForm";
 import { useAuth } from "../hooks/useAuth";
+import { AuthContext } from "../../../shared/context/AuthContext";
 
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { login, formError, fieldErrors } = useAuth();
+  const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(username, password);
-
-    if (!formError && !fieldErrors[0]) {
-      navigate("/dashboard");
-    }
+    const success = await login(username, password);
+    if (success) {
+      setAuth(true);
+      navigate(from);
+    };
   };
 
   return (

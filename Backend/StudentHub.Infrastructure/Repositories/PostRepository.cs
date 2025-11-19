@@ -44,7 +44,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<Post?>> GetByIdAsync(Guid id)
         {
             var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
-            if (post == null) return Result<Post?>.Failure($"Post {id} not found", "id", ErrorType.NotFound);
+            if (post == null) return Result<Post?>.Failure($"Пост {id} не найден", "id", ErrorType.NotFound);
             return Result<Post?>.Success(post);
         }
 
