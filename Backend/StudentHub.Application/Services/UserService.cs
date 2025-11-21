@@ -10,9 +10,11 @@ namespace StudentHub.Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IFileStorageService _fileStorageService;
+        public UserService(IUserRepository userRepository, IFileStorageService fileStorageService)
         {
             _userRepository = userRepository;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<Result> CheckPasswordAsync(string username, string password)
@@ -81,6 +83,18 @@ namespace StudentHub.Application.Services
             );
 
             return Result<UserInfoDto?>.Success(userInfo);
+        }
+
+        public async Task<Result> AddProfilePicture(Stream picture, string fileName)
+        {
+            var result =  await _fileStorageService.SaveFileAsync(picture, fileName);
+            return result;
+        }
+
+        public async Task<Result<Stream>> GetProfilePicture(string path)
+        {
+            var result = await _fileStorageService.GetFileAsync(path);
+            return result;
         }
     }
 }

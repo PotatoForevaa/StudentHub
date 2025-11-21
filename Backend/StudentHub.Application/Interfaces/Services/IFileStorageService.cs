@@ -1,7 +1,10 @@
-﻿namespace StudentHub.Application.Interfaces.Services
+﻿using StudentHub.Application.DTOs;
+
+namespace StudentHub.Application.Interfaces.Services
 {
     public interface IFileStorageService
     {
-        Task<List<string>> SaveImagesAsync(List<string> base64images);
+        Task<Result<string>> SaveFileAsync(Stream fileStream, string fileName);
+        Task<Result<Stream>> GetFileAsync(string relativePath);
     }
 }
