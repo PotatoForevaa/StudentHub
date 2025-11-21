@@ -1,6 +1,6 @@
-﻿import { useContext, useState } from "react";
+﻿import { useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuthForm } from "../hooks/useAuthForm";
 import { AuthForm } from "../components/AuthForm";
 import { AuthContext } from "../../../shared/context/AuthContext";
 
@@ -8,18 +8,28 @@ export const Registration = () => {
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
-  const { register, fieldErrors, formError } = useAuth();
-  const { setAuth } = useContext(AuthContext);
+
+  const { register } = useContext(AuthContext);
+  const { handleError, fieldErrors, formError, resetErrors, setLoading } = useAuthForm();
+
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
   
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await register(fullName, username, password);
-    if (success) {
-      setAuth(true);
-      navigate(from);
+    resetErrors();
+    setLoading(true);
+
+    try {
+      const success = await register(fullName, username, password);
+      if (success) {
+        navigate(from);
+      }
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,21 +42,21 @@ export const Registration = () => {
       fields={[
         {
           displayName: "Имя пользователя",
-          name: "Username",
+          name: "username",
           type: "text",
           placeholder: "Введите имя пользователя",
           onChange: (e) => setUsername(e.target.value),
         },
         {
           displayName: "ФИО",
-          name: "FullName",
+          name: "fullName",
           type: "text",
           placeholder: "Введите ФИО",
           onChange: (e) => setFullName(e.target.value),
         },
         {
           displayName: "Пароль",
-          name: "Password",
+          name: "password",
           type: "password",
           placeholder: "Введите пароль",
           onChange: (e) => setPassword(e.target.value),

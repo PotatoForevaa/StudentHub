@@ -58,9 +58,8 @@ namespace StudentHub.Api.Controllers.API
         [HttpPost("Me")]
         public async Task<IActionResult> GetAccountInfo()
         {
-            var userResult = await _userService.GetByIdAsync(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
-
-            return Ok();
+            var userResult = await _userService.GetInfoById(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
+            return userResult.ToActionResult();
         }
     }
 }

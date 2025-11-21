@@ -11,5 +11,6 @@ namespace StudentHub.Application.Interfaces.Services
         Task<Result<UserDto?>> GetByUsernameAsync(string username);
         Task<Result<UserDto?>> GetByIdAsync(Guid id);
         Task<List<UserDto>> GetAllAsync();
+        Task<Result<UserInfoDto?>> GetInfoById(Guid id);
     }
 }

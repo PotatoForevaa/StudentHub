@@ -102,8 +102,12 @@ const RightSection = styled.div`
   height: 100%;
 `;
 
+const StyledP = styled.p`
+  color: white;
+`;
+
 export const Header = () => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, user } = useContext(AuthContext);
   return (
     <StyledHeader>
       <Nav>
@@ -147,6 +151,22 @@ export const Header = () => {
                     className={({ isActive }) => (isActive ? "active" : "")}
                   >
                     Регистрация
+                  </NavLinkStyled>
+                </Li>
+              </>
+            )}
+            {isAuthenticated && (
+              <>
+                <Li>
+                  <NavLinkStyled
+                    to="profile"
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                  >
+                    <StyledP>
+                      {user?.fullName}
+                      <br />
+                      {user?.username}
+                    </StyledP>
                   </NavLinkStyled>
                 </Li>
               </>

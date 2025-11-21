@@ -67,9 +67,20 @@ namespace StudentHub.Application.Services
             return Result<UserDto?>.Success(userDto);
         }
 
-        //public async Task<Result<UserInfoDto?>> GetInfoById(Guid id)
-        //{
+        public async Task<Result<UserInfoDto?>> GetInfoById(Guid id)
+        {
+            var userResult = await _userRepository
+                .GetByIdAsync(id);
 
-        //} 
+            if (!userResult.IsSuccess) return Result<UserInfoDto?>.Failure(userResult.Errors, userResult.ErrorType);
+            var user = userResult.Value;
+
+            var userInfo = new UserInfoDto(
+                FullName: user.FullName,
+                Username: user.Username
+            );
+
+            return Result<UserInfoDto?>.Success(userInfo);
+        }
     }
 }
