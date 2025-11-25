@@ -39,37 +39,37 @@ namespace StudentHub.Api.Controllers.API
             return Ok(projects);
         }
 
-        [Authorize]
-        [HttpPost("Create")]
-        public async Task<IActionResult> CreateProject(CreateProjectRequest createProjectRequest)
-        {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        //[Authorize]
+        //[HttpPost("Create")]
+        //public async Task<IActionResult> CreateProject(CreateProjectRequest createProjectRequest)
+        //{
+        //    var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var filePaths = new List<string>();
-            if (createProjectRequest.Base64Images?.Count > 0)
-                filePaths = await _fileStorageService.SaveImagesAsync(createProjectRequest.Base64Images);
+        //    var filePaths = new List<string>();
+        //    if (createProjectRequest.Base64Images?.Count > 0)
+        //        filePaths = await _fileStorageService.SaveImagesAsync(createProjectRequest.Base64Images);
 
-            var createProject = new CreateProjectCommand(createProjectRequest.Name, createProjectRequest.Description, userId, filePaths, createProjectRequest.ExternalUrl);
+        //    var createProject = new CreateProjectCommand(createProjectRequest.Name, createProjectRequest.Description, userId, filePaths, createProjectRequest.ExternalUrl);
 
-            var createResult = await _projectService.CreateAsync(createProject);
-            return createResult.ToActionResult();
-        }
+        //    var createResult = await _projectService.CreateAsync(createProject);
+        //    return createResult.ToActionResult();
+        //}
 
-        [Authorize]
-        [HttpPut("Update")]
-        public async Task<IActionResult> UpdateProject(UpdateProjectRequest updateProjectRequest)
-        {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        //[Authorize]
+        //[HttpPut("Update")]
+        //public async Task<IActionResult> UpdateProject(UpdateProjectRequest updateProjectRequest)
+        //{
+        //    var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var filePaths = new List<string>();
-            if (updateProjectRequest.Base64Images?.Count > 0)
-                filePaths = await _fileStorageService.SaveImagesAsync(updateProjectRequest.Base64Images);
+        //    var filePaths = new List<string>();
+        //    if (updateProjectRequest.Base64Images?.Count > 0)
+        //        filePaths = await _fileStorageService.SaveImagesAsync(updateProjectRequest.Base64Images);
 
-            var createProject = new CreateProjectCommand(updateProjectRequest.Name, updateProjectRequest.Description, userId, filePaths, updateProjectRequest.ExternalUrl);
+        //    var createProject = new CreateProjectCommand(updateProjectRequest.Name, updateProjectRequest.Description, userId, filePaths, updateProjectRequest.ExternalUrl);
 
-            var createResult = await _projectService.UpdateAsync(createProject);
-            return createResult.ToActionResult();
-        }
+        //    var createResult = await _projectService.UpdateAsync(createProject);
+        //    return createResult.ToActionResult();
+        //}
 
         [Authorize]
         [HttpDelete("Delete/{id}")]

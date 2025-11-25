@@ -89,6 +89,7 @@ namespace StudentHub.Api
                 builder.Services.AddScoped<IUserService, UserService>();
                 builder.Services.AddScoped<IAuthService, AuthService>();
                 builder.Services.AddScoped<IPostService, PostService>();
+                builder.Services.AddScoped<IFileStorageService, FileStorage>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
@@ -102,7 +103,6 @@ namespace StudentHub.Api
                 {
                     Log.Warning(ex.Message);
                 }
-
 
                 app.UseSerilogRequestLogging();
 

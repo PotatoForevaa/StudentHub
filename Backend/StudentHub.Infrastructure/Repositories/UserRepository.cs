@@ -110,5 +110,11 @@ namespace StudentHub.Infrastructure.Repositories
                     Message = e.Description
                 }).ToList());
         }
+
+        public async Task UpdateAsync(User user)
+        {
+            _db.Update<User>(user);
+            await _db.SaveChangesAsync();
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace StudentHub.Application.Interfaces.Services
         Task<Result<UserDto?>> GetByIdAsync(Guid id);
         Task<List<UserDto>> GetAllAsync();
         Task<Result<UserInfoDto?>> GetInfoById(Guid id);
-        Task<Result> AddProfilePicture(Stream picture);
-        Task<Result<Stream>> GetProfilePicture(string path);
+        Task<Result<Stream?>> GetProfilePictureById(Guid id);
+        Task<Result> AddProfilePicture(Guid id, Stream picture);
     }
 }

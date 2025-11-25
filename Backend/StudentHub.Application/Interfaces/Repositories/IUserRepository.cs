@@ -9,6 +9,7 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<User?>> GetByUsernameAsync(string username);
         Task<Result<User?>> GetByIdAsync(Guid id);
         Task<Result<User?>> AddAsync(User user, string password);
+        Task UpdateAsync(User user);
         Task<Result> CreateRole(string roleName);
         Task<Result> AddToRoleAsync(string username, string role);
         Task<Result> CheckPasswordAsync(string username, string password);

@@ -55,11 +55,19 @@ namespace StudentHub.Api.Controllers.API
         }
 
         [Authorize]
-        [HttpPost("Me")]
+        [HttpGet("Me")]
         public async Task<IActionResult> GetAccountInfo()
         {
             var userResult = await _userService.GetInfoById(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
             return userResult.ToActionResult();
+        }
+
+        [Authorize]
+        [HttpGet("ProfilePicture/{id}")]
+        public async Task<IActionResult> GetProfilePicture([FromRoute] Guid id)
+        {
+            var pictureResult = await _userService.GetProfilePictureById(id);
+            return pictureResult.ToActionResult();
         }
     }
 }

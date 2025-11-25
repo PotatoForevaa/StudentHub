@@ -19,9 +19,7 @@ namespace StudentHub.Application.Services
 
         public async Task<Result> CheckPasswordAsync(string username, string password)
         {
-
-            var a = await _userRepository.CheckPasswordAsync(username, password);
-            return a;
+            return await _userRepository.CheckPasswordAsync(username, password);
         }
 
         public async Task<List<UserDto>> GetAllAsync()
@@ -91,10 +89,28 @@ namespace StudentHub.Application.Services
             return result;
         }
 
-        public async Task<Result<Stream>> GetProfilePicture(string path)
+        public async Task<Result<Stream>> GetProfilePictureById(Guid id)
         {
-            var result = await _fileStorageService.GetFileAsync(path);
+            var userResult = await _userRepository.GetByIdAsync(id);
+            if (!userResult.IsSuccess) return Result<Stream>.Failure(userResult.Errors);
+            var user = userResult.Value;
+
+            var result = await _fileStorageService.GetFileAsync(user.ProfilePicturePath);
             return result;
+        }
+
+        public async Task<Result> AddProfilePicture(Guid id, Stream picture)
+        {
+            var userResult = await _userRepository.GetByIdAsync(id);
+            if (!userResult.IsSuccess) return userResult;
+            var user = userResult.Value;
+
+            var pathResult = await _fileStorageService.SaveFileAsync(picture, id.ToString());
+            if (!pathResult.IsSuccess) return pathResult;
+            user.ProfilePicturePath = pathResult.Value;
+
+            await _userRepository.UpdateAsync(user);
+            return Result.Success();
         }
     }
 }
