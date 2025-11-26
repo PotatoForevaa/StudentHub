@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Api.Extensions;
+using StudentHub.Api.Extensions.Attributes;
 using StudentHub.Application.Interfaces.Services;
+using System.Security.Claims;
 
 namespace StudentHub.Api.Controllers.API
 {
@@ -29,6 +31,23 @@ namespace StudentHub.Api.Controllers.API
         {
             var users = await _userService.GetAllAsync();
             return Ok(users);
+        }
+
+        [Authorize]
+        [HttpGet("ProfilePicture/{username}")]
+        public async Task<IActionResult> GetProfilePicture([FromRoute] string username)
+        {
+            var pictureResult = await _userService.GetProfilePictureByUsername(username);
+            if (!pictureResult.IsSuccess) return pictureResult.ToActionResult();
+            return File(pictureResult.Value!, "image/jpeg");
+        }
+
+        [Authorize]
+        [HttpPost("ProfilePicture")]
+        public async Task<IActionResult> SetProfilePicture([FileExtensions("png,jpg")] [FileSize(5 * 1024 * 1024)] IFormFile file)
+        {
+            var pictureResult = await _userService.AddProfilePicture(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!) , file.OpenReadStream());
+            return pictureResult.ToActionResult();
         }
     }
 }

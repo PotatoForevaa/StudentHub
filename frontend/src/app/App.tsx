@@ -4,6 +4,7 @@ import { Login, Registration } from "../features/auth/pages";
 import { Header } from "./Header";
 import { PrivateRoute } from "../shared/components/PrivateRoute";
 import { AuthProvider } from "../shared/context/AuthContext";
+import { Profile } from "../features/profile/pages/profile";
 
 const GlobalStyles = createGlobalStyle`
   body {
@@ -26,9 +27,9 @@ const AppContainer = styled.div`
 const MainContent = styled.main`
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  align-items: stretch;
   background: #0c0032;
+  justify-content: center;
 `;
 
 function App() {
@@ -47,7 +48,7 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route path="/dashboard" element={null} />
                 <Route path="/projects" element={null} />
-                <Route path="/profile" element={null} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
             </Routes>
           </MainContent>

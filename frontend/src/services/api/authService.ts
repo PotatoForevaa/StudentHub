@@ -14,7 +14,7 @@ export const authService = {
     api.post('/api/account/logout'),
 
   getCurrentUser: () =>
-    api.post('api/account/me')
+    api.get('api/account/me')
 };
 
 export default authService;

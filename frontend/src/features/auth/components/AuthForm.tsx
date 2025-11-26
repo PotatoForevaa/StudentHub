@@ -8,6 +8,7 @@ const Form = styled.form`
   border-radius: 25px;
   padding: 10px 15px 15px 15px;
   font-size: 24px;
+  align-self: center;
 `;
 
 const Label = styled.label`

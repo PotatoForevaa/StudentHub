@@ -99,6 +99,16 @@ namespace StudentHub.Application.Services
             return result;
         }
 
+        public async Task<Result<Stream>> GetProfilePictureByUsername(string username)
+        {
+            var userResult = await _userRepository.GetByUsernameAsync(username);
+            if (!userResult.IsSuccess) return Result<Stream>.Failure(userResult.Errors);
+            var user = userResult.Value;
+
+            var result = await _fileStorageService.GetFileAsync(user.ProfilePicturePath);
+            return result;
+        }
+
         public async Task<Result> AddProfilePicture(Guid id, Stream picture)
         {
             var userResult = await _userRepository.GetByIdAsync(id);
