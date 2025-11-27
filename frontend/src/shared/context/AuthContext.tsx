@@ -1,11 +1,13 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
 import type { User } from "../types/User";
 import authService from "../../services/api/authService";
+import { baseUrl } from "../../services/api/base";
 
 export type AuthContextType = {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
+  picture: string | undefined;
 
   login: (username: string, password: string) => Promise<boolean>;
   register: (fullName: string, username: string, password: string) => Promise<boolean>;
@@ -17,6 +19,7 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
   loading: false,
+  picture: "",
   login: async () => false,
   register: async () => false,
   logout: async () => {},
@@ -26,6 +29,7 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setAuth] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [picture, setPicture] = useState("");
   const [loading, setLoading] = useState(true);
 
   const login = async (username: string, password: string) => {
@@ -60,9 +64,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getUser = async () => {
     try {
+      
       const res = await authService.getCurrentUser();
-      setUser(res.data);
-      setAuth(true);
+      setUser(res.data);      
+      setAuth(true);      
+      setPicture(`${baseUrl}/api/users/profilepicture/${res.data.username}`)
     } catch {
       setUser(null);
       setAuth(false);
@@ -82,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated,
         user,
         loading,
+        picture,
         login,
         register,
         logout,

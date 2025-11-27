@@ -8,6 +8,6 @@ const StyledContainer = styled.div`
   margin: 70px 100px 70px 100px;
 `;
 
-export const Container = () => {
-  return <StyledContainer />;
+export const Container = ({ children }: { children?: React.ReactNode }) => {
+  return <StyledContainer>{children}</StyledContainer>;
 };

@@ -106,8 +106,15 @@ const StyledP = styled.p`
   color: white;
 `;
 
+const StyledImg = styled.img`
+  width: 50px;
+  height: 50px;
+  margin: 0 0 0 20px;
+  border-radius: 15%;
+`;
+
 export const Header = () => {
-  const { isAuthenticated, user } = useContext(AuthContext);
+  const { isAuthenticated, user, picture } = useContext(AuthContext);
   return (
     <StyledHeader>
       <Nav>
@@ -167,6 +174,7 @@ export const Header = () => {
                       <br />
                       {user?.username}
                     </StyledP>
+                    { picture && <StyledImg src={picture} />}
                   </NavLinkStyled>
                 </Li>
               </>

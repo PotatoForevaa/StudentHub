@@ -30,7 +30,7 @@ namespace StudentHub.Infrastructure.Services
             var fullPath = Path.Combine(_basePath, relativePath);
 
             if (!File.Exists(fullPath))
-                return Result<Stream>.Failure("Файл не найден");
+                return Result<Stream>.Failure("Файл не найден", null, ErrorType.NotFound);
 
             return Result<Stream>.Success(File.OpenRead(fullPath));
         }
