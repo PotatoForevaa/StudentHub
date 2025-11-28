@@ -6,6 +6,7 @@ const StyledContainer = styled.div`
   font-size: 24px;
   width: 100%;
   margin: 70px 100px 70px 100px;
+  display: flex;
 `;
 
 export const Container = ({ children }: { children?: React.ReactNode }) => {

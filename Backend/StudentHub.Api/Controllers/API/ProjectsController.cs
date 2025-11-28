@@ -39,21 +39,23 @@ namespace StudentHub.Api.Controllers.API
             return Ok(projects);
         }
 
-        //[Authorize]
-        //[HttpPost("Create")]
-        //public async Task<IActionResult> CreateProject(CreateProjectRequest createProjectRequest)
-        //{
-        //    var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        [Authorize]
+        [HttpPost("Create")]
+        public async Task<IActionResult> CreateProject(CreateProjectRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        //    var filePaths = new List<string>();
-        //    if (createProjectRequest.Base64Images?.Count > 0)
-        //        filePaths = await _fileStorageService.SaveImagesAsync(createProjectRequest.Base64Images);
+            var command = new CreateProjectCommand(
+                Name: request.Name,
+                Description: request.Description,
+                AuthorId: userId,
+                Files: request.Files?.Select(f => f.OpenReadStream()).ToList(),
+                Url: request.ExternalUrl                
+                );
 
-        //    var createProject = new CreateProjectCommand(createProjectRequest.Name, createProjectRequest.Description, userId, filePaths, createProjectRequest.ExternalUrl);
-
-        //    var createResult = await _projectService.CreateAsync(createProject);
-        //    return createResult.ToActionResult();
-        //}
+            var projectResult = await _projectService.CreateAsync(command);
+            return projectResult.ToActionResult();
+        }
 
         //[Authorize]
         //[HttpPut("Update")]

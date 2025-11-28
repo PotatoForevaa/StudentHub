@@ -11,10 +11,11 @@ const Picture = styled.img`
     `;
 
 export const Profile = () => {
-  const { picture } = useContext(AuthContext);
+  const { user, picture } = useContext(AuthContext);
   return (
     <Container>
       { picture && <Picture src={ picture }/> }
+      { user && <div>{user.username}<span/>{user.fullName}</div>}
     </Container>
   );
 };

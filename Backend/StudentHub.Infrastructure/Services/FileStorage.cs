@@ -14,7 +14,8 @@ namespace StudentHub.Infrastructure.Services
             if (!Directory.Exists(_basePath))
                 Directory.CreateDirectory(_basePath);
         }
-        public async Task<Result<string>> SaveFileAsync(Stream fileStream, string fileName)
+
+        public async Task<Result<string>> SaveProfilePictureAsync(Stream fileStream, string fileName)
         {
             var uniqueName = $"{Guid.NewGuid()}_{fileName}.png";
             var fullPath = Path.Combine(_basePath, uniqueName);
@@ -24,8 +25,18 @@ namespace StudentHub.Infrastructure.Services
 
             return Result<string>.Success(uniqueName);
         }
+        
+        public async Task<Result<string>> SaveFileAsync(Stream fileStream, string fileName)
+        {
+            var uniqueName = $"{Guid.NewGuid()}_{fileName}.png";
+            var fullPath = Path.Combine(_basePath, uniqueName);
 
-        public async Task<Result<Stream>> GetFileAsync(string relativePath)
+            using var stream = new FileStream(fullPath, FileMode.Create, FileAccess.ReadWrite);
+            await fileStream.CopyToAsync(stream);
+            return Result<string>.Success(uniqueName);
+        }
+
+        public Result<Stream> GetFileAsync(string relativePath)
         {
             var fullPath = Path.Combine(_basePath, relativePath);
 
@@ -40,12 +51,13 @@ namespace StudentHub.Infrastructure.Services
             using var image = await Image.LoadAsync(fileStream);
 
             int size = Math.Min(image.Width, image.Height);
+            int finalSize = 512;
 
             int x = (image.Width - size) / 2;
             int y = (image.Height - size) / 2;
 
             image.Mutate(i => i.Crop(new Rectangle(x, y, size, size))); //вырезаем квадрат из центра
-            image.Mutate(i => i.Resize(512, 512)); //сжимаем
+            image.Mutate(i => i.Resize(finalSize, finalSize));
 
             using var ms = new MemoryStream();
             await image.SaveAsPngAsync(ms);

@@ -2,13 +2,10 @@
 
 namespace StudentHub.Api.DTOs.Requests
 {
-    public class CreateProjectRequest
-    {
-        [Required]
-        public string Name { get; set; }
-        [Required]
-        public string Description { get; set; }
-        public string? ExternalUrl { get; set; }
-        public List<string>? Base64Images { get; set; }
-    }
+    public record CreateProjectRequest(
+        [Required] string Name,
+        [Required] string Description,
+        string? ExternalUrl,
+        List<IFormFile>? Files
+    );
 }

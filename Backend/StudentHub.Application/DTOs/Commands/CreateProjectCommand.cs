@@ -4,6 +4,6 @@
         string Name,
         string Description,
         Guid AuthorId,
-        List<string> FilePaths,
+        List<Stream>? Files,
         string? Url);
 }
