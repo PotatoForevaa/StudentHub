@@ -54,14 +54,43 @@ namespace StudentHub.Application.Services
             return result;
         }
 
-        public Task<List<ProjectDto>> GetAllAsync(int page = 0, int pagesize = 0)
+        public async Task<List<ProjectDto>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            throw new NotImplementedException();
+            var projectList = await _projectRepository.GetAllAsync(page, pageSize);
+            var dtoList = projectList.Select(p => new ProjectDto(                
+                Name: p.Name,
+                Description: p.Description,
+                FilePaths: p.Images.Select(i => i.Path).ToList(),
+                Id: p.Id
+            ))
+                .ToList();
+
+            return dtoList;
         }
 
-        public Task<Result<ProjectDto?>> GetByIdAsync(Guid id)
+        public async Task<Result<ProjectDto?>> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var projectResult = await _projectRepository.GetByIdAsync(id);
+            if (!projectResult.IsSuccess) return Result<ProjectDto?>.Failure(projectResult.Errors);
+            var project = projectResult.Value;
+            var projectDto = new ProjectDto(
+                Id: project.Id,
+                Name: project.Name,
+                Description: project.Description,
+                FilePaths: project.Images.Select(i => i.Path).ToList()
+            );
+
+            return Result<ProjectDto?>.Success(projectDto);
+        }
+
+        public async Task<Result<Stream>> GetImageByIdAsync(string path)
+        {
+            return await _fileService.GetFileAsync(path);
+        }
+
+        public async Task<Result<List<string>>> GetImageListByIdAsync(Guid id)
+        {
+            return await _projectRepository.GetImageListByIdAsync(id);
         }
 
         public Task<Result<ProjectDto?>> UpdateAsync(CreateProjectCommand updateProjectCommand)

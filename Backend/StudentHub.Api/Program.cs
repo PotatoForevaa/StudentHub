@@ -84,12 +84,14 @@ namespace StudentHub.Api
                 });
 
                 builder.Services.AddHttpContextAccessor();
+                builder.Services.AddScoped<IFileStorageService, FileStorage>();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
                 builder.Services.AddScoped<IUserService, UserService>();
                 builder.Services.AddScoped<IAuthService, AuthService>();
                 builder.Services.AddScoped<IPostService, PostService>();
-                builder.Services.AddScoped<IFileStorageService, FileStorage>();
+                builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+                builder.Services.AddScoped<IProjectService, ProjectService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();

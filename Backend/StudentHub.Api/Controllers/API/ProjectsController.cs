@@ -13,11 +13,9 @@ namespace StudentHub.Api.Controllers.API
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
-        private readonly IFileStorageService _fileStorageService;
-        public ProjectsController(IProjectService projectService, IFileStorageService fileStorageService)
+        public ProjectsController(IProjectService projectService)
         {
             _projectService = projectService;
-            _fileStorageService = fileStorageService;
         }
 
         [Authorize]
@@ -25,10 +23,7 @@ namespace StudentHub.Api.Controllers.API
         public async Task<IActionResult> GetProject([FromRoute] Guid id)
         {
             var projectResult = await _projectService.GetByIdAsync(id);
-            if (!projectResult.IsSuccess) return projectResult.ToActionResult();
-
-            var project = projectResult.Value;
-            return Ok(project);
+            return projectResult.ToActionResult();
         }
 
         [Authorize]
@@ -55,6 +50,21 @@ namespace StudentHub.Api.Controllers.API
 
             var projectResult = await _projectService.CreateAsync(command);
             return projectResult.ToActionResult();
+        }
+
+        [Authorize]
+        [HttpPost("{id}/GetImageList")]
+        public async Task<IActionResult> GetImageList(Guid id)
+        {
+            var result = await _projectService.GetImageListByIdAsync(id);
+            return result.ToActionResult();
+        }
+
+        [Authorize]
+        [HttpPost("{id}/{path}")]
+        public async Task<IActionResult> GetImage(Guid id, string path)
+        {
+            var image = 
         }
 
         //[Authorize]

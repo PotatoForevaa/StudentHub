@@ -10,5 +10,6 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result> DeleteAsync(Guid id);
         Task<Result<Project?>> GetByIdAsync(Guid id);
         Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0);
+        Task<Result<List<string>>> GetImageListByIdAsync(Guid id);
     }
 }

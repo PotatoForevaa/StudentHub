@@ -1,8 +1,9 @@
-﻿using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Processing;
 using StudentHub.Application.DTOs;
 using StudentHub.Application.Interfaces.Services;
-using SixLabors.ImageSharp.Processing;
+using System.IO;
 
 namespace StudentHub.Infrastructure.Services
 {
@@ -36,14 +37,17 @@ namespace StudentHub.Infrastructure.Services
             return Result<string>.Success(uniqueName);
         }
 
-        public Result<Stream> GetFileAsync(string relativePath)
+        public async Task<Result<Stream>> GetFileAsync(string relativePath)
         {
             var fullPath = Path.Combine(_basePath, relativePath);
 
             if (!File.Exists(fullPath))
                 return Result<Stream>.Failure("Файл не найден", null, ErrorType.NotFound);
 
-            return Result<Stream>.Success(File.OpenRead(fullPath));
+            var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
+            await stream.FlushAsync();
+
+            return Result<Stream>.Success(stream);
         }
         
         private async Task<byte[]> ProcessImage(Stream fileStream)
