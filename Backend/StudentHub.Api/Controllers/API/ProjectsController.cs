@@ -60,12 +60,12 @@ namespace StudentHub.Api.Controllers.API
             return result.ToActionResult();
         }
 
-        [Authorize]
-        [HttpPost("{id}/{path}")]
-        public async Task<IActionResult> GetImage(Guid id, string path)
-        {
-            var image = 
-        }
+        //[Authorize]
+        //[HttpPost("{id}/{path}")]
+        //public async Task<IActionResult> GetImage(Guid id, string path)
+        //{
+        //    var image = 
+        //}
 
         //[Authorize]
         //[HttpPut("Update")]
