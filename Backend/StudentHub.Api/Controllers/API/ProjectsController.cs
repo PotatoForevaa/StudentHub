@@ -36,7 +36,7 @@ namespace StudentHub.Api.Controllers.API
 
         [Authorize]
         [HttpPost("Create")]
-        public async Task<IActionResult> CreateProject(CreateProjectRequest request)
+        public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequest request)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
