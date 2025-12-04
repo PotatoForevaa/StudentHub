@@ -6,7 +6,7 @@ namespace StudentHub.Api.Extensions.Attributes
     public class FileSizeAttribute : ValidationAttribute
     {
         private readonly long _maxSize;
-        public FileSizeAttribute(long maxSize) 
+        public FileSizeAttribute(long maxSize)
         {
             _maxSize = maxSize;
             ErrorMessage = $"Размер файла превышает допустимый {maxSize / 1024 / 1024} МБ";

@@ -85,7 +85,7 @@ namespace StudentHub.Application.Services
 
         public async Task<Result> AddProfilePicture(Stream picture, string fileName)
         {
-            var result =  await _fileStorageService.SaveFileAsync(picture, fileName);
+            var result = await _fileStorageService.SaveFileAsync(picture, fileName);
             return result;
         }
 

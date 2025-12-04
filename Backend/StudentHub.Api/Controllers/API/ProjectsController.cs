@@ -45,7 +45,7 @@ namespace StudentHub.Api.Controllers.API
                 Description: request.Description,
                 AuthorId: userId,
                 Files: request.Files?.Select(f => f.OpenReadStream()).ToList(),
-                Url: request.ExternalUrl                
+                Url: request.ExternalUrl
                 );
 
             var projectResult = await _projectService.CreateAsync(command);
@@ -60,12 +60,14 @@ namespace StudentHub.Api.Controllers.API
             return result.ToActionResult();
         }
 
-        //[Authorize]
-        //[HttpPost("{id}/{path}")]
-        //public async Task<IActionResult> GetImage(Guid id, string path)
-        //{
-        //    var image = 
-        //}
+        [Authorize]
+        [HttpGet("{id}/{path}")]
+        public async Task<IActionResult> GetImage(Guid id, string path)
+        {
+            var image = await _projectService.GetImageAsync(path);
+            if (!image.IsSuccess) return image.ToActionResult();
+            return File(image.Value, "image/jpeg");
+        }
 
         //[Authorize]
         //[HttpPut("Update")]
@@ -88,7 +90,7 @@ namespace StudentHub.Api.Controllers.API
         public async Task<IActionResult> DeleteProject([FromRoute] Guid id)
         {
             var deleteResult = await _projectService.DeleteAsync(id);
-            return deleteResult.ToActionResult();     
+            return deleteResult.ToActionResult();
         }
     }
 }

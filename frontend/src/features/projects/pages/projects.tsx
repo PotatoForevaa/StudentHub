@@ -1,13 +1,18 @@
 import { useContext } from "react";
-import { AuthContext } from "../../../shared/context/AuthContext";
-import { Container } from "../../../shared/components/Container";
-
-
+import { ProjectCard } from "../components/project";
+import { CardsContainer, Container } from "../../../shared/components/Container";
+import { ProjectContext } from "../../../shared/context/ProjectContext";
 
 export const Projects = () => {
-  const { user } = useContext(AuthContext);
-  return 
-  <Container>
+  const { projects } = useContext(ProjectContext);
 
-  </Container>;
+  return (
+    <Container>
+      <CardsContainer>
+        {projects?.map((p) => (
+          <ProjectCard key={p.id} project={p} />
+        ))}
+      </CardsContainer>
+    </Container>
+  );
 };

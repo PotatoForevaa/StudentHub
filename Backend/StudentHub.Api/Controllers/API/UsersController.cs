@@ -44,9 +44,9 @@ namespace StudentHub.Api.Controllers.API
 
         [Authorize]
         [HttpPost("ProfilePicture")]
-        public async Task<IActionResult> SetProfilePicture([FileExtensions("png,jpg")] [FileSize(5 * 1024 * 1024)] IFormFile file)
+        public async Task<IActionResult> SetProfilePicture([FileExtensions("png,jpg")][FileSize(5 * 1024 * 1024)] IFormFile file)
         {
-            var pictureResult = await _userService.AddProfilePicture(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!) , file.OpenReadStream());
+            var pictureResult = await _userService.AddProfilePicture(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!), file.OpenReadStream());
             return pictureResult.ToActionResult();
         }
     }

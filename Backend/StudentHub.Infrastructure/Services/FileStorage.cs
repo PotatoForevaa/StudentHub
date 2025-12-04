@@ -1,9 +1,7 @@
 ﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using StudentHub.Application.DTOs;
 using StudentHub.Application.Interfaces.Services;
-using System.IO;
 
 namespace StudentHub.Infrastructure.Services
 {
@@ -26,7 +24,7 @@ namespace StudentHub.Infrastructure.Services
 
             return Result<string>.Success(uniqueName);
         }
-        
+
         public async Task<Result<string>> SaveFileAsync(Stream fileStream, string fileName)
         {
             var uniqueName = $"{Guid.NewGuid()}_{fileName}.png";
@@ -49,7 +47,7 @@ namespace StudentHub.Infrastructure.Services
 
             return Result<Stream>.Success(stream);
         }
-        
+
         private async Task<byte[]> ProcessImage(Stream fileStream)
         {
             using var image = await Image.LoadAsync(fileStream);

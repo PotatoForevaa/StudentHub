@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using StudentHub.Application.DTOs;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Domain.Entities;
@@ -11,14 +10,12 @@ namespace StudentHub.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ILogger<UserRepository> _logger;
         private readonly AppDbContext _db;
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-        public UserRepository(ILogger<UserRepository> logger, AppDbContext db, UserManager<AppUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
+        public UserRepository(AppDbContext db, UserManager<AppUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
         {
-            _logger = logger;
             _db = db;
             _userManager = userManager;
             _roleManager = roleManager;

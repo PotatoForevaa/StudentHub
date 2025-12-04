@@ -5,6 +5,8 @@ import { Header } from "./Header";
 import { PrivateRoute } from "../shared/components/PrivateRoute";
 import { AuthProvider } from "../shared/context/AuthContext";
 import { Profile } from "../features/profile/pages/profile";
+import { Projects } from "../features/projects/pages/projects";
+import { ProjectProvider } from "../shared/context/ProjectContext";
 
 const GlobalStyles = createGlobalStyle`
   body {
@@ -36,23 +38,24 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <GlobalStyles />
-        <AppContainer>
-          <Header />
+        <ProjectProvider>
+          <GlobalStyles />
+          <AppContainer>
+            <Header />
+            <MainContent>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/registration" element={<Registration />} />
 
-          <MainContent>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/registration" element={<Registration />} />
-
-              <Route element={<PrivateRoute />}>
-                <Route path="/dashboard" element={null} />
-                <Route path="/projects" element={null} />
-                <Route path="/profile" element={<Profile />} />
-              </Route>
-            </Routes>
-          </MainContent>
-        </AppContainer>
+                <Route element={<PrivateRoute />}>
+                  <Route path="/dashboard" element={null} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
+              </Routes>
+            </MainContent>
+          </AppContainer>
+        </ProjectProvider>
       </AuthProvider>
     </BrowserRouter>
   );

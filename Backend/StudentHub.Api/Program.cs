@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StudentHub.Api.Extensions;
-using StudentHub.Api.Middlewares;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Application.Interfaces.Services;
@@ -12,8 +10,6 @@ using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Infrastructure.Services;
-using System.Net.Mime;
-using System.Text.Json;
 
 namespace StudentHub.Api
 {
@@ -131,7 +127,7 @@ namespace StudentHub.Api
                 app.MapControllers();
 
                 //app.UseMiddleware<ValidationErrorMiddleware>();
-               
+
                 app.Run();
             }
             catch (Exception ex)

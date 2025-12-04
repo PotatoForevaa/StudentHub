@@ -11,6 +11,7 @@ namespace StudentHub.Application.Interfaces.Services
         Task<Result<ProjectDto?>> CreateAsync(CreateProjectCommand createProjectCommand);
         Task<Result<ProjectDto?>> UpdateAsync(CreateProjectCommand updateProjectCommand);
         Task<Result> DeleteAsync(Guid id);
+        Task<Result<Stream?>> GetImageAsync(string path);
         Task<Result<List<String>>> GetImageListByIdAsync(Guid id);
     }
 }

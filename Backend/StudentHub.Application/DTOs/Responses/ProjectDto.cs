@@ -5,6 +5,8 @@ namespace StudentHub.Application.DTOs.Responses
         Guid Id,
         string Name,
         string Description,
-        List<string> FilePaths
+        List<string> Files,
+        string Author,
+        DateTime CreationDate
         );
 }

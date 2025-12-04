@@ -1,22 +1,30 @@
-import { createContext, useState, type ReactNode } from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import { projectService } from "../../services/api/projectService";
 import type { Project } from "../types/Project";
 
 export type ProjectContextType = {
-    projects: Project[],
+    project: Project | null,
+    projects: Project[] | null,
     getProject: (id: string) => Promise<void>;
     getProjects: () => Promise<void>;
 };
 
 export const ProjectContext = createContext<ProjectContextType>({
+    project: null,
     projects: [],
-    getProject: async () => {},
+    getProject: async (id: string) => {},
     getProjects: async () => {}
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [project, setProject] = useState(null);
   const [projects, setProjects] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProjects();
+    setLoading(false)
+  }, [])
 
   const getProject = async (id: string) => {
     try {

@@ -6,7 +6,7 @@ namespace StudentHub.Api.DTOs.Requests
     {
         [Required]
         public string Name { get; set; }
-        [Required] 
+        [Required]
         public string Description { get; set; }
         public string? ExternalUrl { get; set; }
         public List<IFormFile>? Files { get; set; }

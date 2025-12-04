@@ -4,11 +4,6 @@ using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Application.Interfaces.Services;
 using StudentHub.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StudentHub.Application.Services
 {
@@ -26,11 +21,11 @@ namespace StudentHub.Application.Services
         {
             var filePaths = new List<string>();
             if (command.Files?.Count > 0)
-            foreach (var file in command.Files)
-            {
-                var fileResult = await _fileService.SaveFileAsync(file, "");
-                filePaths.Add(fileResult.Value);
-            }
+                foreach (var file in command.Files)
+                {
+                    var fileResult = await _fileService.SaveFileAsync(file, "");
+                    filePaths.Add(fileResult.Value);
+                }
 
             var project = new Project
             {
@@ -44,7 +39,7 @@ namespace StudentHub.Application.Services
             var result = await _projectRepository.AddAsync(project);
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
-            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths);
+            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, Author: value.Author.FullName, CreationDate: value.CreatedAt);
             return Result<ProjectDto?>.Success(projectDto); ;
         }
 
@@ -57,11 +52,13 @@ namespace StudentHub.Application.Services
         public async Task<List<ProjectDto>> GetAllAsync(int page = 0, int pageSize = 0)
         {
             var projectList = await _projectRepository.GetAllAsync(page, pageSize);
-            var dtoList = projectList.Select(p => new ProjectDto(                
+            var dtoList = projectList.Select(p => new ProjectDto(
                 Name: p.Name,
                 Description: p.Description,
-                FilePaths: p.Images.Select(i => i.Path).ToList(),
-                Id: p.Id
+                Files: p.Images.Select(i => i.Path).ToList(),
+                Id: p.Id,
+                Author: p.Author.FullName,
+                CreationDate: p.CreatedAt
             ))
                 .ToList();
 
@@ -77,16 +74,19 @@ namespace StudentHub.Application.Services
                 Id: project.Id,
                 Name: project.Name,
                 Description: project.Description,
-                FilePaths: project.Images.Select(i => i.Path).ToList()
+                Files: project.Images.Select(i => i.Path).ToList(),
+                Author: project.Author.FullName,
+                CreationDate: project.CreatedAt
             );
 
             return Result<ProjectDto?>.Success(projectDto);
         }
 
-        public async Task<Result<Stream>> GetImageByIdAsync(string path)
+        public async Task<Result<Stream>> GetImageAsync(string path)
         {
             return await _fileService.GetFileAsync(path);
         }
+
 
         public async Task<Result<List<string>>> GetImageListByIdAsync(Guid id)
         {

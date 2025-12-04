@@ -33,13 +33,13 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            if (page == 0 && pageSize == 0) return await _dbContext.Projects.Include(p => p.Images).ToListAsync();
+            if (page == 0 && pageSize == 0) return await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).ToListAsync();
             return await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).ToListAsync();
         }
 
         public async Task<Result<Project?>> GetByIdAsync(Guid id)
         {
-            var project = await _dbContext.Projects.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
             if (project == null) return Result<Project?>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             return Result<Project?>.Success(project);
         }
