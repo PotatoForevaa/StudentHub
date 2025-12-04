@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	  
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\MVC\**" />
+    <Compile Remove="DTOs\Responses\**" />
+    <Compile Remove="DTOs\ViewModels\**" />
+    <Content Remove="Controllers\MVC\**" />
+    <Content Remove="DTOs\Responses\**" />
+    <Content Remove="DTOs\ViewModels\**" />
+    <EmbeddedResource Remove="Controllers\MVC\**" />
+    <EmbeddedResource Remove="DTOs\Responses\**" />
+    <EmbeddedResource Remove="DTOs\ViewModels\**" />
+    <None Remove="Controllers\MVC\**" />
+    <None Remove="DTOs\Responses\**" />
+    <None Remove="DTOs\ViewModels\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <ProjectReference Include="..\StudentHub.Infrastructure\StudentHub.Infrastructure.csproj" />
+   </ItemGroup>
+	<PropertyGroup>
+		<NeutralLanguage>en</NeutralLanguage>
+		<SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
+		<CopySatelliteAssembliesDuringPublish>false</CopySatelliteAssembliesDuringPublish>
+	</PropertyGroup>
+	
+
+</Project>
