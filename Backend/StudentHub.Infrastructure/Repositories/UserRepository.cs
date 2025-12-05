@@ -56,6 +56,19 @@ namespace StudentHub.Infrastructure.Repositories
                 return Result<User>.Success(user);
             }
 
+            // Check if the error is due to duplicate username
+            var duplicateError = result.Errors.FirstOrDefault(e => 
+                e.Code == "DuplicateUserName" || 
+                e.Description.Contains("already", StringComparison.OrdinalIgnoreCase));
+            
+            if (duplicateError != null)
+            {
+                return Result<User?>.Failure(
+                    $"Пользователь с именем '{user.Username}' уже существует",
+                    "username",
+                    ErrorType.Conflict);
+            }
+
             return Result<User?>.Failure(result.Errors.Select(e => new Error
             {
                 Field = "Password",

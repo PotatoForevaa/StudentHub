@@ -40,7 +40,24 @@ namespace StudentHub.Application.Services
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
             var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, Author: value.Author.FullName, CreationDate: value.CreatedAt);
-            return Result<ProjectDto?>.Success(projectDto); ;
+            return Result<ProjectDto?>.Success(projectDto);
+        }
+
+        public async Task<Result<double>> AddScoreAsync(AddProjectScoreCommand command)
+        {
+            if (command.Score < 1 || command.Score > 5)
+                return Result<double>.Failure("Score must be between 1 and 5", "score", ErrorType.Validation);
+
+            var rating = new ProjectRating
+            {
+                AuthorId = command.AuthorId,
+                ProjectId = command.ProjectId,
+                Score = command.Score,
+                DateTime = DateTime.UtcNow
+            };
+
+            var result = await _projectRepository.AddRatingAsync(rating);
+            return result;
         }
 
         public async Task<Result> DeleteAsync(Guid id)

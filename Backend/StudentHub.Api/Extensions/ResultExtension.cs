@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentHub.Application.DTOs;
+using StudentHub.Api.DTOs.Responses;
 
 namespace StudentHub.Api.Extensions
 {
@@ -8,7 +9,14 @@ namespace StudentHub.Api.Extensions
         public static IActionResult ToActionResult<T>(this Result<T> result)
         {
             if (result.IsSuccess)
-                return new OkObjectResult(result.Value);
+            {
+                var apiResponse = new ApiResponse<T>
+                {
+                    IsSuccess = true,
+                    Data = result.Value
+                };
+                return new OkObjectResult(apiResponse);
+            }
 
             var errorType = result.ErrorType;
 
@@ -18,7 +26,10 @@ namespace StudentHub.Api.Extensions
         public static IActionResult ToActionResult(this Result result)
         {
             if (result.IsSuccess)
-                return new OkResult();
+            {
+                var apiResponse = new ApiResponse { IsSuccess = true };
+                return new OkObjectResult(apiResponse);
+            }
 
             var errorType = result.ErrorType;
 
@@ -27,35 +38,20 @@ namespace StudentHub.Api.Extensions
 
         private static IActionResult CreateErrorResult(ErrorType type, List<Error> errors)
         {
-            var errorDict = errors
-                .GroupBy(e => e.Field)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(e => e.Message).ToArray()
-                );
+            var apiErrors = errors.Select(e => new ApiError { Message = e.Message, Field = e.Field }).ToList();
 
-            var problem = new
+            var apiResponse = new ApiResponse
             {
-                title = GetTitle(type),
-                status = GetStatusCode(type),
-                errors = errorDict
+                IsSuccess = false,
+                Errors = apiErrors,
+                ErrorType = type.ToString()
             };
 
-            return new ObjectResult(problem)
+            return new ObjectResult(apiResponse)
             {
                 StatusCode = GetStatusCode(type)
             };
         }
-
-        private static string GetTitle(ErrorType type) => type switch
-        {
-            ErrorType.NotFound => "Not Found",
-            ErrorType.Validation => "Validation Error",
-            ErrorType.Unauthorized => "Unauthorized",
-            ErrorType.Conflict => "Conflict",
-            ErrorType.ServerError => "Server Error",
-            _ => "Unknown Error"
-        };
 
         private static int GetStatusCode(ErrorType type) => type switch
         {

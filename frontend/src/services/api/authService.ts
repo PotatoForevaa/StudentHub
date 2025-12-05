@@ -1,20 +1,27 @@
 import api from './base';
+import type { ApiResponse } from '../../types/Api';
+import type { User } from '../../types/User';
 
 export const authService = {
-  login: (username: string, password: string) =>
-    api.post('/api/account/login', { username, password }),
+  login: async (username: string, password: string): Promise<ApiResponse<{ token?: string }>> => {
+    const res = await api.post('/api/Account/Login', { username, password });
+    return res.data;
+  },
 
-  register: (username: string, password: string, fullName: string) =>
-    api.post('/api/account/register', { username, password, fullName }),
+  register: async (username: string, password: string, fullName: string): Promise<ApiResponse<User>> => {
+    const res = await api.post('/api/Account/Register', { username, password, fullName });
+    return res.data;
+  },
 
-  getProfile: () =>
-    api.post(''),
+  logout: async (): Promise<ApiResponse> => {
+    const res = await api.post('/api/Account/Logout');
+    return res.data;
+  },
 
-  logout: () =>
-    api.post('/api/account/logout'),
-
-  getCurrentUser: () =>
-    api.get('api/account/me')
+  getCurrentUser: async (): Promise<ApiResponse<User>> => {
+    const res = await api.get('/api/Account/Me');
+    return res.data;
+  }
 };
 
 export default authService;

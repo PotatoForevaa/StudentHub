@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { AxiosError } from "axios";
-import type { FieldErrors } from "../types/AuthForm.types";
-import type { ApiErrorResponse } from "../../../services/api/api.types";
+import type { FieldErrors } from "../../../types/Auth";
+import type { ApiErrorResponse } from "../../../types/Api";
 
 export function useAuthForm() {
   const [loading, setLoading] = useState(false);

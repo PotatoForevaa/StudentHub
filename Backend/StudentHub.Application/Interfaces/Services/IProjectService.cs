@@ -13,5 +13,6 @@ namespace StudentHub.Application.Interfaces.Services
         Task<Result> DeleteAsync(Guid id);
         Task<Result<Stream?>> GetImageAsync(string path);
         Task<Result<List<String>>> GetImageListByIdAsync(Guid id);
+        Task<Result<double>> AddScoreAsync(AddProjectScoreCommand command);
     }
 }

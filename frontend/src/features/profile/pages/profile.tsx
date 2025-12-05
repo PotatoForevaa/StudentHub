@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { Container } from "../../../shared/components/Container";
-import { AuthContext } from "../../../shared/context/AuthContext";
+import { Container } from "../../../components/shared/Container";
+import { AuthContext } from "../../../context/AuthContext";
 import styled from "styled-components";
 
 const Picture = styled.img`

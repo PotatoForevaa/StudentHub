@@ -1,25 +1,30 @@
 ﻿import { NavLink } from "react-router-dom";
 import { styled } from "styled-components";
-import { AuthContext } from "../shared/context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import { useContext } from "react";
+import { colors, shadows, transitions, fonts } from "../styles/tokens";
 
 const StyledHeader = styled.header`
-  background: linear-gradient(135deg, #190061 0%, #0c0032 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  background: ${colors.surface};
+  box-shadow: ${shadows.header};
   position: sticky;
   top: 0;
   z-index: 1000;
+  border-bottom: 1px solid ${colors.accentBorderLight};
 `;
 
 const Nav = styled.nav`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 50px;
-  height: 70px;
+  height: 72px;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+
+  @media (max-width: 720px) {
+    padding: 0 12px;
+  }
 `;
 
 const Ul = styled.ul`
@@ -28,7 +33,7 @@ const Ul = styled.ul`
   margin: 0;
   padding: 0;
   height: 100%;
-  gap: 5px;
+  gap: 6px;
 `;
 
 const Li = styled.li`
@@ -38,56 +43,51 @@ const Li = styled.li`
 `;
 
 const NavLinkStyled = styled(NavLink)`
-  color: #ffffff;
+  color: ${colors.textPrimary};
   text-decoration: none;
   height: 100%;
-  padding: 0 20px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
-  font-weight: 500;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  border-radius: 4px;
+  font-weight: ${fonts.weight.semibold};
+  font-size: ${fonts.size.base};
+  transition: color ${transitions.base}, transform ${transitions.base};
+  border-radius: 6px;
   position: relative;
   white-space: nowrap;
 
-  &:hover {
-    background: rgba(53, 0, 211, 0.2);
-    color: #ffffff;
-    transform: translateY(-1px);
-  }
-
-  &.active {
-    background: rgba(53, 0, 211, 0.3);
-    color: #ffffff;
-  }
+  &:hover { color: ${colors.primaryDark}; transform: translateY(-2px) }
+  &.active { color: ${colors.primary} }
 
   &::after {
     content: "";
     position: absolute;
-    bottom: 0;
+    bottom: 8px;
     left: 50%;
     width: 0;
-    height: 2px;
-    background: #3500d3;
-    transition: all 0.3s ease;
+    height: 3px;
+    background: linear-gradient(90deg, ${colors.primary}, ${colors.primaryDark});
+    transition: width ${transitions.slow};
     transform: translateX(-50%);
+    border-radius: 2px;
   }
 
-  &:hover::after {
-    width: 80%;
+  &:hover::after, &.active::after {
+    width: 60%;
   }
 `;
 
 const Logo = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  color: #ffffff;
-  margin-right: 30px;
+  font-size: ${fonts.size['3xl']};
+  font-weight: ${fonts.weight.bold};
+  color: ${colors.textPrimary};
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
 
-  span {
-    color: #3500d3;
-  }
+  span { color: ${colors.primary}; margin-left: 6px }
+
+  @media (max-width: 480px) { font-size: ${fonts.size.lg} }
 `;
 
 const LeftSection = styled.div`
@@ -103,14 +103,18 @@ const RightSection = styled.div`
 `;
 
 const StyledP = styled.p`
-  color: white;
+  color: ${colors.textPrimary};
+  margin: 0;
+  line-height: 1.1;
 `;
 
 const StyledImg = styled.img`
-  width: 50px;
-  height: 50px;
-  margin: 0 0 0 20px;
-  border-radius: 15%;
+  width: 44px;
+  height: 44px;
+  margin: 0 0 0 12px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid ${colors.accentBorderLight};
 `;
 
 export const Header = () => {

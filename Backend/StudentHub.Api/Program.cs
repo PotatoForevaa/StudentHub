@@ -45,7 +45,7 @@ namespace StudentHub.Api
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppIdentityDbContext>()
-                    .AddErrorDescriber<CustomIdentityErrorDescriberRu>() //локализация ошибок identity
+                    .AddErrorDescriber<CustomIdentityErrorDescriberRu>() //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ identity
                     .AddDefaultTokenProviders();
 
                 builder.Services.ConfigureApplicationCookie(options =>
@@ -90,7 +90,15 @@ namespace StudentHub.Api
                 builder.Services.AddScoped<IProjectService, ProjectService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();
+                builder.Services.AddSwaggerGen(options =>
+                {
+                    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+                    { 
+                        Title = "StudentHub API", 
+                        Version = "v1",
+                        Description = "StudentHub Backend API with clean architecture"
+                    });
+                });
 
                 var app = builder.Build();
                 try

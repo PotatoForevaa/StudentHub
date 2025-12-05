@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
-import type { AuthFormProps } from "../types/AuthForm.types";
+import type { AuthFormProps } from "../../types/Auth";
 import { FieldError } from "./FieldError";
-import { colors, shadows, transitions, fonts, spacing, borderRadius } from "../../../styles/tokens";
+import { colors, shadows, transitions, fonts, spacing, borderRadius } from "../../styles/tokens";
 
 const Form = styled.form`
   background: ${colors.surface};
@@ -85,4 +85,3 @@ export const AuthForm = (props: AuthFormProps) => {
     </Form>
   );
 };
-

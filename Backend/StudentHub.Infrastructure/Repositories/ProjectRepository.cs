@@ -18,7 +18,7 @@ namespace StudentHub.Infrastructure.Repositories
         {
             await _dbContext.AddAsync(project);
             await _dbContext.SaveChangesAsync();
-
+            var resultProject = await GetByIdAsync(project.Id);
             return Result<Project?>.Success(project);
         }
 
@@ -34,7 +34,7 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0)
         {
             if (page == 0 && pageSize == 0) return await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).ToListAsync();
-            return await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).ToListAsync();
+            return await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).Include(p => p.Author).ToListAsync();
         }
 
         public async Task<Result<Project?>> GetByIdAsync(Guid id)
@@ -57,6 +57,31 @@ namespace StudentHub.Infrastructure.Repositories
             if (project == null) return Result<List<string>>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             var imageList = project.Images.Select(i => i.Path).ToList();
             return Result<List<string>>.Success(imageList);
+        }
+
+        public async Task<Result<double>> AddRatingAsync(ProjectRating rating)
+        {
+            // Ensure project exists
+            var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == rating.ProjectId);
+            if (project == null) return Result<double>.Failure($"Проект {rating.ProjectId} не найден", "projectId", ErrorType.NotFound);
+
+            // Check if the user has already rated this project
+            var existing = await _dbContext.ProjectRatings.FirstOrDefaultAsync(r => r.ProjectId == rating.ProjectId && r.AuthorId == rating.AuthorId);
+            if (existing != null)
+            {
+                existing.Score = rating.Score;
+                existing.DateTime = DateTime.UtcNow;
+                _dbContext.ProjectRatings.Update(existing);
+            }
+            else
+            {
+                await _dbContext.ProjectRatings.AddAsync(rating);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            var avg = await _dbContext.ProjectRatings.Where(r => r.ProjectId == rating.ProjectId).AverageAsync(r => r.Score);
+            return Result<double>.Success(avg);
         }
     }
 }

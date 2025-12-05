@@ -1,12 +1,44 @@
 import api from "./base";
+import type { ApiResponse } from "../../types/Api";
+import type { Project } from "../../types/Project";
 
 export const projectService = {
-    getProjects: () => 
-        api.get('/api/projects'),
+    getProjects: async (): Promise<ApiResponse<Project[]>> => {
+        const response = await api.get('/api/Projects');
+        return response.data;
+    },
 
-    getProject: (id: string) => 
-        api.get(`/api/projects/${id}`),
+    getProject: async (id: string): Promise<ApiResponse<Project>> => {
+        const response = await api.get(`/api/Projects/${id}`);
+        return response.data;
+    },
 
-    addProject: (project: FormData) =>
-        api.post('/api/projects/create', project)
+    addProject: async (project: FormData): Promise<ApiResponse<Project>> => {
+        const response = await api.post('/api/Projects/Create', project, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+
+    deleteProject: async (id: string): Promise<ApiResponse> => {
+        const response = await api.delete(`/api/Projects/Delete/${id}`);
+        return response.data;
+    },
+
+    getImageList: async (id: string): Promise<ApiResponse> => {
+        const response = await api.post(`/api/Projects/${id}/GetImageList`);
+        return response.data;
+    },
+
+    getImage: async (id: string, path: string): Promise<Response> => {
+        const token = localStorage.getItem('token');
+        const headers: HeadersInit = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const url = `http://localhost:5192/api/Projects/${id}/${path}`;
+        return fetch(url, { headers });
+    }
 };

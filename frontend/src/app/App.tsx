@@ -2,22 +2,35 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { styled, createGlobalStyle } from "styled-components";
 import { Login, Registration } from "../features/auth/pages";
 import { Header } from "./Header";
-import { PrivateRoute } from "../shared/components/PrivateRoute";
-import { AuthProvider } from "../shared/context/AuthContext";
+import { PrivateRoute } from "../components/shared/PrivateRoute";
+import { AuthProvider } from "../context/AuthContext";
 import { Profile } from "../features/profile/pages/profile";
 import { Projects } from "../features/projects/pages/projects";
-import { ProjectProvider } from "../shared/context/ProjectContext";
+import { ProjectProvider } from "../context/ProjectContext";
+import { colors, fonts } from "../styles/tokens";
 
 const GlobalStyles = createGlobalStyle`
+  html, body, #root {
+    height: 100%;
+  }
+
+  * { box-sizing: border-box }
+
   body {
     margin: 0;
     padding: 0;
+    font-family: ${fonts.family};
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(180deg, ${colors.bg} 0%, ${colors.white} 40%);
+    color: ${colors.textPrimary};
   }
-  
-  * {
-    box-sizing: border-box;
-    font-family: calibri;
-  }
+
+  a { color: ${colors.primary}; }
+
+  input::placeholder, textarea::placeholder { color: ${colors.placeholder} }
+
+  button { font-family: inherit }
 `;
 
 const AppContainer = styled.div`
@@ -30,7 +43,7 @@ const MainContent = styled.main`
   flex: 1;
   display: flex;
   align-items: stretch;
-  background: #0c0032;
+  background: ${colors.white};
   justify-content: center;
 `;
 

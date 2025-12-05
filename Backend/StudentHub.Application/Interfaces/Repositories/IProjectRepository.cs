@@ -11,5 +11,6 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<Project?>> GetByIdAsync(Guid id);
         Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0);
         Task<Result<List<string>>> GetImageListByIdAsync(Guid id);
+        Task<Result<double>> AddRatingAsync(ProjectRating rating);
     }
 }

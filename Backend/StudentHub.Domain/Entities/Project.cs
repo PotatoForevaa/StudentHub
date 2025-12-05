@@ -10,5 +10,6 @@
         public Guid AuthorId { get; set; }
         public User Author { get; set; }
         public List<Image> Images { get; set; } = new List<Image>();
+        public List<ProjectRating> Ratings { get; set; } = new List<ProjectRating>();
     }
 }

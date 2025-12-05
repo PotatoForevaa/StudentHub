@@ -1,8 +1,8 @@
 ﻿import { useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthForm } from "../hooks/useAuthForm";
-import { AuthForm } from "../components/AuthForm";
-import { AuthContext } from "../../../shared/context/AuthContext";
+import { AuthForm } from "../../../components/auth/AuthForm";
+import { AuthContext } from "../../../context/AuthContext";
 
 export const Registration = () => {
   const [username, setUsername] = useState("");
