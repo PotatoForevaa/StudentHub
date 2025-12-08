@@ -57,10 +57,10 @@ namespace StudentHub.Infrastructure.Repositories
             }
 
             // Check if the error is due to duplicate username
-            var duplicateError = result.Errors.FirstOrDefault(e => 
-                e.Code == "DuplicateUserName" || 
+            var duplicateError = result.Errors.FirstOrDefault(e =>
+                e.Code == "DuplicateUserName" ||
                 e.Description.Contains("already", StringComparison.OrdinalIgnoreCase));
-            
+
             if (duplicateError != null)
             {
                 return Result<User?>.Failure(

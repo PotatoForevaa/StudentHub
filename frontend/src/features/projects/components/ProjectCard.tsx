@@ -1,9 +1,7 @@
 import styled from "styled-components";
-import type { Project } from "../../types/Project";
-import { baseUrl } from "../../services/api/base";
-import { useEffect, useState } from 'react';
-import userService from '../../services/api/userService';
-import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../styles/tokens";
+import type { Project } from "../types";
+import { baseUrl } from "../../../shared/services/base";
+import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 
 const Card = styled.div`
   background: ${colors.surface};
@@ -78,27 +76,6 @@ const formatDate = (dateString: string): string => {
 };
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
-  const [authorName, setAuthorName] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    const fetchAuthor = async () => {
-      try {
-        if (!project.authorId) return;
-        const res = await userService.getById(project.authorId);
-        if (mounted && res && res.isSuccess && res.data) {
-          setAuthorName(res.data.fullName || res.data.username || null);
-        }
-      } catch {
-        // ignore
-      }
-    };
-    fetchAuthor();
-    return () => {
-      mounted = false;
-    };
-  }, [project.authorId]);
-
   return (
     <Card>
       <Title>{project.name}</Title>
@@ -109,9 +86,10 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         ))}
       </ImagesContainer>
       <AuthorDate>
-        <span>{authorName ? `By ${authorName}` : project.authorId ? `By ${project.authorId.substring(0, 8)}...` : 'Unknown Author'}</span>
-        <span>{project.createdAt && formatDate(project.createdAt)}</span>
+        <span>{project.author ? project.author.substring(0, 8) : 'Unknown'}</span>
+        <span>{project.creationDate && formatDate(project.creationDate)}</span>
       </AuthorDate>
     </Card>
   );
 };
+

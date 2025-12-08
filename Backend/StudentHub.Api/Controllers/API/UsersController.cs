@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Api.DTOs.Responses;
-using StudentHub.Application.DTOs.Responses;
 using StudentHub.Api.Extensions;
 using StudentHub.Api.Extensions.Attributes;
+using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces.Services;
 using System.Security.Claims;
 

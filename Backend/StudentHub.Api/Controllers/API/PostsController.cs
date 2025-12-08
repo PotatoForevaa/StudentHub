@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Api.DTOs.Requests;
 using StudentHub.Api.DTOs.Responses;
-using StudentHub.Application.DTOs.Responses;
 using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Requests;
+using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces.Services;
 using System.Security.Claims;
 

@@ -3,7 +3,8 @@ export type Project = {
     name?: string;
     description?: string;
     externalUrl?: string;
-    createdAt: string;
-    authorId: string;
+    creationDate: string;
+    author: string;
     imagePaths?: string[];
 }
+

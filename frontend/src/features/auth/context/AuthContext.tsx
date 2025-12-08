@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
-import type { User } from "../types/User";
-import authService from "../services/api/authService";
-import { baseUrl } from "../services/api/base";
+import type { User } from "../../../shared/types";
+import { authService } from "../services/authService";
+import { baseUrl } from "../../../shared/services/base";
 
 export type AuthContextType = {
   isAuthenticated: boolean;
@@ -34,7 +34,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      await authService.login(username, password);
+      const res = await authService.login(username, password);
+      // Store token if provided
+      if (res?.data?.token) {
+        localStorage.setItem('token', res.data.token);
+      }
       await getUser();
       
       return true;
@@ -57,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await authService.logout();
     } finally {
+      localStorage.removeItem('token');
       setUser(null);
       setAuth(false);
     }
@@ -83,7 +88,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     (async () => {
-      await getUser(); 
+      // Check if token exists in localStorage (for Bearer token auth)
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Token exists, try to get user to verify it's still valid
+        await getUser();
+      } else {
+        // No token, but still try getUser in case backend uses cookies
+        await getUser();
+      }
       setLoading(false);
     })();
   }, []);
@@ -105,3 +118,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+

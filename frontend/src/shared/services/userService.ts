@@ -1,6 +1,5 @@
 import api from './base';
-import type { ApiResponse } from '../../types/Api';
-import type { User } from '../../types/User';
+import type { ApiResponse, User } from '../types';
 
 export const userService = {
   getById: async (id: string): Promise<ApiResponse<User>> => {
@@ -18,3 +17,4 @@ export const userService = {
 };
 
 export default userService;
+

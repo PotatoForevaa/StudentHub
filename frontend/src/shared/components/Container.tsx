@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { colors, shadows, spacing } from "../../styles/tokens";
+import { colors, shadows, spacing } from "../styles/tokens";
 
 const StyledContainer = styled.div`
   background: ${colors.surface};
@@ -28,3 +28,4 @@ export const Container = ({ children }: { children?: React.ReactNode }) => {
 export const CardsContainer = ({ children }: { children?: React.ReactNode }) => {
   return <CardsGrid>{children}</CardsGrid>;
 };
+

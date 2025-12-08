@@ -114,5 +114,73 @@ namespace StudentHub.Application.Services
         {
             throw new NotImplementedException();
         }
+
+        public async Task<Result<ProjectCommentDto>> AddCommentAsync(CreateProjectCommentCommand command)
+        {
+            if (string.IsNullOrWhiteSpace(command.Content))
+                return Result<ProjectCommentDto>.Failure("Comment content cannot be empty", "content", ErrorType.Validation);
+
+            var comment = new ProjectComment
+            {
+                ProjectId = command.ProjectId,
+                AuthorId = command.AuthorId,
+                Content = command.Content,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await _projectRepository.AddCommentAsync(comment);
+            if (!result.IsSuccess) return Result<ProjectCommentDto>.Failure(result.Errors);
+
+            var commentEntity = result.Value;
+
+            // Get user's score for this project
+            var userScore = await _projectRepository.GetUserScoreForProjectAsync(command.AuthorId, command.ProjectId);
+
+            if (commentEntity.Author == null)
+                return Result<ProjectCommentDto>.Failure("Failed to load comment author", "author", ErrorType.NotFound);
+
+            var commentDto = new ProjectCommentDto(
+                Id: commentEntity.Id,
+                AuthorId: commentEntity.AuthorId,
+                AuthorUsername: commentEntity.Author.Username,
+                AuthorFullName: commentEntity.Author.FullName,
+                AuthorProfilePicturePath: string.IsNullOrEmpty(commentEntity.Author.ProfilePicturePath) ? null : commentEntity.Author.ProfilePicturePath,
+                Content: commentEntity.Content,
+                CreatedAt: commentEntity.CreatedAt,
+                UserScore: userScore
+            );
+
+            return Result<ProjectCommentDto>.Success(commentDto);
+        }
+
+        public async Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId)
+        {
+            var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId);
+            if (!result.IsSuccess) return Result<List<ProjectCommentDto>>.Failure(result.Errors);
+
+            var comments = result.Value ?? new List<ProjectComment>();
+            var commentDtos = new List<ProjectCommentDto>();
+
+            foreach (var comment in comments)
+            {
+                // Get user's score for this project
+                var userScore = await _projectRepository.GetUserScoreForProjectAsync(comment.AuthorId, projectId);
+
+                var commentDto = new ProjectCommentDto(
+                    Id: comment.Id,
+                    AuthorId: comment.AuthorId,
+                    AuthorUsername: comment.Author.Username,
+                    AuthorFullName: comment.Author.FullName,
+                    AuthorProfilePicturePath: string.IsNullOrEmpty(comment.Author.ProfilePicturePath) ? null : comment.Author.ProfilePicturePath,
+                    Content: comment.Content,
+                    CreatedAt: comment.CreatedAt,
+                    UserScore: userScore
+                );
+
+                commentDtos.Add(commentDto);
+            }
+
+            return Result<List<ProjectCommentDto>>.Success(commentDtos);
+        }
     }
 }

@@ -1,6 +1,6 @@
-import api from "./base";
-import type { ApiResponse } from "../../types/Api";
-import type { Project } from "../../types/Project";
+import api from '../../../shared/services/base';
+import type { ApiResponse } from '../../../shared/types';
+import type { Project } from '../types';
 
 export const projectService = {
     getProjects: async (): Promise<ApiResponse<Project[]>> => {
@@ -42,3 +42,4 @@ export const projectService = {
         return fetch(url, { headers });
     }
 };
+

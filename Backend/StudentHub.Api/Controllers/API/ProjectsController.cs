@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentHub.Api.DTOs.Requests;
 using StudentHub.Api.DTOs.Responses;
-using StudentHub.Application.DTOs.Responses;
 using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Commands;
+using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces.Services;
 using System.Security.Claims;
 
@@ -178,6 +178,49 @@ namespace StudentHub.Api.Controllers.API
         {
             var deleteResult = await _projectService.DeleteAsync(id);
             return deleteResult.ToActionResult();
+        }
+
+        /// <summary>
+        /// Add a comment to a project.
+        /// </summary>
+        /// <param name="id">Project ID (GUID)</param>
+        /// <param name="request">Comment content</param>
+        /// <returns>Created comment with user's score on the project</returns>
+        /// <response code="200">Comment added successfully</response>
+        /// <response code="400">Validation error (empty content)</response>
+        /// <response code="404">Project not found</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        [Authorize]
+        [HttpPost("{id}/Comments")]
+        [ProducesResponseType(typeof(ApiResponse<ProjectCommentDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> AddComment([FromRoute] Guid id, [FromBody] CreateProjectCommentRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var command = new CreateProjectCommentCommand(id, userId, request.Content);
+            var result = await _projectService.AddCommentAsync(command);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Get all comments for a project.
+        /// </summary>
+        /// <param name="id">Project ID (GUID)</param>
+        /// <returns>List of comments with each user's score on the project</returns>
+        /// <response code="200">Comments retrieved successfully</response>
+        /// <response code="404">Project not found</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        [Authorize]
+        [HttpGet("{id}/Comments")]
+        [ProducesResponseType(typeof(ApiResponse<List<ProjectCommentDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetComments([FromRoute] Guid id)
+        {
+            var result = await _projectService.GetCommentsByProjectIdAsync(id);
+            return result.ToActionResult();
         }
     }
 }

@@ -2,12 +2,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { styled, createGlobalStyle } from "styled-components";
 import { Login, Registration } from "../features/auth/pages";
 import { Header } from "./Header";
-import { PrivateRoute } from "../components/shared/PrivateRoute";
-import { AuthProvider } from "../context/AuthContext";
+import { PrivateRoute } from "../shared/components/PrivateRoute";
+import { AuthProvider } from "../features/auth/context/AuthContext";
 import { Profile } from "../features/profile/pages/profile";
 import { Projects } from "../features/projects/pages/projects";
-import { ProjectProvider } from "../context/ProjectContext";
-import { colors, fonts } from "../styles/tokens";
+import { ProjectProvider } from "../features/projects/context/ProjectContext";
+import { colors, fonts } from "../shared/styles/tokens";
 
 const GlobalStyles = createGlobalStyle`
   html, body, #root {

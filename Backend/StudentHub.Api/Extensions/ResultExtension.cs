@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StudentHub.Application.DTOs;
 using StudentHub.Api.DTOs.Responses;
+using StudentHub.Application.DTOs;
 
 namespace StudentHub.Api.Extensions
 {

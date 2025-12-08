@@ -1,6 +1,6 @@
-import api from './base';
-import type { ApiResponse } from '../../types/Api';
-import type { User } from '../../types/User';
+import api from '../../../shared/services/base';
+import type { ApiResponse } from '../../../shared/types';
+import type { User } from '../../../shared/types';
 
 export const authService = {
   login: async (username: string, password: string): Promise<ApiResponse<{ token?: string }>> => {
@@ -25,3 +25,4 @@ export const authService = {
 };
 
 export default authService;
+

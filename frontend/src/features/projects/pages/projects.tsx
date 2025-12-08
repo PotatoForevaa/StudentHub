@@ -1,18 +1,20 @@
 import { useContext } from "react";
-import { ProjectCard } from "../../../components/projects/ProjectCard";
-import { CardsContainer, Container } from "../../../components/shared/Container";
-import { ProjectContext } from "../../../context/ProjectContext";
+import { ProjectCard } from "../components/ProjectCard";
+import { CardsContainer, Container } from "../../../shared/components/Container";
+import { ProjectContext } from "../context/ProjectContext";
 
 export const Projects = () => {
-  const { projects } = useContext(ProjectContext);
+  const { projects, loading } = useContext(ProjectContext);
 
   return (
     <Container>
       <CardsContainer>
-        {projects && projects.length > 0 ? (
+        {loading ? (
+          <p>Loading projects...</p>
+        ) : projects && projects.length > 0 ? (
           projects.map((p) => <ProjectCard key={p.id} project={p} />)
         ) : (
-          <p>No projects found. Check console for API response details.</p>
+          <p>No projects found.</p>
         )}
       </CardsContainer>
     </Container>

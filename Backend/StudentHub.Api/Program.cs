@@ -72,7 +72,7 @@ namespace StudentHub.Api
                 {
                     options.AddPolicy("AllowAll", policy =>
                     {
-                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:5192")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();
@@ -92,9 +92,9 @@ namespace StudentHub.Api
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(options =>
                 {
-                    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
-                    { 
-                        Title = "StudentHub API", 
+                    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                    {
+                        Title = "StudentHub API",
                         Version = "v1",
                         Description = "StudentHub Backend API with clean architecture"
                     });

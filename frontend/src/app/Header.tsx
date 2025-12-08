@@ -1,8 +1,8 @@
 ﻿import { NavLink } from "react-router-dom";
 import { styled } from "styled-components";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../features/auth/context/AuthContext";
 import { useContext } from "react";
-import { colors, shadows, transitions, fonts } from "../styles/tokens";
+import { colors, shadows, transitions, fonts } from "../shared/styles/tokens";
 
 const StyledHeader = styled.header`
   background: ${colors.surface};

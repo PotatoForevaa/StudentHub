@@ -11,5 +11,6 @@
         public User Author { get; set; }
         public List<Image> Images { get; set; } = new List<Image>();
         public List<ProjectRating> Ratings { get; set; } = new List<ProjectRating>();
+        public List<ProjectComment> Comments { get; set; } = new List<ProjectComment>();
     }
 }
