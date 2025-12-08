@@ -13,8 +13,8 @@ export const projectService = {
         return response.data;
     },
 
-    addProject: async (project: FormData): Promise<ApiResponse<Project>> => {
-        const response = await api.post('/api/Projects/Create', project, {
+    addProject: async (formData: FormData): Promise<ApiResponse<Project>> => {
+        const response = await api.post('/api/Projects/Create', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -42,4 +42,3 @@ export const projectService = {
         return fetch(url, { headers });
     }
 };
-

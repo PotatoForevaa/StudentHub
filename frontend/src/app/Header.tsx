@@ -1,4 +1,4 @@
-﻿import { NavLink } from "react-router-dom";
+﻿import { NavLink, useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { AuthContext } from "../features/auth/context/AuthContext";
 import { useContext } from "react";
@@ -117,8 +117,33 @@ const StyledImg = styled.img`
   border: 1px solid ${colors.accentBorderLight};
 `;
 
+const LogoutButton = styled.button`
+  background: transparent;
+  border: 1px solid ${colors.accentBorderDark};
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: ${colors.textPrimary};
+  font-weight: ${fonts.weight.semibold};
+  font-size: ${fonts.size.sm};
+  cursor: pointer;
+  transition: all ${transitions.base};
+  margin-left: 12px;
+
+  &:hover {
+    background: ${colors.primary};
+    color: ${colors.white};
+    border-color: ${colors.primary};
+  }
+`;
+
 export const Header = () => {
-  const { isAuthenticated, user, picture } = useContext(AuthContext);
+  const { isAuthenticated, user, picture, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
   return (
     <StyledHeader>
       <Nav>
@@ -180,6 +205,11 @@ export const Header = () => {
                     </StyledP>
                     { picture && <StyledImg src={picture} />}
                   </NavLinkStyled>
+                </Li>
+                <Li>
+                  <LogoutButton onClick={handleLogout}>
+                    Выйти
+                  </LogoutButton>
                 </Li>
               </>
             )}

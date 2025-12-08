@@ -9,6 +9,8 @@ export type ProjectContextType = {
     loading: boolean;
     getProject: (id: string) => Promise<void>;
     getProjects: () => Promise<void>;
+    addProject: (formData: FormData) => Promise<boolean>;
+    getProjectImages: (projectId: string) => Promise<string[]>;
 };
 
 export const ProjectContext = createContext<ProjectContextType>({
@@ -16,7 +18,9 @@ export const ProjectContext = createContext<ProjectContextType>({
     projects: [],
     loading: true,
     getProject: async (_id: string) => {},
-    getProjects: async () => {}
+    getProjects: async () => {},
+    addProject: async (_formData: FormData) => false,
+    getProjectImages: async (_projectId: string) => []
 });
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
@@ -57,6 +61,33 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const addProject = async (formData: FormData): Promise<boolean> => {
+    try {
+      const res = await projectService.addProject(formData);
+      if (res.isSuccess) {
+        await getProjects(); // Refresh projects list
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to add project:', error);
+      return false;
+    }
+  };
+
+  const getProjectImages = async (projectId: string): Promise<string[]> => {
+    try {
+      const res = await projectService.getImageList(projectId);
+      if (res.isSuccess && res.data && (res.data as any).imagePaths) {
+        return (res.data as any).imagePaths;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to get project images:', error);
+      return [];
+    }
+  };
+
   // Fetch projects when authenticated (and not loading)
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -69,6 +100,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       value={{
         getProject,
         getProjects,
+        addProject,
+        getProjectImages,
         project,
         projects,
         loading
@@ -78,4 +111,3 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     </ProjectContext.Provider>
   );
 };
-

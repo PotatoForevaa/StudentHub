@@ -110,9 +110,65 @@ namespace StudentHub.Application.Services
             return await _projectRepository.GetImageListByIdAsync(id);
         }
 
-        public Task<Result<ProjectDto?>> UpdateAsync(CreateProjectCommand updateProjectCommand)
+        public async Task<Result<ProjectDto?>> UpdateAsync(UpdateProjectCommand updateProjectCommand)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(updateProjectCommand.Name))
+                return Result<ProjectDto?>.Failure("Project name cannot be empty", "name", ErrorType.Validation);
+
+            if (string.IsNullOrWhiteSpace(updateProjectCommand.Description))
+                return Result<ProjectDto?>.Failure("Project description cannot be empty", "description", ErrorType.Validation);
+
+            var projectResult = await _projectRepository.GetByIdAsync(updateProjectCommand.ProjectId);
+            if (!projectResult.IsSuccess) return Result<ProjectDto?>.Failure(projectResult.Errors);
+
+            var project = projectResult.Value!;
+
+            if (project.AuthorId != updateProjectCommand.AuthorId)
+                return Result<ProjectDto?>.Failure("You can edit only your own projects", "authorId", ErrorType.Validation);
+
+            project.Name = updateProjectCommand.Name;
+            project.Description = updateProjectCommand.Description;
+            project.ExternalUrl = string.IsNullOrEmpty(updateProjectCommand.ExternalUrl) ? null : new Uri(updateProjectCommand.ExternalUrl);
+
+            var newFilePaths = new List<string>();
+
+            if (updateProjectCommand.Base64Images != null && updateProjectCommand.Base64Images.Any())
+            {
+                // Replace existing images with provided ones
+                project.Images.Clear();
+
+                foreach (var base64 in updateProjectCommand.Base64Images)
+                {
+                    if (string.IsNullOrWhiteSpace(base64)) continue;
+
+                    var bytes = Convert.FromBase64String(base64);
+                    await using var stream = new MemoryStream(bytes);
+                    var fileName = $"{Guid.NewGuid()}.jpg";
+                    var saved = await _fileService.SaveFileAsync(stream, fileName);
+                    if (!saved.IsSuccess) return Result<ProjectDto?>.Failure(saved.Errors);
+                    newFilePaths.Add(saved.Value);
+                    project.Images.Add(new Image { Path = saved.Value });
+                }
+            }
+            else
+            {
+                // keep existing image paths
+                newFilePaths = project.Images.Select(i => i.Path).ToList();
+            }
+
+            var updateResult = await _projectRepository.UpdateAsync(project);
+            if (!updateResult.IsSuccess) return Result<ProjectDto?>.Failure(updateResult.Errors);
+
+            var projectDto = new ProjectDto(
+                Id: project.Id,
+                Name: project.Name,
+                Description: project.Description,
+                Files: newFilePaths,
+                Author: project.Author.FullName,
+                CreationDate: project.CreatedAt
+            );
+
+            return Result<ProjectDto?>.Success(projectDto);
         }
 
         public async Task<Result<ProjectCommentDto>> AddCommentAsync(CreateProjectCommentCommand command)

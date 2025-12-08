@@ -1,6 +1,8 @@
+import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import type { Project } from "../types";
-import { baseUrl } from "../../../shared/services/base";
+import { ProjectContext } from "../context/ProjectContext";
+import { projectService } from "../services/projectService";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 
 const Card = styled.div`
@@ -76,14 +78,56 @@ const formatDate = (dateString: string): string => {
 };
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
+  const { getProjectImages } = useContext(ProjectContext);
+  const [imageDataUrls, setImageDataUrls] = useState<string[]>([]);
+  const [loadingImages, setLoadingImages] = useState(true);
+
+  useEffect(() => {
+    const loadImages = async () => {
+      setLoadingImages(true);
+      try {
+        // Get image paths for this project
+        const imagePaths = await getProjectImages(project.id);
+
+        // Fetch each image and convert to data URL
+        const dataUrls: string[] = [];
+        for (const path of imagePaths || []) {
+          try {
+            const response = await projectService.getImage(project.id, path);
+            if (response.ok) {
+              const blob = await response.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              dataUrls.push(dataUrl);
+            }
+          } catch (error) {
+            console.error(`Failed to load image ${path}:`, error);
+          }
+        }
+
+        setImageDataUrls(dataUrls);
+      } catch (error) {
+        console.error('Failed to load project images:', error);
+        setImageDataUrls([]);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+
+    loadImages();
+  }, [project.id, getProjectImages]);
+
   return (
     <Card>
       <Title>{project.name}</Title>
       <Description>{project.description ? project.description.slice(0, 220) + (project.description.length > 220 ? '...' : '') : ''}</Description>
       <ImagesContainer>
-        {project.imagePaths?.map((img, idx) => (
-          <Image key={idx} src={`${baseUrl}/api/Projects/${project.id}/${img}`} alt={`Project image ${idx + 1}`} />
-        ))}
+        {loadingImages ? (
+          <div>Loading images...</div>
+        ) : (
+          imageDataUrls.slice(0, 3).map((dataUrl, idx) => (
+            <Image key={idx} src={dataUrl} alt={`Project image ${idx + 1}`} />
+          ))
+        )}
       </ImagesContainer>
       <AuthorDate>
         <span>{project.author ? project.author.substring(0, 8) : 'Unknown'}</span>
@@ -92,4 +136,3 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
     </Card>
   );
 };
-

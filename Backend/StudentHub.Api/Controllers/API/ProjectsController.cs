@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudentHub.Api.DTOs.Requests;
 using StudentHub.Api.DTOs.Responses;
 using StudentHub.Api.Extensions;
+using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Interfaces.Services;
@@ -76,7 +77,7 @@ namespace StudentHub.Api.Controllers.API
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequest request)
+        public async Task<IActionResult> CreateProject([FromForm] CreateProjectRequest request)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -93,6 +94,52 @@ namespace StudentHub.Api.Controllers.API
         }
 
         /// <summary>
+        /// Update an existing project.
+        /// </summary>
+        /// <param name="id">Project ID (GUID)</param>
+        /// <param name="request">Updated project data</param>
+        /// <returns>Updated project</returns>
+        /// <response code="200">Project updated successfully</response>
+        /// <response code="400">Validation error</response>
+        /// <response code="404">Project not found</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        [Authorize]
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ProjectDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> UpdateProject([FromRoute] Guid id, [FromBody] UpdateProjectRequest request)
+        {
+            if (request.ProjectId != Guid.Empty && request.ProjectId != id)
+            {
+                return BadRequest(new ApiResponse
+                {
+                    IsSuccess = false,
+                    ErrorType = ErrorType.Validation.ToString(),
+                    Errors = new List<ApiError>
+                    {
+                        new ApiError { Message = "Project ID mismatch between route and body", Field = "id" }
+                    }
+                });
+            }
+
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var command = new UpdateProjectCommand(
+                ProjectId: id,
+                AuthorId: userId,
+                Name: request.Name,
+                Description: request.Description,
+                ExternalUrl: request.ExternalUrl,
+                Base64Images: request.Base64Images
+            );
+
+            var result = await _projectService.UpdateAsync(command);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
         /// Get list of images for a specific project.
         /// </summary>
         /// <param name="id">Project ID (GUID)</param>
@@ -102,7 +149,7 @@ namespace StudentHub.Api.Controllers.API
         /// <response code="401">Unauthorized - authentication required</response>
         /// <response code="500">Server error</response>
         [Authorize]
-        [HttpPost("{id}/GetImageList")]
+        [HttpGet("{id}/GetImageList")]
         [ProducesResponseType(typeof(ApiResponse<List<string>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
