@@ -14,6 +14,7 @@ namespace StudentHub.Application.Interfaces.Services
         Task<Result<Stream?>> GetImageAsync(string path);
         Task<Result<List<String>>> GetImageListByIdAsync(Guid id);
         Task<Result<double>> AddScoreAsync(AddProjectScoreCommand command);
+        Task<Result<double>> GetAverageRatingAsync(Guid projectId);
         Task<Result<ProjectCommentDto>> AddCommentAsync(CreateProjectCommentCommand command);
         Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId);
     }

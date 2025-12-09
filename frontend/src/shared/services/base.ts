@@ -11,7 +11,6 @@ export const api: AxiosInstance = axios.create({
   withCredentials: true
 });
 
-// Add request interceptor to include auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');

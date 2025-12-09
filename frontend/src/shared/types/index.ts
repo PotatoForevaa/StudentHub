@@ -1,4 +1,3 @@
-// API Types
 export interface ApiErrorResponse {
   detail?: string;
   errors?: Record<string, string[]> | ApiError[]; 
@@ -16,7 +15,6 @@ export interface ApiResponse<T = unknown> {
   errorType?: string;
 }
 
-// User Type
 export type User = {
     fullName: string;
     username: string;

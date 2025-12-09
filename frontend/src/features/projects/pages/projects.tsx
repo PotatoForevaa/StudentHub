@@ -1,6 +1,7 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectCreateForm } from "../components/ProjectCreateForm";
+import { Pagination } from "../components/Pagination";
 import { CardsContainer, Container } from "../../../shared/components/Container";
 import { ProjectContext } from "../context/ProjectContext";
 import { styled } from "styled-components";
@@ -40,17 +41,35 @@ const CreateButton = styled.button`
 `;
 
 export const Projects = () => {
-  const { projects, loading, getProjects } = useContext(ProjectContext);
+  const {
+    projects,
+    paginatedProjects,
+    loading,
+    getProjects,
+    currentPage,
+    totalPages,
+    setCurrentPage
+  } = useContext(ProjectContext);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   const handleCreateSuccess = () => {
     setShowCreateForm(false);
-    getProjects(); // Refresh the projects list
+    getProjects();
   };
 
   const handleCancel = () => {
     setShowCreateForm(false);
   };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  useEffect(() => {
+    if (projects && projects.length > 0 && currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [projects, currentPage, totalPages, setCurrentPage]);
 
   return (
     <Container>
@@ -71,12 +90,22 @@ export const Projects = () => {
       <CardsContainer>
         {loading ? (
           <p>Loading projects...</p>
+        ) : paginatedProjects && paginatedProjects.length > 0 ? (
+          paginatedProjects.map((p) => <ProjectCard key={p.id} project={p} />)
         ) : projects && projects.length > 0 ? (
-          projects.map((p) => <ProjectCard key={p.id} project={p} />)
+          <p>No projects found on this page.</p>
         ) : (
           <p>No projects found.</p>
         )}
       </CardsContainer>
+
+      {!loading && projects && projects.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </Container>
   );
 };

@@ -7,27 +7,52 @@ export type ProjectContextType = {
     project: Project | null;
     projects: Project[] | null;
     loading: boolean;
+    // Pagination
+    currentPage: number;
+    pageSize: number;
+    totalPages: number;
+    paginatedProjects: Project[] | null;
+    setCurrentPage: (page: number) => void;
+    setPageSize: (size: number) => void;
     getProject: (id: string) => Promise<void>;
     getProjects: () => Promise<void>;
     addProject: (formData: FormData) => Promise<boolean>;
-    getProjectImages: (projectId: string) => Promise<string[]>;
 };
 
 export const ProjectContext = createContext<ProjectContextType>({
     project: null,
     projects: [],
     loading: true,
+    currentPage: 1,
+    pageSize: 6,
+    totalPages: 0,
+    paginatedProjects: [],
+    setCurrentPage: () => {},
+    setPageSize: () => {},
     getProject: async (_id: string) => {},
     getProjects: async () => {},
-    addProject: async (_formData: FormData) => false,
-    getProjectImages: async (_projectId: string) => []
+    addProject: async (_formData: FormData) => false
 });
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPageState] = useState(1);
+  const [pageSize, setPageSizeState] = useState(6);
   const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
+
+  const totalPages = Math.ceil((projects?.length || 0) / pageSize);
+  const paginatedProjects = projects?.slice((currentPage - 1) * pageSize, currentPage * pageSize) || [];
+
+  const setCurrentPage = useCallback((page: number) => {
+    setCurrentPageState(page);
+  }, []);
+
+  const setPageSize = useCallback((size: number) => {
+    setPageSizeState(size);
+    setCurrentPageState(1);
+  }, []);
 
   const getProjects = useCallback(async () => {
     setLoading(true);
@@ -35,7 +60,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         const res = await projectService.getProjects();
         console.debug('projectService.getProjects response:', res);
         if (res && res.isSuccess && res.data) {
-          setProjects(res.data as Project[]);
+          const mappedProjects = res.data.map((p: any) => ({
+            ...p,
+            imagePaths: p.files || []
+          }));
+          setProjects(mappedProjects as Project[]);
         } else {
           console.warn('Failed to load projects, ApiResponse:', res);
           setProjects([]);
@@ -52,7 +81,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await projectService.getProject(id);
       if (res.isSuccess && res.data) {
-        setProject(res.data as Project);
+        const projectData = { ...(res.data as any), imagePaths: (res.data as any).files || [] };
+        setProject(projectData as Project);
       } else {
         setProject(null);
       }
@@ -65,7 +95,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await projectService.addProject(formData);
       if (res.isSuccess) {
-        await getProjects(); // Refresh projects list
+        await getProjects();
         return true;
       }
       return false;
@@ -75,20 +105,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const getProjectImages = async (projectId: string): Promise<string[]> => {
-    try {
-      const res = await projectService.getImageList(projectId);
-      if (res.isSuccess && res.data && (res.data as any).imagePaths) {
-        return (res.data as any).imagePaths;
-      }
-      return [];
-    } catch (error) {
-      console.error('Failed to get project images:', error);
-      return [];
-    }
-  };
-
-  // Fetch projects when authenticated (and not loading)
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       getProjects();
@@ -101,10 +117,16 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         getProject,
         getProjects,
         addProject,
-        getProjectImages,
         project,
         projects,
-        loading
+        loading,
+        // Pagination
+        currentPage,
+        pageSize,
+        totalPages,
+        paginatedProjects,
+        setCurrentPage,
+        setPageSize
       }}
     >
       {children}

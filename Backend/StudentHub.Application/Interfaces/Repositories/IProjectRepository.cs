@@ -12,6 +12,7 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0);
         Task<Result<List<string>>> GetImageListByIdAsync(Guid id);
         Task<Result<double>> AddRatingAsync(ProjectRating rating);
+        Task<Result<double>> GetAverageRatingAsync(Guid projectId);
         Task<Result<ProjectComment>> AddCommentAsync(ProjectComment comment);
         Task<Result<List<ProjectComment>>> GetCommentsByProjectIdAsync(Guid projectId);
         Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId);

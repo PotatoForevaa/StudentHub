@@ -35,7 +35,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (username: string, password: string) => {
     try {
       const res = await authService.login(username, password);
-      // Store token if provided
       if (res?.data?.token) {
         localStorage.setItem('token', res.data.token);
       }

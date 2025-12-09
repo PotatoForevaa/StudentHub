@@ -9,6 +9,12 @@ export const colors = {
   bg: '#f4f6fb',            // page background
   surface: '#ffffff',       // cards, panels
 
+  // Gray palette
+  gray100: '#f3f4f6',
+  gray300: '#d1d5db',
+  gray400: '#9ca3af',
+  gray500: '#6b7280',
+
   // Text colors
   textPrimary: '#0f172a',   // dark text
   textSecondary: '#374151', // secondary text

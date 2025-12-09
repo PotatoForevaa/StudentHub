@@ -60,6 +60,11 @@ namespace StudentHub.Application.Services
             return result;
         }
 
+        public async Task<Result<double>> GetAverageRatingAsync(Guid projectId)
+        {
+            return await _projectRepository.GetAverageRatingAsync(projectId);
+        }
+
         public async Task<Result> DeleteAsync(Guid id)
         {
             var result = await _projectRepository.DeleteAsync(id);
@@ -69,15 +74,25 @@ namespace StudentHub.Application.Services
         public async Task<List<ProjectDto>> GetAllAsync(int page = 0, int pageSize = 0)
         {
             var projectList = await _projectRepository.GetAllAsync(page, pageSize);
-            var dtoList = projectList.Select(p => new ProjectDto(
-                Name: p.Name,
-                Description: p.Description,
-                Files: p.Images.Select(i => i.Path).ToList(),
-                Id: p.Id,
-                Author: p.Author.FullName,
-                CreationDate: p.CreatedAt
-            ))
-                .ToList();
+            var dtoList = new List<ProjectDto>();
+
+            foreach (var p in projectList)
+            {
+                // Get average rating for each project
+                var avgRatingResult = await GetAverageRatingAsync(p.Id);
+                double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
+
+                var dto = new ProjectDto(
+                    Name: p.Name,
+                    Description: p.Description,
+                    Files: p.Images.Select(i => i.Path).ToList(),
+                    Id: p.Id,
+                    Author: p.Author.FullName,
+                    CreationDate: p.CreatedAt,
+                    AverageRating: avgRating
+                );
+                dtoList.Add(dto);
+            }
 
             return dtoList;
         }
@@ -87,13 +102,24 @@ namespace StudentHub.Application.Services
             var projectResult = await _projectRepository.GetByIdAsync(id);
             if (!projectResult.IsSuccess) return Result<ProjectDto?>.Failure(projectResult.Errors);
             var project = projectResult.Value;
+
+            // Get average rating
+            var avgRatingResult = await GetAverageRatingAsync(id);
+            double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
+
+            // Get comments
+            var commentsResult = await GetCommentsByProjectIdAsync(id);
+            List<ProjectCommentDto>? comments = commentsResult.IsSuccess ? commentsResult.Value : null;
+
             var projectDto = new ProjectDto(
                 Id: project.Id,
                 Name: project.Name,
                 Description: project.Description,
                 Files: project.Images.Select(i => i.Path).ToList(),
                 Author: project.Author.FullName,
-                CreationDate: project.CreatedAt
+                CreationDate: project.CreatedAt,
+                AverageRating: avgRating,
+                Comments: comments
             );
 
             return Result<ProjectDto?>.Success(projectDto);

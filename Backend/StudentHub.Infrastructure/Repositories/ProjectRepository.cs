@@ -33,7 +33,12 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            if (page == 0 && pageSize == 0) return await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).ToListAsync();
+            if (page == 0 && pageSize == 0)
+                return await _dbContext.Projects
+                    .Include(p => p.Images)
+                    .Include(p => p.Author)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToListAsync();
             return await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).Include(p => p.Author).ToListAsync();
         }
 
@@ -61,11 +66,9 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<double>> AddRatingAsync(ProjectRating rating)
         {
-            // Ensure project exists
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == rating.ProjectId);
             if (project == null) return Result<double>.Failure($"Проект {rating.ProjectId} не найден", "projectId", ErrorType.NotFound);
 
-            // Check if the user has already rated this project
             var existing = await _dbContext.ProjectRatings.FirstOrDefaultAsync(r => r.ProjectId == rating.ProjectId && r.AuthorId == rating.AuthorId);
             if (existing != null)
             {
@@ -84,20 +87,27 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<double>.Success(avg);
         }
 
+        public async Task<Result<double>> GetAverageRatingAsync(Guid projectId)
+        {
+            var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+            if (project == null) return Result<double>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
+
+            var ratings = await _dbContext.ProjectRatings.Where(r => r.ProjectId == projectId).ToListAsync();
+            var avg = ratings.Any() ? ratings.Average(r => r.Score) : 0.0;
+            return Result<double>.Success(avg);
+        }
+
         public async Task<Result<ProjectComment>> AddCommentAsync(ProjectComment comment)
         {
-            // Ensure project exists
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == comment.ProjectId);
             if (project == null) return Result<ProjectComment>.Failure($"Проект {comment.ProjectId} не найден", "projectId", ErrorType.NotFound);
 
-            // Ensure user exists
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == comment.AuthorId);
             if (user == null) return Result<ProjectComment>.Failure($"Пользователь {comment.AuthorId} не найден", "authorId", ErrorType.NotFound);
 
             await _dbContext.ProjectComments.AddAsync(comment);
             await _dbContext.SaveChangesAsync();
 
-            // Reload comment with author
             var commentWithAuthor = await _dbContext.ProjectComments
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == comment.Id);
@@ -107,7 +117,6 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<List<ProjectComment>>> GetCommentsByProjectIdAsync(Guid projectId)
         {
-            // Ensure project exists
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null) return Result<List<ProjectComment>>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
 

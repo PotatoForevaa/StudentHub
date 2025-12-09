@@ -36,17 +36,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               }
             }
@@ -144,17 +144,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               }
             }
@@ -262,17 +262,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               }
             }
@@ -322,17 +322,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               }
             }
@@ -411,17 +411,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseListApiResponse"
+                  "$ref": "#/components/schemas/PostDtoListApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseListApiResponse"
+                  "$ref": "#/components/schemas/PostDtoListApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseListApiResponse"
+                  "$ref": "#/components/schemas/PostDtoListApiResponse"
                 }
               }
             }
@@ -479,17 +479,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               }
             }
@@ -587,17 +587,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostResponseApiResponse"
+                  "$ref": "#/components/schemas/PostDtoApiResponse"
                 }
               }
             }
@@ -847,17 +847,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
                 }
               }
             }
@@ -923,6 +923,123 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/Projects": {
@@ -936,17 +1053,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseListApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoListApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseListApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoListApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseListApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoListApiResponse"
                 }
               }
             }
@@ -981,19 +1098,45 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateProjectRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProjectRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProjectRequest"
+                "required": [
+                  "Description",
+                  "Name"
+                ],
+                "type": "object",
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "ExternalUrl": {
+                    "type": "string"
+                  },
+                  "Files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "Name": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "ExternalUrl": {
+                  "style": "form"
+                },
+                "Files": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -1004,17 +1147,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponseApiResponse"
+                  "$ref": "#/components/schemas/ProjectDtoApiResponse"
                 }
               }
             }
@@ -1083,7 +1226,7 @@
       }
     },
     "/api/Projects/{id}/GetImageList": {
-      "post": {
+      "get": {
         "tags": [
           "Projects"
         ],
@@ -1104,17 +1247,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImageListResponseApiResponse"
+                  "$ref": "#/components/schemas/StringListApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImageListResponseApiResponse"
+                  "$ref": "#/components/schemas/StringListApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImageListResponseApiResponse"
+                  "$ref": "#/components/schemas/StringListApiResponse"
                 }
               }
             }
@@ -1161,6 +1304,125 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Projects/{id}/Score": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectScoreRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectScoreRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectScoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DoubleApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DoubleApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DoubleApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "text/plain": {
                 "schema": {
@@ -1333,6 +1595,203 @@
         }
       }
     },
+    "/api/Projects/{id}/Comments": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectCommentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectCommentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentDtoApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentDtoApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentDtoApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentDtoListApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentDtoListApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentDtoListApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Users/{id}": {
       "get": {
         "tags": [
@@ -1355,17 +1814,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseApiResponse"
+                  "$ref": "#/components/schemas/UserDtoApiResponse"
                 }
               }
             }
@@ -1464,17 +1923,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseListApiResponse"
+                  "$ref": "#/components/schemas/UserDtoListApiResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseListApiResponse"
+                  "$ref": "#/components/schemas/UserDtoListApiResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseListApiResponse"
+                  "$ref": "#/components/schemas/UserDtoListApiResponse"
                 }
               }
             }
@@ -1710,42 +2169,6 @@
         },
         "additionalProperties": false
       },
-      "AuthResponse": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UserResponse"
-          },
-          "message": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "AuthResponseApiResponse": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "data": {
-            "$ref": "#/components/schemas/AuthResponse"
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ApiError"
-            },
-            "nullable": true
-          },
-          "errorType": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "CreatePostRequest": {
         "required": [
           "title"
@@ -1763,61 +2186,25 @@
         },
         "additionalProperties": false
       },
-      "CreateProjectRequest": {
-        "required": [
-          "description",
-          "name"
-        ],
+      "CreateProjectCommentRequest": {
         "type": "object",
         "properties": {
-          "name": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "description": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "externalUrl": {
+          "content": {
             "type": "string",
             "nullable": true
-          },
-          "files": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "ImageListResponse": {
-        "type": "object",
-        "properties": {
-          "imagePaths": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ImageListResponseApiResponse": {
+      "DoubleApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
             "type": "boolean"
           },
           "data": {
-            "$ref": "#/components/schemas/ImageListResponse"
+            "type": "number",
+            "format": "double"
           },
           "errors": {
             "type": "array",
@@ -1851,7 +2238,7 @@
         },
         "additionalProperties": false
       },
-      "PostResponse": {
+      "PostDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -1881,14 +2268,14 @@
         },
         "additionalProperties": false
       },
-      "PostResponseApiResponse": {
+      "PostDtoApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
             "type": "boolean"
           },
           "data": {
-            "$ref": "#/components/schemas/PostResponse"
+            "$ref": "#/components/schemas/PostDto"
           },
           "errors": {
             "type": "array",
@@ -1904,7 +2291,7 @@
         },
         "additionalProperties": false
       },
-      "PostResponseListApiResponse": {
+      "PostDtoListApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
@@ -1913,7 +2300,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PostResponse"
+              "$ref": "#/components/schemas/PostDto"
             },
             "nullable": true
           },
@@ -1931,7 +2318,96 @@
         },
         "additionalProperties": false
       },
-      "ProjectResponse": {
+      "ProjectCommentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorUsername": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorFullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorProfilePicturePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userScore": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProjectCommentDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProjectCommentDto"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "nullable": true
+          },
+          "errorType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProjectCommentDtoListApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectCommentDto"
+            },
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "nullable": true
+          },
+          "errorType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProjectDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -1946,36 +2422,32 @@
             "type": "string",
             "nullable": true
           },
-          "externalUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "authorId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "imagePaths": {
+          "files": {
             "type": "array",
             "items": {
               "type": "string"
             },
             "nullable": true
+          },
+          "author": {
+            "type": "string",
+            "nullable": true
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
       },
-      "ProjectResponseApiResponse": {
+      "ProjectDtoApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
             "type": "boolean"
           },
           "data": {
-            "$ref": "#/components/schemas/ProjectResponse"
+            "$ref": "#/components/schemas/ProjectDto"
           },
           "errors": {
             "type": "array",
@@ -1991,7 +2463,7 @@
         },
         "additionalProperties": false
       },
-      "ProjectResponseListApiResponse": {
+      "ProjectDtoListApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
@@ -2000,7 +2472,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ProjectResponse"
+              "$ref": "#/components/schemas/ProjectDto"
             },
             "nullable": true
           },
@@ -2014,6 +2486,16 @@
           "errorType": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProjectScoreRequest": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2042,6 +2524,33 @@
         },
         "additionalProperties": false
       },
+      "StringListApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "nullable": true
+          },
+          "errorType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdatePostRequest": {
         "required": [
           "description",
@@ -2065,7 +2574,41 @@
         },
         "additionalProperties": false
       },
-      "UserResponse": {
+      "UpdateProjectRequest": {
+        "required": [
+          "description",
+          "name",
+          "projectId"
+        ],
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "externalUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "base64Images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -2079,22 +2622,18 @@
           "fullName": {
             "type": "string",
             "nullable": true
-          },
-          "profilePicturePath": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "UserResponseApiResponse": {
+      "UserDtoApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
             "type": "boolean"
           },
           "data": {
-            "$ref": "#/components/schemas/UserResponse"
+            "$ref": "#/components/schemas/UserDto"
           },
           "errors": {
             "type": "array",
@@ -2110,7 +2649,7 @@
         },
         "additionalProperties": false
       },
-      "UserResponseListApiResponse": {
+      "UserDtoListApiResponse": {
         "type": "object",
         "properties": {
           "isSuccess": {
@@ -2119,7 +2658,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UserResponse"
+              "$ref": "#/components/schemas/UserDto"
             },
             "nullable": true
           },

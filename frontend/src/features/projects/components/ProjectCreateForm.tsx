@@ -1,8 +1,9 @@
 import { styled } from "styled-components";
 import { useState } from "react";
 import { FieldError } from "../../auth/components/FieldError";
-import { colors, shadows, transitions, fonts, spacing, borderRadius } from "../../../shared/styles/tokens";
-import { projectService } from "../services/projectService";
+import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
+import { useProjectForm } from "../hooks/useProjectForm";
+import type { ProjectFormData } from "../types";
 
 const Form = styled.form`
   background: ${colors.surface};
@@ -134,22 +135,17 @@ interface ProjectCreateFormProps {
 }
 
 export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProps) => {
-  const [formData, setFormData] = useState({
+  const { onSubmit, loading, fieldErrors, formError } = useProjectForm(onSuccess);
+  const [formData, setFormData] = useState<ProjectFormData>({
     name: '',
     description: '',
     externalUrl: '',
   });
   const [files, setFiles] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear field error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,42 +160,9 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setErrors({});
-
-    try {
-      // Prepare FormData payload
-      const form = new FormData();
-      form.append('name', formData.name);
-      form.append('description', formData.description);
-      if (formData.externalUrl) {
-        form.append('externalUrl', formData.externalUrl);
-      }
-      files.forEach(file => {
-        form.append('files', file);
-      });
-
-      const result = await projectService.addProject(form);
-
-      if (result.isSuccess) {
-        onSuccess?.();
-      } else {
-        // Handle API errors
-        const fieldErrors: Record<string, string> = {};
-        result.errors?.forEach(error => {
-          const field = error.field?.toLowerCase() || 'general';
-          fieldErrors[field] = error.message || 'Unknown error';
-        });
-        setErrors(fieldErrors);
-      }
-    } catch (error) {
-      console.error('Failed to create project:', error);
-      setErrors({ general: 'An unexpected error occurred' });
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(formData, files);
   };
 
   return (
@@ -214,7 +177,7 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
           onChange={handleInputChange}
           required
         />
-        {errors.name && <FieldError message={errors.name} />}
+        {fieldErrors.name && <FieldError message={fieldErrors.name} />}
       </FieldContainer>
 
       <FieldContainer>
@@ -226,7 +189,7 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
           onChange={handleInputChange}
           required
         />
-        {errors.description && <FieldError message={errors.description} />}
+        {fieldErrors.description && <FieldError message={fieldErrors.description} />}
       </FieldContainer>
 
       <FieldContainer>
@@ -238,7 +201,7 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
           value={formData.externalUrl}
           onChange={handleInputChange}
         />
-        {errors.externalurl && <FieldError message={errors.externalurl} />}
+        {fieldErrors.externalurl && <FieldError message={fieldErrors.externalurl} />}
       </FieldContainer>
 
       <FieldContainer>
@@ -268,10 +231,10 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
             ))}
           </ImagePreview>
         )}
-        {errors.files && <FieldError message={errors.files} />}
+        {fieldErrors.files && <FieldError message={fieldErrors.files} />}
       </FieldContainer>
 
-      {errors.general && <FieldError message={errors.general} />}
+      {formError && <FieldError message={formError} />}
 
       <Button type="submit" disabled={loading}>
         {loading ? 'Создание...' : 'Создать проект'}

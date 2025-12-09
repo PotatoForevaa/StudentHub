@@ -1,6 +1,6 @@
 import api from '../../../shared/services/base';
 import type { ApiResponse } from '../../../shared/types';
-import type { Project } from '../types';
+import type { Project, Comment, ScoreFormData, CommentFormData, UpdateProjectFormData } from '../types';
 
 export const projectService = {
     getProjects: async (): Promise<ApiResponse<Project[]>> => {
@@ -28,7 +28,7 @@ export const projectService = {
     },
 
     getImageList: async (id: string): Promise<ApiResponse> => {
-        const response = await api.post(`/api/Projects/${id}/GetImageList`);
+        const response = await api.get(`/api/Projects/${id}/GetImageList`);
         return response.data;
     },
 
@@ -40,5 +40,25 @@ export const projectService = {
         }
         const url = `http://localhost:5192/api/Projects/${id}/${path}`;
         return fetch(url, { headers });
+    },
+
+    updateProject: async (id: string, data: UpdateProjectFormData): Promise<ApiResponse<Project>> => {
+        const response = await api.put(`/api/Projects/${id}`, data);
+        return response.data;
+    },
+
+    getComments: async (id: string): Promise<ApiResponse<Comment[]>> => {
+        const response = await api.get(`/api/Projects/${id}/Comments`);
+        return response.data;
+    },
+
+    addComment: async (id: string, data: CommentFormData): Promise<ApiResponse<Comment>> => {
+        const response = await api.post(`/api/Projects/${id}/Comments`, data);
+        return response.data;
+    },
+
+    addScore: async (id: string, data: ScoreFormData): Promise<ApiResponse<number>> => {
+        const response = await api.post(`/api/Projects/${id}/Score`, data);
+        return response.data;
     }
 };
