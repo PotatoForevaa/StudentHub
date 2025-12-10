@@ -1,7 +1,7 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 
-export const baseUrl = 'http://localhost:5192';
+export const baseUrl = 'http://192.168.147.75:5192';
 export const api: AxiosInstance = axios.create({
   baseURL: baseUrl,
   timeout: 10000,

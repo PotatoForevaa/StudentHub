@@ -72,7 +72,7 @@ namespace StudentHub.Api
                 {
                     options.AddPolicy("AllowAll", policy =>
                     {
-                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:5192", "http://192.168.147.75:5173")
+                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75:5173")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();
