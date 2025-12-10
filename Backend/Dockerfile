@@ -11,6 +11,9 @@ RUN dotnet restore
 
 COPY . .
 
+ENV PGPASSWORD=studenthubpassword
+ENV ConnectionStrings__PgSql="Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword"
+
 RUN dotnet tool install --global dotnet-ef --version 8.0.10
 ENV PATH="$PATH:/root/.dotnet/tools"
 
