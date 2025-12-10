@@ -9,19 +9,20 @@ COPY StudentHub.Api/*.csproj ./StudentHub.Api/
 
 RUN dotnet restore
 
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="$PATH:/root/.dotnet/tools"
 COPY . .
+
+RUN dotnet tool install --global dotnet-ef --version 8.0.10
+ENV PATH="$PATH:/root/.dotnet/tools"
 
 RUN dotnet ef migrations bundle \
     --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
     --context AppDbContext \
-    --output /src/migrate-business 
+    --output /src/migrate-business
 
 RUN dotnet ef migrations bundle \
     --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
     --context AppIdentityDbContext \
-    --output /src/migrate-identity 
+    --output /src/migrate-identity
 
 WORKDIR /src/StudentHub.Api
 
@@ -34,4 +35,4 @@ COPY --from=build /app/publish .
 COPY --from=build /src/migrate-identity ./migrate-identity
 COPY --from=build /src/migrate-business ./migrate-business
 
-ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business --verbose && /migrate-identity --verbose && dotnet StudentHub.Api.dll"]
+ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business --verbose && ./migrate-identity --verbose && dotnet StudentHub.Api.dll"]
