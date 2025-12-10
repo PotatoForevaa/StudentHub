@@ -6,6 +6,7 @@ import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
 import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
+import { baseUrl } from "../../../shared/services/base";
 
 const ProjectDetailContainer = styled.div`
   display: flex;
@@ -231,7 +232,7 @@ function ProjectDetailContent() {
               {imagePaths.map((path, idx) => (
                 <FullImage
                   key={idx}
-                  src={`http://localhost:5192/api/Projects/${project.id}/${path}`}
+                  src={`${baseUrl}/api/Projects/${project.id}/${path}`}
                   alt={`Изображение проекта ${idx + 1}`}
                 />
               ))}
@@ -309,7 +310,7 @@ function CommentItem({ comment }: { comment: Comment }) {
     <CommentContainer>
       <CommentHeader>
         {comment.authorProfilePicturePath && (
-          <ProfilePic src={`http://localhost:5192/api/Users/ProfilePicture/${comment.authorUsername}`} alt={comment.authorUsername || ''} />
+          <ProfilePic src={`${baseUrl}/api/Users/ProfilePicture/${comment.authorUsername}`} alt={comment.authorUsername || ''} />
         )}
         <CommentUserLink to={`/profile/${comment.authorUsername}`}>
           {comment.authorUsername || 'Аноним'}

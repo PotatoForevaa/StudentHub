@@ -1,4 +1,4 @@
-import api from '../../../shared/services/base';
+import api, { baseUrl } from '../../../shared/services/base';
 import type { ApiResponse } from '../../../shared/types';
 import type { Project, Comment, ScoreFormData, CommentFormData, UpdateProjectFormData } from '../types';
 
@@ -38,7 +38,7 @@ export const projectService = {
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
-        const url = `http://localhost:5192/api/Projects/${id}/${path}`;
+        const url = `${baseUrl}/api/Projects/${id}/${path}`;
         return fetch(url, { headers });
     },
 

@@ -25,7 +25,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__PgSql: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
     ports:
-      - "5192:80"
+      - "5192:5000"
     depends_on:
       db:
         condition: service_healthy
