@@ -37,3 +37,8 @@ services:
 
 volumes:
   postgres_data:
+  uploads:
+
+networks:
+  studenthub_network:
+    driver: bridge
