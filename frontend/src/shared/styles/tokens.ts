@@ -1,27 +1,27 @@
 export const colors = {
-  // Primary palette
+  // primary palette
   primary: '#2563eb',       // blue-600
   primaryDark: '#1d4ed8',   // blue-700
   primaryLight: '#3b82f6',  // blue-500
 
-  // Neutral palette
+  // white palette
   white: '#ffffff',
   bg: '#f4f6fb',            // page background
   surface: '#ffffff',       // cards, panels
 
-  // Gray palette
+  // gray palette
   gray100: '#f3f4f6',
   gray300: '#d1d5db',
   gray400: '#9ca3af',
   gray500: '#6b7280',
 
-  // Text colors
+  // text
   textPrimary: '#0f172a',   // dark text
   textSecondary: '#374151', // secondary text
   muted: '#6b7280',         // tertiary / muted text
   placeholder: 'rgba(15,23,42,0.36)',
 
-  // Accents & utility
+  // accents
   accentBorder: 'rgba(37,99,235,0.08)',
   accentBorderLight: 'rgba(2,6,23,0.04)',
   accentBorderDark: 'rgba(2,6,23,0.06)',

@@ -79,13 +79,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     (async () => {
-      // Check if token exists in localStorage (for Bearer token auth)
       const token = localStorage.getItem('token');
       if (token) {
-        // Token exists, try to get user to verify it's still valid
         await getUser();
       } else {
-        // No token, but still try getUser in case backend uses cookies
         await getUser();
       }
       setLoading(false);

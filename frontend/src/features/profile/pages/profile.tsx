@@ -81,21 +81,17 @@ export const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  // Determine if viewing own profile or other's
   const isOwnProfile = !username;
   const currentUser = isOwnProfile ? user : targetUser;
 
   useEffect(() => {
     if (username) {
       if (user?.username === username) {
-        // This is the current user, no need to fetch via API
         setTargetUser(null);
         setProfileLoading(false);
       } else {
-        // This is another user, fetch their data
         setProfileLoading(true);
-        setTargetUser(null); // Clear previous data while loading
-        // Note: API doesn't have getByUsername, so we get all users and filter
+        setTargetUser(null);
         userService.getAllUsers().then(res => {
           if (res?.isSuccess && res.data) {
             const foundUser = res.data.find(u => u.username === username);
