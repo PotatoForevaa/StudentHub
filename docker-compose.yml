@@ -1,50 +1,39 @@
+version: '3.8'
+
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: studenthub_postgres
+  db:
+    image: postgres:15
     environment:
-      POSTGRES_DB: studenthubdb
+      POSTGRES_DB: StudentHub
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
+      POSTGRES_PASSWORD: admin
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - studenthub_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./Backend
-      dockerfile: Dockerfile
-    container_name: studenthub_backend
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      ConnectionStrings__PgSql: "Host=postgres;Port=5432;Database=studenthubdb;Username=postgres;Password=password123"
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PgSql: Host=db;port=5432;Database=StudentHub;Username=postgres;Password=admin
     ports:
       - "5000:5000"
-    depends_on:
-      - postgres
-    networks:
-      - studenthub_network
-    volumes:
-      - uploads:/app/uploads
-      - ./Backend/StudentHub.Api/logs:/app/logs
+      - "5001:5001"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: .dockerfile
-    container_name: studenthub_frontend
     ports:
       - "3000:3000"
-    networks:
-      - studenthub_network
 
 volumes:
   postgres_data:
-  uploads:
-
-networks:
-  studenthub_network:
-    driver: bridge
