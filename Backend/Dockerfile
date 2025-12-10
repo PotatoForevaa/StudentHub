@@ -34,4 +34,6 @@ COPY --from=build /app/publish .
 COPY --from=build /src/migrate-identity ./migrate-identity
 COPY --from=build /src/migrate-business ./migrate-business
 
+RUN chmod +x ./migrate-identity ./migrate-business
+
 ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business --verbose && /migrate-identity --verbose && dotnet StudentHub.Api.dll"]
