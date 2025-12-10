@@ -103,6 +103,12 @@ namespace StudentHub.Api
                 var app = builder.Build();
                 try
                 {
+                    var dbContext = app.Services.GetRequiredService<AppDbContext>();
+                    await dbContext.Database.MigrateAsync();
+
+                    var identityContext = app.Services.GetRequiredService<AppIdentityDbContext>();
+                    await identityContext.Database.MigrateAsync();
+
                     await DbSeeder.SeedAdmin(app.Services);
                 }
                 catch (Exception ex)

@@ -11,24 +11,6 @@ RUN dotnet restore
 
 COPY . .
 
-ENV PGPASSWORD=studenthubpassword
-ENV ConnectionStrings__PgSql="Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword"
-
-RUN dotnet tool install --global dotnet-ef --version 8.0.10
-ENV PATH="$PATH:/root/.dotnet/tools"
-
-RUN dotnet ef migrations bundle \
-    --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
-    --startup-project ./StudentHub.Api/StudentHub.Api.csproj \
-    --context AppDbContext \
-    --output /src/migrate-business
-
-RUN dotnet ef migrations bundle \
-    --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
-    --startup-project ./StudentHub.Api/StudentHub.Api.csproj \
-    --context AppIdentityDbContext \
-    --output /src/migrate-identity
-
 WORKDIR /src/StudentHub.Api
 
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
@@ -37,7 +19,5 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .
-COPY --from=build /src/migrate-identity ./migrate-identity
-COPY --from=build /src/migrate-business ./migrate-business
 
-ENTRYPOINT ["bash", "-c", "ls ; ./migrate-business --verbose && ./migrate-identity --verbose && dotnet StudentHub.Api.dll"]
+ENTRYPOINT dotnet StudentHub.Api.dll
