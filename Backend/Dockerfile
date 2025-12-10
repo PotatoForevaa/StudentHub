@@ -16,11 +16,13 @@ ENV PATH="$PATH:/root/.dotnet/tools"
 
 RUN dotnet ef migrations bundle \
     --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
+    --startup-project ./StudentHub.Api/StudentHub.Api.csproj \
     --context AppDbContext \
     --output /src/migrate-business
 
 RUN dotnet ef migrations bundle \
     --project ./StudentHub.Infrastructure/StudentHub.Infrastructure.csproj \
+    --startup-project ./StudentHub.Api/StudentHub.Api.csproj \
     --context AppIdentityDbContext \
     --output /src/migrate-identity
 
