@@ -1,6 +1,5 @@
 # StudentHub
 **Work In Progress**  
-project is under development!!!
 
 ## Deployment
 git clone https://github.com/PotatoForevaa/StudentHub  
