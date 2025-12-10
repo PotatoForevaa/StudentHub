@@ -77,6 +77,12 @@ namespace StudentHub.Api
                         .AllowAnyHeader()
                         .AllowCredentials();
                     });
+                    options.AddPolicy("AllowFrontend", policy =>
+                    {
+                        policy.WithOrigins("http://192.168.147.75:5173") // адрес фронта
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
                 });
 
                 builder.Services.AddHttpContextAccessor();
@@ -133,7 +139,7 @@ namespace StudentHub.Api
                 }
 
                 app.UseRouting();
-                app.UseCors("AllowAll");
+                app.UseCors("AllowFrontend");
 
                 app.UseAuthentication();
                 app.UseAuthorization();
