@@ -42,6 +42,16 @@ namespace StudentHub.Infrastructure.Repositories
             return await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).Include(p => p.Author).ToListAsync();
         }
 
+        public async Task<List<Project>> GetProjectsByAuthorIdAsync(Guid authorId)
+        {
+            return await _dbContext.Projects
+                .Where(p => p.AuthorId == authorId)
+                .Include(p => p.Images)
+                .Include(p => p.Author)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<Result<Project?>> GetByIdAsync(Guid id)
         {
             var project = await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
@@ -135,6 +145,30 @@ namespace StudentHub.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.AuthorId == userId && r.ProjectId == projectId);
 
             return rating?.Score;
+        }
+
+        public async Task<Result<List<ProjectComment>>> GetCommentsByAuthorIdAsync(Guid authorId)
+        {
+            var comments = await _dbContext.ProjectComments
+                .Include(c => c.Author)
+                .Include(c => c.Project)
+                .Where(c => c.AuthorId == authorId)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+
+            return Result<List<ProjectComment>>.Success(comments);
+        }
+
+        public Result<byte[]> GetImageAsync(string path)
+        {
+            try
+            {
+                return Result<byte[]>.Success(File.ReadAllBytes(path));
+            }
+            catch
+            {
+                return Result<byte[]>.Failure("File not found");
+            }
         }
     }
 }

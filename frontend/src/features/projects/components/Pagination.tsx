@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { colors, shadows, transitions, fonts, spacing, borderRadius } from '../../../shared/styles/tokens';
+import { colors, transitions, fonts, spacing, borderRadius } from '../../../shared/styles/tokens';
 
 const PaginationContainer = styled.div`
   display: flex;

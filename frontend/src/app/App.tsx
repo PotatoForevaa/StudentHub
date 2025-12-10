@@ -8,6 +8,8 @@ import { Profile } from "../features/profile/pages/profile";
 import { Projects } from "../features/projects/pages/projects";
 import { ProjectDetail } from "../features/projects/pages/projectDetail";
 import { ProjectProvider } from "../features/projects/context/ProjectContext";
+import { UserList } from "../features/users/pages/userlist";
+import { UserProvider } from "../features/users/context/UserContext";
 import { colors, fonts } from "../shared/styles/tokens";
 
 const GlobalStyles = createGlobalStyle`
@@ -53,23 +55,27 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <ProjectProvider>
-          <GlobalStyles />
-          <AppContainer>
-            <Header />
-            <MainContent>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/registration" element={<Registration />} />
+          <UserProvider>
+            <GlobalStyles />
+            <AppContainer>
+              <Header />
+              <MainContent>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/registration" element={<Registration />} />
 
-                <Route element={<PrivateRoute />}>
-                  <Route path="/dashboard" element={null} />
-                  <Route path="/projects" element={<Projects />} />
-                  <Route path="/projects/:id" element={<ProjectDetail />} />
-                  <Route path="/profile" element={<Profile />} />
-                </Route>
-              </Routes>
-            </MainContent>
-          </AppContainer>
+                  <Route element={<PrivateRoute />}>
+                    <Route path="/dashboard" element={null} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/projects/:id" element={<ProjectDetail />} />
+                    <Route path="/users" element={<UserList />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/:username" element={<Profile />} />
+                  </Route>
+                </Routes>
+              </MainContent>
+            </AppContainer>
+          </UserProvider>
         </ProjectProvider>
       </AuthProvider>
     </BrowserRouter>

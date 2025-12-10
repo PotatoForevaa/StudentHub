@@ -10,10 +10,12 @@ namespace StudentHub.Application.Services
     public class ProjectService : IProjectService
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly IPostRepository _postRepository;
         private readonly IFileStorageService _fileService;
-        public ProjectService(IProjectRepository projectRepository, IFileStorageService fileService)
+        public ProjectService(IProjectRepository projectRepository, IPostRepository postRepository, IFileStorageService fileService)
         {
             _projectRepository = projectRepository;
+            _postRepository = postRepository;
             _fileService = fileService;
         }
 
@@ -78,7 +80,31 @@ namespace StudentHub.Application.Services
 
             foreach (var p in projectList)
             {
-                // Get average rating for each project
+                var avgRatingResult = await GetAverageRatingAsync(p.Id);
+                double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
+
+                var dto = new ProjectDto(
+                    Name: p.Name,
+                    Description: p.Description,
+                    Files: p.Images.Select(i => i.Path).ToList(),
+                    Id: p.Id,
+                    Author: p.Author.FullName,
+                    CreationDate: p.CreatedAt,
+                    AverageRating: avgRating
+                );
+                dtoList.Add(dto);
+            }
+
+            return dtoList;
+        }
+
+        public async Task<List<ProjectDto>> GetProjectsByAuthorIdAsync(Guid authorId)
+        {
+            var projectList = await _projectRepository.GetProjectsByAuthorIdAsync(authorId);
+            var dtoList = new List<ProjectDto>();
+
+            foreach (var p in projectList)
+            {
                 var avgRatingResult = await GetAverageRatingAsync(p.Id);
                 double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
 
@@ -103,11 +129,9 @@ namespace StudentHub.Application.Services
             if (!projectResult.IsSuccess) return Result<ProjectDto?>.Failure(projectResult.Errors);
             var project = projectResult.Value;
 
-            // Get average rating
             var avgRatingResult = await GetAverageRatingAsync(id);
             double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
 
-            // Get comments
             var commentsResult = await GetCommentsByProjectIdAsync(id);
             List<ProjectCommentDto>? comments = commentsResult.IsSuccess ? commentsResult.Value : null;
 
@@ -160,7 +184,6 @@ namespace StudentHub.Application.Services
 
             if (updateProjectCommand.Base64Images != null && updateProjectCommand.Base64Images.Any())
             {
-                // Replace existing images with provided ones
                 project.Images.Clear();
 
                 foreach (var base64 in updateProjectCommand.Base64Images)
@@ -178,7 +201,6 @@ namespace StudentHub.Application.Services
             }
             else
             {
-                // keep existing image paths
                 newFilePaths = project.Images.Select(i => i.Path).ToList();
             }
 
@@ -215,7 +237,6 @@ namespace StudentHub.Application.Services
 
             var commentEntity = result.Value;
 
-            // Get user's score for this project
             var userScore = await _projectRepository.GetUserScoreForProjectAsync(command.AuthorId, command.ProjectId);
 
             if (commentEntity.Author == null)
@@ -240,12 +261,11 @@ namespace StudentHub.Application.Services
             var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId);
             if (!result.IsSuccess) return Result<List<ProjectCommentDto>>.Failure(result.Errors);
 
-            var comments = result.Value ?? new List<ProjectComment>();
+            var comments = result.Value;
             var commentDtos = new List<ProjectCommentDto>();
 
             foreach (var comment in comments)
             {
-                // Get user's score for this project
                 var userScore = await _projectRepository.GetUserScoreForProjectAsync(comment.AuthorId, projectId);
 
                 var commentDto = new ProjectCommentDto(
@@ -263,6 +283,77 @@ namespace StudentHub.Application.Services
             }
 
             return Result<List<ProjectCommentDto>>.Success(commentDtos);
+        }
+
+        public async Task<Result<List<ProjectCommentDto>>> GetCommentsByAuthorIdAsync(Guid authorId)
+        {
+            var result = await _projectRepository.GetCommentsByAuthorIdAsync(authorId);
+            if (!result.IsSuccess) return Result<List<ProjectCommentDto>>.Failure(result.Errors);
+
+            var comments = result.Value;
+            var commentDtos = new List<ProjectCommentDto>();
+
+            foreach (var comment in comments)
+            {
+                var userScore = await _projectRepository.GetUserScoreForProjectAsync(comment.AuthorId, comment.ProjectId);
+
+                var commentDto = new ProjectCommentDto(
+                    Id: comment.Id,
+                    AuthorId: comment.AuthorId,
+                    AuthorUsername: comment.Author.Username,
+                    AuthorFullName: comment.Author.FullName,
+                    AuthorProfilePicturePath: string.IsNullOrEmpty(comment.Author.ProfilePicturePath) ? null : comment.Author.ProfilePicturePath,
+                    Content: comment.Content,
+                    CreatedAt: comment.CreatedAt,
+                    UserScore: userScore
+                );
+
+                commentDtos.Add(commentDto);
+            }
+
+            return Result<List<ProjectCommentDto>>.Success(commentDtos);
+        }
+
+        public async Task<Result<List<ActivityDto>>> GetUserActivityAsync(Guid userId)
+        {
+            var activityList = new List<ActivityDto>();
+
+            var posts = await _postRepository.GetPostsByAuthorIdAsync(userId);
+            foreach (var post in posts)
+            {
+                var activity = new ActivityDto(
+                    Type: "post",
+                    Id: post.Id,
+                    Title: post.Title,
+                    Content: post.Description,
+                    CreatedAt: post.CreatedAt,
+                    ProjectName: null,
+                    ProjectId: null
+                );
+                activityList.Add(activity);
+            }
+
+            var commentsResult = await _projectRepository.GetCommentsByAuthorIdAsync(userId);
+            if (commentsResult.IsSuccess)
+            {
+                foreach (var comment in commentsResult.Value)
+                {
+                    var activity = new ActivityDto(
+                        Type: "comment",
+                        Id: comment.Id,
+                        Title: null,
+                        Content: comment.Content,
+                        CreatedAt: comment.CreatedAt,
+                        ProjectName: comment.Project?.Name,
+                        ProjectId: comment.ProjectId
+                    );
+                    activityList.Add(activity);
+                }
+            }
+
+            activityList.Sort((a, b) => b.CreatedAt.CompareTo(a.CreatedAt));
+
+            return Result<List<ActivityDto>>.Success(activityList);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace StudentHub.Api
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppIdentityDbContext>()
-                    .AddErrorDescriber<CustomIdentityErrorDescriberRu>() //����������� ������ identity
+                    .AddErrorDescriber<CustomIdentityErrorDescriberRu>() //ru localization for identity errors
                     .AddDefaultTokenProviders();
 
                 builder.Services.ConfigureApplicationCookie(options =>

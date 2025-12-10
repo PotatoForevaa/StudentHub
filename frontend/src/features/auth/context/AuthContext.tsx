@@ -33,27 +33,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const login = async (username: string, password: string) => {
-    try {
-      const res = await authService.login(username, password);
-      if (res?.data?.token) {
-        localStorage.setItem('token', res.data.token);
-      }
-      await getUser();
-      
-      return true;
-    } catch (err) {
-      throw err;
+    const res = await authService.login(username, password);
+    if (res?.data?.token) {
+      localStorage.setItem('token', res.data.token);
     }
+    await getUser();
+
+    return true;
   };
 
   const register = async (fullName: string, username: string, password: string) => {
-    try {
-      await authService.register(username, password, fullName);
-      await getUser();
-      return true;
-    } catch (err) {
-      throw err;
-    }
+    await authService.register(username, password, fullName);
+    await getUser();
+    return true;
   };
 
   const logout = async () => {
@@ -117,4 +109,3 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
-

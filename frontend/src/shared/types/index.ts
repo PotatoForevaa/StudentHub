@@ -16,7 +16,17 @@ export interface ApiResponse<T = unknown> {
 }
 
 export type User = {
+    id: string;
     fullName: string;
     username: string;
 }
 
+export type ActivityDto = {
+    id: string;
+    type: 'post' | 'comment';
+    title?: string;
+    content?: string;
+    createdAt: string;
+    projectId?: string;
+    projectName?: string;
+}

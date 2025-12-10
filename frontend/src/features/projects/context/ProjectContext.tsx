@@ -60,9 +60,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         const res = await projectService.getProjects();
         console.debug('projectService.getProjects response:', res);
         if (res && res.isSuccess && res.data) {
-          const mappedProjects = res.data.map((p: any) => ({
-            ...p,
-            imagePaths: p.files || []
+          const mappedProjects = res.data.map((p: unknown) => ({
+            ...(p as Record<string, unknown>),
+            imagePaths: (p as { files?: string[] }).files || []
           }));
           setProjects(mappedProjects as Project[]);
         } else {
@@ -81,7 +81,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await projectService.getProject(id);
       if (res.isSuccess && res.data) {
-        const projectData = { ...(res.data as any), imagePaths: (res.data as any).files || [] };
+        const projectData = { ...(res.data as Record<string, unknown>), imagePaths: (res.data as { files?: string[] }).files || [] };
         setProject(projectData as Project);
       } else {
         setProject(null);

@@ -60,5 +60,10 @@ export const projectService = {
     addScore: async (id: string, data: ScoreFormData): Promise<ApiResponse<number>> => {
         const response = await api.post(`/api/Projects/${id}/Score`, data);
         return response.data;
+    },
+
+    getProjectsByUser: async (userId: string): Promise<ApiResponse<Project[]>> => {
+        const response = await api.get(`/api/Projects/GetByUser/${userId}`);
+        return response.data;
     }
 };

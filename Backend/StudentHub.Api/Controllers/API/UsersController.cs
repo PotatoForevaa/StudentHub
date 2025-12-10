@@ -17,9 +17,11 @@ namespace StudentHub.Api.Controllers.API
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UsersController(IUserService userService)
+        private readonly IProjectService _projectService;
+        public UsersController(IUserService userService, IProjectService projectService)
         {
             _userService = userService;
+            _projectService = projectService;
         }
 
         /// <summary>
@@ -32,7 +34,6 @@ namespace StudentHub.Api.Controllers.API
         /// <response code="404">User not found</response>
         /// <response code="401">Unauthorized - authentication required</response>
         /// <response code="500">Server error</response>
-        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
@@ -46,13 +47,33 @@ namespace StudentHub.Api.Controllers.API
         }
 
         /// <summary>
+        /// Get a specific user by username.
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <returns>User details</returns>
+        /// <response code="200">User retrieved successfully</response>
+        /// <response code="404">User not found</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        /// <response code="500">Server error</response>
+        [Authorize]
+        [HttpGet("by-username/{username}")]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetUserByUsername([FromRoute] string username)
+        {
+            var result = await _userService.GetByUsernameAsync(username);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
         /// Get all users (Admin only).
         /// </summary>
         /// <returns>List of all users</returns>
         /// <response code="200">Users retrieved successfully</response>
         /// <response code="403">Forbidden - Admin role required</response>
         /// <response code="401">Unauthorized - authentication required</response>
-        [Authorize(Roles = "Admin")]
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<UserDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
@@ -105,6 +126,40 @@ namespace StudentHub.Api.Controllers.API
         {
             var pictureResult = await _userService.AddProfilePicture(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!), file.OpenReadStream());
             return pictureResult.ToActionResult();
+        }
+
+        /// <summary>
+        /// Get user's activity (posts and comments).
+        /// </summary>
+        /// <param name="userId">User ID (GUID)</param>
+        /// <returns>List of user activity</returns>
+        /// <response code="200">Activity retrieved successfully</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        [Authorize]
+        [HttpGet("{userId}/Activity")]
+        [ProducesResponseType(typeof(ApiResponse<List<ActivityDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetUserActivity([FromRoute] Guid userId)
+        {
+            var result = await _projectService.GetUserActivityAsync(userId);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Get user's comments.
+        /// </summary>
+        /// <param name="userId">User ID (GUID)</param>
+        /// <returns>List of user comments</returns>
+        /// <response code="200">Comments retrieved successfully</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        [Authorize]
+        [HttpGet("{userId}/Comments")]
+        [ProducesResponseType(typeof(ApiResponse<List<ProjectCommentDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetUserComments([FromRoute] Guid userId)
+        {
+            var result = await _projectService.GetCommentsByAuthorIdAsync(userId);
+            return result.ToActionResult();
         }
     }
 }

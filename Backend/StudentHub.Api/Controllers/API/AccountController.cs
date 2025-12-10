@@ -98,7 +98,7 @@ namespace StudentHub.Api.Controllers.API
         /// <summary>
         /// Get the current authenticated user's account information.
         /// </summary>
-        /// <returns>User account information</returns>
+        /// <returns>User account information including user ID</returns>
         /// <response code="200">User information retrieved</response>
         /// <response code="401">Unauthorized - authentication required</response>
         [Authorize]
@@ -107,7 +107,7 @@ namespace StudentHub.Api.Controllers.API
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAccountInfo()
         {
-            var userResult = await _userService.GetInfoById(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
+            var userResult = await _userService.GetByIdAsync(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
             return userResult.ToActionResult();
         }
     }

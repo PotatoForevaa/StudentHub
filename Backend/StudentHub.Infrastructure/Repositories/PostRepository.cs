@@ -50,8 +50,16 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<List<Post>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            if (page == 0 && pageSize == 0) return await _dbContext.Posts.ToListAsync();
-            return await _dbContext.Posts.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            if (page == 0 && pageSize == 0) return await _dbContext.Posts.OrderByDescending(p => p.CreatedAt).ToListAsync();
+            return await _dbContext.Posts.OrderByDescending(p => p.CreatedAt).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        }
+
+        public async Task<List<Post>> GetPostsByAuthorIdAsync(Guid authorId)
+        {
+            return await _dbContext.Posts
+                .Where(p => p.AuthorId == authorId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
         }
     }
 }

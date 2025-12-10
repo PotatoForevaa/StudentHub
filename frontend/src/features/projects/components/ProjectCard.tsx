@@ -47,6 +47,18 @@ const AuthorDate = styled.div`
   margin-top: auto;
 `;
 
+const AuthorLink = styled(Link)`
+  color: ${colors.primary};
+  text-decoration: none;
+  cursor: pointer;
+  transition: color ${transitions.base};
+
+  &:hover {
+    color: ${colors.primaryDark};
+    text-decoration: underline;
+  }
+`;
+
 const Rating = styled.span`
   font-size: ${fonts.size.sm};
   color: ${colors.primary};
@@ -67,6 +79,29 @@ const Image = styled.img`
   object-fit: cover;
   border: 1px solid ${colors.accentBorderDark};
   box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+`;
+
+const ExternalUrl = styled.div`
+  font-size: ${fonts.size.sm};
+  color: ${colors.primary};
+  display: flex;
+  align-items: center;
+  margin-top: ${spacing.xs};
+
+  a {
+    color: ${colors.primary};
+    text-decoration: none;
+    cursor: pointer;
+    transition: color ${transitions.base};
+    display: flex;
+    align-items: center;
+    gap: ${spacing.xs};
+
+    &:hover {
+      color: ${colors.primaryDark};
+      text-decoration: underline;
+    }
+  }
 `;
 
 interface ProjectCardProps {
@@ -103,11 +138,20 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
       <Card>
         <Title>{project.name}</Title>
         <Description>{project.description ? project.description.slice(0, 220) + (project.description.length > 220 ? '...' : '') : ''}</Description>
+        {project.externalUrl && project.externalUrl.trim() && (
+          <ExternalUrl>
+            <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+              🔗 External Link: {project.externalUrl}
+            </a>
+          </ExternalUrl>
+        )}
         <ImagesContainer>
           {renderImages()}
         </ImagesContainer>
         <AuthorDate>
-          <span>{project.author ? project.author.substring(0, 8) : 'Unknown'}</span>
+          <AuthorLink to={`/profile/${project.author}`} onClick={(e) => e.stopPropagation()}>
+            {project.author ? project.author.substring(0, 8) : 'Unknown'}
+          </AuthorLink>
           <Rating>☆ {project.averageRating?.toFixed(1) ?? 'N/A'}</Rating>
           <span>{project.creationDate && formatDate(project.creationDate)}</span>
         </AuthorDate>

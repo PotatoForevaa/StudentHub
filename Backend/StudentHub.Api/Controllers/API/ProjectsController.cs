@@ -63,6 +63,24 @@ namespace StudentHub.Api.Controllers.API
         }
 
         /// <summary>
+        /// Get all projects by author ID.
+        /// </summary>
+        /// <param name="authorId">Author ID (GUID)</param>
+        /// <returns>List of projects by the specified author</returns>
+        /// <response code="200">Projects retrieved successfully</response>
+        /// <response code="401">Unauthorized - authentication required</response>
+        [Authorize]
+        [HttpGet("author/{authorId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<ProjectDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetProjectsByAuthor([FromRoute] Guid authorId)
+        {
+            var projects = await _projectService.GetProjectsByAuthorIdAsync(authorId);
+            var response = new ApiResponse<List<ProjectDto>> { IsSuccess = true, Data = projects };
+            return Ok(response);
+        }
+
+        /// <summary>
         /// Create a new project.
         /// </summary>
         /// <param name="request">Project creation details (name, description, files, external URL)</param>

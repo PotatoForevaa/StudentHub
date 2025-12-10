@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import styled from "styled-components";
-import { ProjectProvider, ProjectContext } from "../context/ProjectContext";
+import { ProjectProvider } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
-import type { Project, Comment, ScoreFormData } from "../types";
+import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 
 const ProjectDetailContainer = styled.div`
@@ -122,7 +122,6 @@ const BackLink = styled(Link)`
 
 function ProjectDetailContent() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useContext(ProjectContext) as any;
   const [project, setProject] = useState<Project | null>(null);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -130,15 +129,7 @@ function ProjectDetailContent() {
   const [newComment, setNewComment] = useState('');
   const [newScore, setNewScore] = useState(0);
 
-  useEffect(() => {
-    if (id) {
-      loadProject();
-      loadImageList();
-      loadComments();
-    }
-  }, [id]);
-
-  const loadProject = async () => {
+  const loadProject = useCallback(async () => {
     try {
       const result = await projectService.getProject(id!);
       if (result.isSuccess) {
@@ -147,9 +138,9 @@ function ProjectDetailContent() {
     } catch (error) {
       console.error("Failed to load project", error);
     }
-  };
+  }, [id]);
 
-  const loadImageList = async () => {
+  const loadImageList = useCallback(async () => {
     try {
       const result = await projectService.getImageList(id!);
       if (result.isSuccess) {
@@ -158,9 +149,9 @@ function ProjectDetailContent() {
     } catch (error) {
       console.error("Failed to load image list", error);
     }
-  };
+  }, [id]);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
       const result = await projectService.getComments(id!);
       if (result.isSuccess) {
@@ -171,7 +162,15 @@ function ProjectDetailContent() {
       console.error("Failed to load comments", error);
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadProject();
+      loadImageList();
+      loadComments();
+    }
+  }, [id, loadProject, loadImageList, loadComments]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -212,7 +211,7 @@ function ProjectDetailContent() {
         <ProjectHeader>
           <ProjectTitle>{project.name}</ProjectTitle>
           <ProjectMeta>
-            <span>Автор: {project.author}</span>
+            <span>Автор: <AuthorLink to={`/profile/${project.author}`}>{project.author}</AuthorLink></span>
             <span>{formatDate(project.creationDate)}</span>
           </ProjectMeta>
           {project.description && (
@@ -312,7 +311,9 @@ function CommentItem({ comment }: { comment: Comment }) {
         {comment.authorProfilePicturePath && (
           <ProfilePic src={`http://localhost:5192/api/Users/ProfilePicture/${comment.authorUsername}`} alt={comment.authorUsername || ''} />
         )}
-        <CommentUser>{comment.authorUsername || 'Аноним'}</CommentUser>
+        <CommentUserLink to={`/profile/${comment.authorUsername}`}>
+          {comment.authorUsername || 'Аноним'}
+        </CommentUserLink>
         {comment.userScore && <SmallStars>{Array.from({ length: comment.userScore }, () => '★').join('')}</SmallStars>}
         <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
       </CommentHeader>
@@ -346,15 +347,24 @@ const ProfilePic = styled.img`
   object-fit: cover;
 `;
 
-const CommentUser = styled.span`
-  font-weight: ${fonts.weight.semibold};
-  color: ${colors.textPrimary};
-`;
+
 
 const CommentDate = styled.span`
   margin-left: auto;
   font-size: ${fonts.size.sm};
   color: ${colors.textSecondary};
+`;
+
+const CommentUserLink = styled(Link)`
+  color: ${colors.primary};
+  text-decoration: none;
+  cursor: pointer;
+  transition: color ${transitions.base};
+
+  &:hover {
+    color: ${colors.primaryDark};
+    text-decoration: underline;
+  }
 `;
 
 const SmallStars = styled.span`
@@ -367,6 +377,17 @@ const CommentText = styled.p`
   color: ${colors.textPrimary};
   line-height: 1.5;
   word-break: break-all;
+`;
+
+const AuthorLink = styled(Link)`
+  color: ${colors.textPrimary};
+  text-decoration: none;
+  cursor: pointer;
+  transition: color ${transitions.base};
+
+  &:hover {
+    color: ${colors.primary};
+  }
 `;
 
 const Form = styled.form`
