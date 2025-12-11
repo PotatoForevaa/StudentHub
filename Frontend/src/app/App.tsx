@@ -1,16 +1,20 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from 'react';
 import { styled, createGlobalStyle } from "styled-components";
-import { Login, Registration } from "../features/auth/pages";
 import { Header } from "./Header";
 import { PrivateRoute } from "../shared/components/PrivateRoute";
-import { AuthProvider } from "../features/auth/context/AuthContext";
-import { Profile } from "../features/profile/pages/profile";
-import { Projects } from "../features/projects/pages/projects";
-import { ProjectDetail } from "../features/projects/pages/projectDetail";
-import { ProjectProvider } from "../features/projects/context/ProjectContext";
-import { UserList } from "../features/users/pages/userlist";
-import { UserProvider } from "../features/users/context/UserContext";
+import { AppProvider } from "../shared/components/AppProvider";
+import { ErrorBoundary } from "../shared/components/ErrorBoundary";
+import { LoadingSpinner } from "../shared/components/LoadingSpinner";
 import { colors, fonts } from "../shared/styles/tokens";
+
+// Lazy-loaded components
+const Login = lazy(() => import("../features/auth/pages/Login"));
+const Registration = lazy(() => import("../features/auth/pages/Registration"));
+const Profile = lazy(() => import("../features/profile/pages/profile"));
+const Projects = lazy(() => import("../features/projects/pages/projects"));
+const ProjectDetail = lazy(() => import("../features/projects/pages/projectDetail"));
+const UserList = lazy(() => import("../features/users/pages/userlist"));
 
 const GlobalStyles = createGlobalStyle`
   html, body, #root {
@@ -52,14 +56,14 @@ const MainContent = styled.main`
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ProjectProvider>
-          <UserProvider>
-            <GlobalStyles />
-            <AppContainer>
-              <Header />
-              <MainContent>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppProvider>
+          <GlobalStyles />
+          <AppContainer>
+            <Header />
+            <MainContent>
+              <Suspense fallback={<LoadingSpinner text="Загрузка страницы..." size="lg" />}>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/registration" element={<Registration />} />
@@ -73,12 +77,12 @@ function App() {
                     <Route path="/:username" element={<Profile />} />
                   </Route>
                 </Routes>
-              </MainContent>
-            </AppContainer>
-          </UserProvider>
-        </ProjectProvider>
-      </AuthProvider>
-    </BrowserRouter>
+              </Suspense>
+            </MainContent>
+          </AppContainer>
+        </AppProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

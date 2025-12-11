@@ -1,9 +1,12 @@
-import { useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectCreateForm } from "../components/ProjectCreateForm";
 import { Pagination } from "../components/Pagination";
 import { CardsContainer, Container } from "../../../shared/components/Container";
-import { ProjectContext } from "../context/ProjectContext";
+import { useProjects } from "../hooks/useProjects";
+import { useContext } from "react";
+import { AuthContext } from "../../auth/context/AuthContext";
+import { LoadingSpinner } from "../../../shared/components/LoadingSpinner";
 import { styled } from "styled-components";
 import { colors, shadows, transitions, fonts, spacing, borderRadius } from "../../../shared/styles/tokens";
 
@@ -41,16 +44,18 @@ const CreateButton = styled.button`
 `;
 
 export const Projects = () => {
+  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+
   const {
     projects,
     paginatedProjects,
-    loading,
-    getProjects,
+    loading: projectsLoading,
+    refetch: getProjects,
     currentPage,
     totalPages,
     setCurrentPage
-  } = useContext(ProjectContext);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  } = useProjects();
 
   const handleCreateSuccess = () => {
     setShowCreateForm(false);
@@ -64,6 +69,12 @@ export const Projects = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && projects?.length === 0) {
+      getProjects();
+    }
+  }, [isAuthenticated, authLoading, getProjects, projects]);
 
   useEffect(() => {
     if (projects && projects.length > 0 && currentPage > totalPages && totalPages > 0) {
@@ -88,8 +99,8 @@ export const Projects = () => {
       )}
 
       <CardsContainer>
-        {loading ? (
-          <p>Loading projects...</p>
+        {projectsLoading ? (
+          <LoadingSpinner text="Загрузка проектов..." size="md" />
         ) : paginatedProjects && paginatedProjects.length > 0 ? (
           paginatedProjects.map((p) => <ProjectCard key={p.id} project={p} />)
         ) : projects && projects.length > 0 ? (
@@ -99,7 +110,7 @@ export const Projects = () => {
         )}
       </CardsContainer>
 
-      {!loading && projects && projects.length > 0 && (
+      {!projectsLoading && projects && projects.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

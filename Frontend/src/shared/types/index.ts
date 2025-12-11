@@ -30,3 +30,5 @@ export type ActivityDto = {
     projectId?: string;
     projectName?: string;
 }
+
+export type FieldErrors = Record<string, string>;

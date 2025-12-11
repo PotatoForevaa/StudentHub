@@ -2,7 +2,8 @@ import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import type { Project } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
-import { projectService } from "../services/projectService";
+import { formatDate } from "../../../shared/utils/date";
+import { ProjectImages } from "./ProjectImages";
 
 const Card = styled.div`
   background: ${colors.surface};
@@ -67,22 +68,6 @@ const Rating = styled.span`
   font-weight: ${fonts.weight.medium};
 `;
 
-const ImagesContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
-`;
-
-const Image = styled.img`
-  width: 130px;
-  height: 75px;
-  border-radius: ${borderRadius.sm};
-  object-fit: cover;
-  border: 1px solid ${colors.accentBorderDark};
-  box-shadow: 0 6px 18px rgba(2,6,23,0.04);
-`;
-
 const ExternalUrl = styled.div`
   font-size: ${fonts.size.sm};
   color: ${colors.primary};
@@ -110,32 +95,8 @@ interface ProjectCardProps {
   project: Project;
 }
 
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return '';
-  }
-};
-
 export const ProjectCard = ({ project }: ProjectCardProps) => {
   const navigate = useNavigate();
-
-  const renderImages = () => {
-    const imagePaths = project.imagePaths || [];
-    return imagePaths.slice(0, 6).map((path, idx) => (
-      <Image
-        key={idx}
-        src={projectService.getProjectImagePath(project.id, path)}
-        alt={`Project image ${idx + 1}`}
-      />
-    ));
-  };
 
   return (
     <Card onClick={() => navigate(`/projects/${project.id}`)}>
@@ -148,9 +109,11 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
             </a>
           </ExternalUrl>
         )}
-        <ImagesContainer>
-          {renderImages()}
-        </ImagesContainer>
+        <ProjectImages
+          projectId={project.id}
+          imagePaths={project.imagePaths || []}
+          maxImages={6}
+        />
         <AuthorDate>
           <AuthorLink to={`/profile/${project.author}`} onClick={(e) => e.stopPropagation()}>
             {project.author ? project.author.substring(0, 8) : 'Unknown'}
