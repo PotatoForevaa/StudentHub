@@ -70,7 +70,7 @@ namespace StudentHub.Api
 
                 builder.Services.AddCors(options =>
                 {
-                    options.AddPolicy("AllowAll", policy =>
+                    options.AddPolicy("AllowFront", policy =>
                     {
                         policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75:5173")
                         .AllowAnyMethod()
@@ -142,7 +142,7 @@ namespace StudentHub.Api
                 }
 
                 app.UseRouting();
-                app.UseCors("AllowAll");
+                app.UseCors("AllowFront");
 
                 app.UseAuthentication();
                 app.UseAuthorization();
