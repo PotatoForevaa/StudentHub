@@ -5,8 +5,7 @@
         public Guid Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public string ProfilePicturePath { get; set; } = string.Empty;
-        public List<Post> Posts { get; set; } = new List<Post>();
+        public string ProfilePicturePath { get; set; } = "default-pfp.png";
         public List<Project> Projects { get; set; } = new List<Project>();
     }
 }

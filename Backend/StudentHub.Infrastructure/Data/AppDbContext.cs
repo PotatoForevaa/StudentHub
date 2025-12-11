@@ -14,9 +14,7 @@ namespace StudentHub.Infrastructure.Data
             builder.HasDefaultSchema("Business");
         }
 
-        public DbSet<Post> Posts { get; set; }
         public DbSet<Project> Projects { get; set; }
-        public DbSet<PostRating> PostRatings { get; set; }
         public DbSet<ProjectRating> ProjectRatings { get; set; }
         public DbSet<ProjectComment> ProjectComments { get; set; }
         public DbSet<Image> Images { get; set; }

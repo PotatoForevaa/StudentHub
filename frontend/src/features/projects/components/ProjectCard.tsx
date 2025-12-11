@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Project } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import { baseUrl } from "../../../shared/services/base";
@@ -19,6 +19,7 @@ const Card = styled.div`
   overflow: hidden;
 
   border-left: 4px solid ${colors.accentBorder};
+  cursor: pointer;
   &:hover { transform: translateY(-6px); box-shadow: ${shadows.lg} }
 `;
 
@@ -123,6 +124,8 @@ const formatDate = (dateString: string): string => {
 };
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
+  const navigate = useNavigate();
+
   const renderImages = () => {
     const imagePaths = project.imagePaths || [];
     return imagePaths.slice(0, 6).map((path, idx) => (
@@ -135,8 +138,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   };
 
   return (
-    <Link to={`/projects/${project.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <Card>
+    <Card onClick={() => navigate(`/projects/${project.id}`)}>
         <Title>{project.name}</Title>
         <Description>{project.description ? project.description.slice(0, 220) + (project.description.length > 220 ? '...' : '') : ''}</Description>
         {project.externalUrl && project.externalUrl.trim() && (
@@ -156,7 +158,6 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           <Rating>☆ {project.averageRating?.toFixed(1) ?? 'N/A'}</Rating>
           <span>{project.creationDate && formatDate(project.creationDate)}</span>
         </AuthorDate>
-      </Card>
-    </Link>
+    </Card>
   );
 };

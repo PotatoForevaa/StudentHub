@@ -58,7 +58,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
         const res = await projectService.getProjects();
-        console.debug('projectService.getProjects response:', res);
         if (res && res.isSuccess && res.data) {
           const mappedProjects = res.data.map((p: unknown) => ({
             ...(p as Record<string, unknown>),

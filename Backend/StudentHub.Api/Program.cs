@@ -80,7 +80,7 @@ namespace StudentHub.Api
                     });
                     options.AddPolicy("AllowFrontend", policy =>
                     {
-                        policy.WithOrigins("http://192.168.147.75:5173") // àäðåñ ôðîíòà
+                        policy.WithOrigins("http://192.168.147.75:5173")
                               .AllowAnyHeader()
                               .AllowAnyMethod();
                     });
@@ -89,10 +89,8 @@ namespace StudentHub.Api
                 builder.Services.AddHttpContextAccessor();
                 builder.Services.AddScoped<IFileStorageService, FileStorage>();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
-                builder.Services.AddScoped<IPostRepository, PostRepository>();
                 builder.Services.AddScoped<IUserUseCase, UserUseCase>();
                 builder.Services.AddScoped<IAuthService, AuthService>();
-                builder.Services.AddScoped<IPostUseCase, PostUseCase>();
                 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
                 builder.Services.AddScoped<IProjectUseCase, ProjectUseCase>();
                 builder.Services.AddControllers();
@@ -110,13 +108,18 @@ namespace StudentHub.Api
                 var app = builder.Build();
                 try
                 {
-                    var dbContext = app.Services.GetRequiredService<AppDbContext>();
-                    await dbContext.Database.MigrateAsync();
+                    using (var scope = app.Services.CreateScope())
+                    {
+                        var scopedServices = scope.ServiceProvider;
 
-                    var identityContext = app.Services.GetRequiredService<AppIdentityDbContext>();
-                    await identityContext.Database.MigrateAsync();
+                        var dbContext = scopedServices.GetRequiredService<AppDbContext>();
+                        await dbContext.Database.MigrateAsync();
 
-                    await DbSeeder.SeedAdmin(app.Services);
+                        var identityContext = scopedServices.GetRequiredService<AppIdentityDbContext>();
+                        await identityContext.Database.MigrateAsync();
+
+                        await DbSeeder.SeedAdmin(scopedServices);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -140,7 +143,7 @@ namespace StudentHub.Api
                 }
 
                 app.UseRouting();
-                app.UseCors("AllowFrontend");
+                app.UseCors("AllowAll");
 
                 app.UseAuthentication();
                 app.UseAuthorization();

@@ -4,17 +4,17 @@ import type { Project, Comment, ScoreFormData, CommentFormData, UpdateProjectFor
 
 export const projectService = {
     getProjects: async (): Promise<ApiResponse<Project[]>> => {
-        const response = await api.get('/api/Projects');
+        const response = await api.get('/api/projects');
         return response.data;
     },
 
     getProject: async (id: string): Promise<ApiResponse<Project>> => {
-        const response = await api.get(`/api/Projects/${id}`);
+        const response = await api.get(`/api/projects/${id}`);
         return response.data;
     },
 
     addProject: async (formData: FormData): Promise<ApiResponse<Project>> => {
-        const response = await api.post('/api/Projects/Create', formData, {
+        const response = await api.post('/api/projects', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -23,47 +23,37 @@ export const projectService = {
     },
 
     deleteProject: async (id: string): Promise<ApiResponse> => {
-        const response = await api.delete(`/api/Projects/Delete/${id}`);
+        const response = await api.delete(`/api/projects/${id}`);
         return response.data;
     },
 
     getImageList: async (id: string): Promise<ApiResponse> => {
-        const response = await api.get(`/api/Projects/${id}/GetImageList`);
+        const response = await api.get(`/api/projects/${id}/images`);
         return response.data;
     },
 
-    getImage: async (id: string, path: string): Promise<Response> => {
-        const token = localStorage.getItem('token');
-        const headers: HeadersInit = {};
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        const url = `${baseUrl}/api/Projects/${id}/${path}`;
-        return fetch(url, { headers });
-    },
-
     updateProject: async (id: string, data: UpdateProjectFormData): Promise<ApiResponse<Project>> => {
-        const response = await api.put(`/api/Projects/${id}`, data);
+        const response = await api.put(`/api/projects/${id}`, data);
         return response.data;
     },
 
     getComments: async (id: string): Promise<ApiResponse<Comment[]>> => {
-        const response = await api.get(`/api/Projects/${id}/Comments`);
+        const response = await api.get(`/api/projects/${id}/comments`);
         return response.data;
     },
 
     addComment: async (id: string, data: CommentFormData): Promise<ApiResponse<Comment>> => {
-        const response = await api.post(`/api/Projects/${id}/Comments`, data);
+        const response = await api.post(`/api/projects/${id}/comments`, data);
         return response.data;
     },
 
     addScore: async (id: string, data: ScoreFormData): Promise<ApiResponse<number>> => {
-        const response = await api.post(`/api/Projects/${id}/Score`, data);
+        const response = await api.post(`/api/projects/${id}/score`, data);
         return response.data;
     },
 
     getProjectsByUser: async (userId: string): Promise<ApiResponse<Project[]>> => {
-        const response = await api.get(`/api/Projects/GetByUser/${userId}`);
+        const response = await api.get(`/api/projects/author/${userId}`);
         return response.data;
     }
 };

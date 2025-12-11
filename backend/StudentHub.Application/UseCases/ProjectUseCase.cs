@@ -11,12 +11,10 @@ namespace StudentHub.Application.UseCases
     public class ProjectUseCase : IProjectUseCase
     {
         private readonly IProjectRepository _projectRepository;
-        private readonly IPostRepository _postRepository;
         private readonly IFileStorageService _fileService;
-        public ProjectUseCase(IProjectRepository projectRepository, IPostRepository postRepository, IFileStorageService fileService)
+        public ProjectUseCase(IProjectRepository projectRepository, IFileStorageService fileService)
         {
             _projectRepository = projectRepository;
-            _postRepository = postRepository;
             _fileService = fileService;
         }
 
@@ -321,46 +319,47 @@ namespace StudentHub.Application.UseCases
 
         public async Task<Result<List<ActivityDto>>> GetUserActivityAsync(Guid userId)
         {
-            var activityList = new List<ActivityDto>();
+            throw new NotImplementedException();
+            //var activityList = new List<ActivityDto>();
 
-            var postsResult = await _postRepository.GetPostsByAuthorIdAsync(userId);
-            if (!postsResult.IsSuccess) return Result<List<ActivityDto>>.Failure(postsResult.Errors);
-            var posts = postsResult.Value;
-            foreach (var post in posts)
-            {
-                var activity = new ActivityDto(
-                    Type: "post",
-                    Id: post.Id,
-                    Title: post.Title,
-                    Content: post.Description,
-                    CreatedAt: post.CreatedAt,
-                    ProjectName: null,
-                    ProjectId: null
-                );
-                activityList.Add(activity);
-            }
+            //var postsResult = await _projectRepository.GetBy(userId);
+            //if (!postsResult.IsSuccess) return Result<List<ActivityDto>>.Failure(postsResult.Errors);
+            //var posts = postsResult.Value;
+            //foreach (var post in posts)
+            //{
+            //    var activity = new ActivityDto(
+            //        Type: "post",
+            //        Id: post.Id,
+            //        Title: post.Title,
+            //        Content: post.Description,
+            //        CreatedAt: post.CreatedAt,
+            //        ProjectName: null,
+            //        ProjectId: null
+            //    );
+            //    activityList.Add(activity);
+            //}
 
-            var commentsResult = await _projectRepository.GetCommentsByAuthorIdAsync(userId);
-            if (commentsResult.IsSuccess)
-            {
-                foreach (var comment in commentsResult.Value)
-                {
-                    var activity = new ActivityDto(
-                        Type: "comment",
-                        Id: comment.Id,
-                        Title: null,
-                        Content: comment.Content,
-                        CreatedAt: comment.CreatedAt,
-                        ProjectName: comment.Project?.Name,
-                        ProjectId: comment.ProjectId
-                    );
-                    activityList.Add(activity);
-                }
-            }
+            //var commentsResult = await _projectRepository.GetCommentsByAuthorIdAsync(userId);
+            //if (commentsResult.IsSuccess)
+            //{
+            //    foreach (var comment in commentsResult.Value)
+            //    {
+            //        var activity = new ActivityDto(
+            //            Type: "comment",
+            //            Id: comment.Id,
+            //            Title: null,
+            //            Content: comment.Content,
+            //            CreatedAt: comment.CreatedAt,
+            //            ProjectName: comment.Project?.Name,
+            //            ProjectId: comment.ProjectId
+            //        );
+            //        activityList.Add(activity);
+            //    }
+            //}
 
-            activityList.Sort((a, b) => b.CreatedAt.CompareTo(a.CreatedAt));
+            //activityList.Sort((a, b) => b.CreatedAt.CompareTo(a.CreatedAt));
 
-            return Result<List<ActivityDto>>.Success(activityList);
+            //return Result<List<ActivityDto>>.Success(activityList);
         }
     }
 }
