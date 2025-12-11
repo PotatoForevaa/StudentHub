@@ -4,7 +4,6 @@ using Serilog;
 using StudentHub.Api.Extensions;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
-using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Interfaces.UseCases;
 using StudentHub.Application.UseCases;
 using StudentHub.Infrastructure.Data;

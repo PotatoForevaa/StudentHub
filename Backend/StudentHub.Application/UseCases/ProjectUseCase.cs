@@ -3,7 +3,6 @@ using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
-using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Interfaces.UseCases;
 
 namespace StudentHub.Application.UseCases

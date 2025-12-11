@@ -4,7 +4,6 @@ using StudentHub.Api.DTOs.Requests;
 using StudentHub.Api.DTOs.Responses;
 using StudentHub.Api.Extensions;
 using StudentHub.Application.DTOs.Requests;
-using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Interfaces.UseCases;
 using System.Security.Claims;
 

@@ -1,7 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using StudentHub.Application.DTOs;
-using StudentHub.Application.Interfaces.Services;
+using StudentHub.Application.Interfaces.UseCases;
 
 namespace StudentHub.Infrastructure.Services
 {
