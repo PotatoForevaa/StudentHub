@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import type { Project } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
-import { baseUrl } from "../../../shared/services/base";
+import { projectService } from "../services/projectService";
 
 const Card = styled.div`
   background: ${colors.surface};
@@ -131,7 +131,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
     return imagePaths.slice(0, 6).map((path, idx) => (
       <Image
         key={idx}
-        src={`${baseUrl}/api/Projects/${project.id}/${path}`}
+        src={projectService.getProjectImagePath(project.id, path)}
         alt={`Project image ${idx + 1}`}
       />
     ));

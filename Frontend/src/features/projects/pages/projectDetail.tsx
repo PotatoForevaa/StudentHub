@@ -233,7 +233,7 @@ function ProjectDetailContent() {
               {imagePaths.map((path, idx) => (
                 <FullImage
                   key={idx}
-                  src={`${baseUrl}/api/Projects/${project.id}/${path}`}
+                  src={projectService.getProjectImagePath(project.id, path)}
                   alt={`Изображение проекта ${idx + 1}`}
                 />
               ))}

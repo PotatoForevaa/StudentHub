@@ -55,5 +55,8 @@ export const projectService = {
     getProjectsByUser: async (userId: string): Promise<ApiResponse<Project[]>> => {
         const response = await api.get(`/api/projects/author/${userId}`);
         return response.data;
-    }
+    },
+
+    getProjectImagePath: (id: string, path: string): string => 
+        `${baseUrl}/api/projects/${id}/images/${path}`
 };
