@@ -73,6 +73,7 @@ namespace StudentHub.Api
                     options.AddPolicy("AllowFront", policy =>
                     {
                         policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75:5173")
+                        .SetIsOriginAllowed(origin => origin.StartsWith("http://192.168."))
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();
