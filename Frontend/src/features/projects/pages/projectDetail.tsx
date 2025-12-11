@@ -311,7 +311,7 @@ function CommentItem({ comment }: { comment: Comment }) {
     <CommentContainer>
       <CommentHeader>
         {comment.authorProfilePicturePath && (
-          <ProfilePic src={`${comment.authorUsername ? userService.getProfilePicture(comment.authorUsername): ""}`} alt={comment.authorUsername || ''} />
+          <ProfilePic src={`${comment.authorUsername ? userService.getProfilePicturePath(comment.authorUsername): ""}`} alt={comment.authorUsername || ''} />
         )}
         <CommentUserLink to={`/profile/${comment.authorUsername}`}>
           {comment.authorUsername || 'Аноним'}

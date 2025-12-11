@@ -22,6 +22,9 @@ export const userService = {
     return res.data;
   },
 
+  getProfilePicturePath: (username: string): string => 
+    `/api/users/by-username/${username}/profile-picture`,
+
   uploadProfilePicture: async (file: File): Promise<ApiResponse> => {
     const formData = new FormData();
     formData.append('file', file);
