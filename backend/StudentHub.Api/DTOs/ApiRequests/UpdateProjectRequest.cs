@@ -1,0 +1,14 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace StudentHub.Api.DTOs.Requests
+{
+    public class UpdateProjectRequest
+    {
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public string Description { get; set; }
+        public string? ExternalUrl { get; set; }
+        public List<string>? Base64Images { get; set; } = new List<string>();
+    }
+}
