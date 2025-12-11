@@ -1,4 +1,4 @@
-namespace StudentHub.Domain.Entities
+namespace StudentHub.Application.Entities
 {
     public class ProjectComment
     {
@@ -11,4 +11,3 @@ namespace StudentHub.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
-

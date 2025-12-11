@@ -1,5 +1,5 @@
 ﻿using StudentHub.Application.DTOs;
-using StudentHub.Domain.Entities;
+using StudentHub.Application.Entities;
 
 namespace StudentHub.Application.Interfaces.Repositories
 {

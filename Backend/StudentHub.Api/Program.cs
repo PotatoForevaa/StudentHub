@@ -5,7 +5,8 @@ using StudentHub.Api.Extensions;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Application.Interfaces.Services;
-using StudentHub.Application.Services;
+using StudentHub.Application.Interfaces.UseCases;
+using StudentHub.Application.UseCases;
 using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
@@ -79,7 +80,7 @@ namespace StudentHub.Api
                     });
                     options.AddPolicy("AllowFrontend", policy =>
                     {
-                        policy.WithOrigins("http://192.168.147.75:5173") // àäðåñ ôðîíòà
+                        policy.WithOrigins("http://192.168.147.75:5173") // Ã Ã¤Ã°Ã¥Ã± Ã´Ã°Ã®Ã­Ã²Ã 
                               .AllowAnyHeader()
                               .AllowAnyMethod();
                     });
@@ -89,11 +90,11 @@ namespace StudentHub.Api
                 builder.Services.AddScoped<IFileStorageService, FileStorage>();
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<IPostRepository, PostRepository>();
-                builder.Services.AddScoped<IUserService, UserService>();
+                builder.Services.AddScoped<IUserUseCase, UserUseCase>();
                 builder.Services.AddScoped<IAuthService, AuthService>();
-                builder.Services.AddScoped<IPostService, PostService>();
+                builder.Services.AddScoped<IPostUseCase, PostUseCase>();
                 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-                builder.Services.AddScoped<IProjectService, ProjectService>();
+                builder.Services.AddScoped<IProjectUseCase, ProjectUseCase>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(options =>

@@ -1,18 +1,19 @@
 ﻿using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Responses;
+using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Application.Interfaces.Services;
-using StudentHub.Domain.Entities;
+using StudentHub.Application.Interfaces.UseCases;
 
-namespace StudentHub.Application.Services
+namespace StudentHub.Application.UseCases
 {
-    public class ProjectService : IProjectService
+    public class ProjectUseCase : IProjectUseCase
     {
         private readonly IProjectRepository _projectRepository;
         private readonly IPostRepository _postRepository;
         private readonly IFileStorageService _fileService;
-        public ProjectService(IProjectRepository projectRepository, IPostRepository postRepository, IFileStorageService fileService)
+        public ProjectUseCase(IProjectRepository projectRepository, IPostRepository postRepository, IFileStorageService fileService)
         {
             _projectRepository = projectRepository;
             _postRepository = postRepository;
@@ -73,9 +74,11 @@ namespace StudentHub.Application.Services
             return result;
         }
 
-        public async Task<List<ProjectDto>> GetAllAsync(int page = 0, int pageSize = 0)
+        public async Task<Result<List<ProjectDto>>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            var projectList = await _projectRepository.GetAllAsync(page, pageSize);
+            var projectListResult = await _projectRepository.GetAllAsync(page, pageSize);
+            if (!projectListResult.IsSuccess) return Result<List<ProjectDto>>.Failure(projectListResult.Errors, projectListResult.ErrorType);
+            var projectList = projectListResult.Value;
             var dtoList = new List<ProjectDto>();
 
             foreach (var p in projectList)
@@ -95,12 +98,14 @@ namespace StudentHub.Application.Services
                 dtoList.Add(dto);
             }
 
-            return dtoList;
+            return Result<List<ProjectDto>>.Success(dtoList);
         }
 
-        public async Task<List<ProjectDto>> GetProjectsByAuthorIdAsync(Guid authorId)
+        public async Task<Result<List<ProjectDto>>> GetProjectsByAuthorIdAsync(Guid authorId)
         {
-            var projectList = await _projectRepository.GetProjectsByAuthorIdAsync(authorId);
+            var projectListResult = await _projectRepository.GetProjectsByAuthorIdAsync(authorId);
+            if (!projectListResult.IsSuccess) return Result<List<ProjectDto>>.Failure(projectListResult.Errors, projectListResult.ErrorType);
+            var projectList = projectListResult.Value;
             var dtoList = new List<ProjectDto>();
 
             foreach (var p in projectList)
@@ -120,7 +125,7 @@ namespace StudentHub.Application.Services
                 dtoList.Add(dto);
             }
 
-            return dtoList;
+            return Result<List<ProjectDto>>.Success(dtoList);
         }
 
         public async Task<Result<ProjectDto?>> GetByIdAsync(Guid id)
@@ -318,7 +323,9 @@ namespace StudentHub.Application.Services
         {
             var activityList = new List<ActivityDto>();
 
-            var posts = await _postRepository.GetPostsByAuthorIdAsync(userId);
+            var postsResult = await _postRepository.GetPostsByAuthorIdAsync(userId);
+            if (!postsResult.IsSuccess) return Result<List<ActivityDto>>.Failure(postsResult.Errors);
+            var posts = postsResult.Value;
             foreach (var post in posts)
             {
                 var activity = new ActivityDto(

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentHub.Application.DTOs;
+using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
-using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
 
 namespace StudentHub.Infrastructure.Repositories
@@ -48,18 +48,19 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<Post?>.Success(post);
         }
 
-        public async Task<List<Post>> GetAllAsync(int page = 0, int pageSize = 0)
+        public async Task<Result<List<Post>>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            if (page == 0 && pageSize == 0) return await _dbContext.Posts.OrderByDescending(p => p.CreatedAt).ToListAsync();
-            return await _dbContext.Posts.OrderByDescending(p => p.CreatedAt).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var posts = page == 0 && pageSize == 0 ? await _dbContext.Posts.OrderByDescending(p => p.CreatedAt).ToListAsync() : await _dbContext.Posts.OrderByDescending(p => p.CreatedAt).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            return Result<List<Post>>.Success(posts);
         }
 
-        public async Task<List<Post>> GetPostsByAuthorIdAsync(Guid authorId)
+        public async Task<Result<List<Post>>> GetPostsByAuthorIdAsync(Guid authorId)
         {
-            return await _dbContext.Posts
+            var posts = await _dbContext.Posts
                 .Where(p => p.AuthorId == authorId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
+            return Result<List<Post>>.Success(posts);
         }
     }
 }

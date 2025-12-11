@@ -1,5 +1,5 @@
 ﻿using StudentHub.Application.DTOs;
-using StudentHub.Domain.Entities;
+using StudentHub.Application.Entities;
 
 namespace StudentHub.Application.Interfaces.Repositories
 {
@@ -7,8 +7,8 @@ namespace StudentHub.Application.Interfaces.Repositories
     {
         Task<Result<Project?>> AddAsync(Project project);
         Task<Result> DeleteAsync(Guid id);
-        Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0);
-        Task<List<Project>> GetProjectsByAuthorIdAsync(Guid authorId);
+        Task<Result<List<Project>>> GetAllAsync(int page = 0, int pageSize = 0);
+        Task<Result<List<Project>>> GetProjectsByAuthorIdAsync(Guid authorId);
         Task<Result<Project?>> GetByIdAsync(Guid id);
         Task<Result<Project?>> UpdateAsync(Project project);
         Task<Result<List<string>>> GetImageListByIdAsync(Guid id);

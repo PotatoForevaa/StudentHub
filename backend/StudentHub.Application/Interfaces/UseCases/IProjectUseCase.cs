@@ -2,13 +2,13 @@
 using StudentHub.Application.DTOs.Commands;
 using StudentHub.Application.DTOs.Responses;
 
-namespace StudentHub.Application.Interfaces.Services
+namespace StudentHub.Application.Interfaces.UseCases
 {
-    public interface IProjectService
+    public interface IProjectUseCase
     {
         Task<Result<ProjectDto?>> GetByIdAsync(Guid id);
-        Task<List<ProjectDto>> GetAllAsync(int page = 0, int pageSize = 0);
-        Task<List<ProjectDto>> GetProjectsByAuthorIdAsync(Guid authorId);
+        Task<Result<List<ProjectDto>>> GetAllAsync(int page = 0, int pageSize = 0);
+        Task<Result<List<ProjectDto>>> GetProjectsByAuthorIdAsync(Guid authorId);
         Task<Result<ProjectDto?>> CreateAsync(CreateProjectCommand createProjectCommand);
         Task<Result<ProjectDto?>> UpdateAsync(UpdateProjectCommand updateProjectCommand);
         Task<Result> DeleteAsync(Guid id);

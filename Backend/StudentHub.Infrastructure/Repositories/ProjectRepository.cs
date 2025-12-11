@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentHub.Application.DTOs;
+using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
-using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
 
 namespace StudentHub.Infrastructure.Repositories
@@ -31,25 +31,23 @@ namespace StudentHub.Infrastructure.Repositories
             return Result.Success();
         }
 
-        public async Task<List<Project>> GetAllAsync(int page = 0, int pageSize = 0)
+        public async Task<Result<List<Project>>> GetAllAsync(int page = 0, int pageSize = 0)
         {
-            if (page == 0 && pageSize == 0)
-                return await _dbContext.Projects
-                    .Include(p => p.Images)
-                    .Include(p => p.Author)
-                    .OrderByDescending(p => p.CreatedAt)
-                    .ToListAsync();
-            return await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).Include(p => p.Author).ToListAsync();
+            var projects = page == 0 && pageSize == 0
+                ? await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).OrderByDescending(p => p.CreatedAt).ToListAsync()
+                : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).Include(p => p.Author).ToListAsync();
+            return Result<List<Project>>.Success(projects);
         }
 
-        public async Task<List<Project>> GetProjectsByAuthorIdAsync(Guid authorId)
+        public async Task<Result<List<Project>>> GetProjectsByAuthorIdAsync(Guid authorId)
         {
-            return await _dbContext.Projects
+            var projects = await _dbContext.Projects
                 .Where(p => p.AuthorId == authorId)
                 .Include(p => p.Images)
                 .Include(p => p.Author)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
+            return Result<List<Project>>.Success(projects);
         }
 
         public async Task<Result<Project?>> GetByIdAsync(Guid id)

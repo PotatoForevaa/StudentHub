@@ -1,4 +1,4 @@
-﻿namespace StudentHub.Domain.Entities
+﻿namespace StudentHub.Application.Entities
 {
     public class Project
     {

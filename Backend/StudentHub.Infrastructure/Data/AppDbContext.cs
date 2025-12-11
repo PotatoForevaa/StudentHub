@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudentHub.Domain.Entities;
+using StudentHub.Application.Entities;
 
 namespace StudentHub.Infrastructure.Data
 {

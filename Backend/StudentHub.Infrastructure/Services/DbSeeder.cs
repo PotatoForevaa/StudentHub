@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StudentHub.Domain.Entities;
+using StudentHub.Application.Entities;
 using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 

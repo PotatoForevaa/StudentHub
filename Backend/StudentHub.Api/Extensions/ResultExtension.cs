@@ -62,5 +62,33 @@ namespace StudentHub.Api.Extensions
             ErrorType.ServerError => 500,
             _ => 500
         };
+
+        public static IActionResult ToCreatedActionResult<T>(this Result<T> result, string relativeUri)
+        {
+            if (result.IsSuccess)
+            {
+                var apiResponse = new ApiResponse<T>
+                {
+                    IsSuccess = true,
+                    Data = result.Value
+                };
+                return new CreatedResult(relativeUri, apiResponse);
+            }
+
+            var errorType = result.ErrorType;
+            return CreateErrorResult(errorType, result.Errors);
+        }
+
+        public static IActionResult ToCreatedActionResult(this Result result, string relativeUri)
+        {
+            if (result.IsSuccess)
+            {
+                var apiResponse = new ApiResponse { IsSuccess = true };
+                return new CreatedResult(relativeUri, apiResponse);
+            }
+
+            var errorType = result.ErrorType;
+            return CreateErrorResult(errorType, result.Errors);
+        }
     }
 }

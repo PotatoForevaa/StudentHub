@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentHub.Application.DTOs;
+using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
-using StudentHub.Domain.Entities;
 using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 
