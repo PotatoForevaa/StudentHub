@@ -24,6 +24,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__PgSql: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
+      Admin__Password: P@ssw0rd
+      Admin__FullName: Admin User
+      Admin__Username: Admin
     ports:
       - "80:5000"
     depends_on:
