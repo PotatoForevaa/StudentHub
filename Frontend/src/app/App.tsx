@@ -66,11 +66,11 @@ function App() {
 
                   <Route element={<PrivateRoute />}>
                     <Route path="/dashboard" element={null} />
+                    <Route path="/" element={<Profile />} />
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/:id" element={<ProjectDetail />} />
                     <Route path="/users" element={<UserList />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/profile/:username" element={<Profile />} />
+                    <Route path="/:username" element={<Profile />} />
                   </Route>
                 </Routes>
               </MainContent>

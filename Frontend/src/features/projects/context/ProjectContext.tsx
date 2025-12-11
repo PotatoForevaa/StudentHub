@@ -2,6 +2,7 @@ import { createContext, useEffect, useState, useContext, useCallback, type React
 import { projectService } from "../services/projectService";
 import type { Project } from "../types";
 import { AuthContext } from "../../auth/context/AuthContext";
+import { usePagination } from "../../../shared/hooks/usePagination";
 
 export type ProjectContextType = {
     project: Project | null;
@@ -38,21 +39,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPageState] = useState(1);
-  const [pageSize, setPageSizeState] = useState(6);
   const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
 
-  const totalPages = Math.ceil((projects?.length || 0) / pageSize);
-  const paginatedProjects = projects?.slice((currentPage - 1) * pageSize, currentPage * pageSize) || [];
-
-  const setCurrentPage = useCallback((page: number) => {
-    setCurrentPageState(page);
-  }, []);
-
-  const setPageSize = useCallback((size: number) => {
-    setPageSizeState(size);
-    setCurrentPageState(1);
-  }, []);
+  const { paginatedItems: paginatedProjects, currentPage, pageSize, totalPages, setCurrentPage, setPageSize } = usePagination(projects, 6);
 
   const getProjects = useCallback(async () => {
     setLoading(true);

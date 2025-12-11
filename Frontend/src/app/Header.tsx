@@ -195,7 +195,7 @@ export const Header = () => {
               <>
                 <Li>
                   <NavLinkStyled
-                    to="profile"
+                    to={user?.username ? `/${user.username}` : "/"}
                     className={({ isActive }) => (isActive ? "active" : "")}
                   >
                     <StyledP>

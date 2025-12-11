@@ -43,7 +43,7 @@ interface UserCardProps {
 
 export const UserCard = ({ user }: UserCardProps) => {
   return (
-    <Link to={`/profile/${user.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/${user.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
       <Card>
         <Title>{user.fullName}</Title>
         <Subtitle>@{user.username}</Subtitle>
