@@ -101,7 +101,7 @@ namespace StudentHub.Api.Controllers.API
         [HttpGet("{id}/images/{filename}")]
         public async Task<IActionResult> GetImage([FromRoute] Guid id, [FromRoute] string filename)
         {
-            var image = await _projectUseCase.GetImageAsync(Path.Combine(id.ToString(), filename));
+            var image = await _projectUseCase.GetImageAsync(filename);
             if (!image.IsSuccess) return image.ToActionResult();
             return File(image.Value, "image/jpeg");
         }
