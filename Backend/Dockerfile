@@ -2,7 +2,6 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY *.sln .
-COPY StudentHub.Domain/*.csproj ./StudentHub.Domain/
 COPY StudentHub.Application/*.csproj ./StudentHub.Application/
 COPY StudentHub.Infrastructure/*.csproj ./StudentHub.Infrastructure/
 COPY StudentHub.Api/*.csproj ./StudentHub.Api/
