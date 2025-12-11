@@ -7,6 +7,7 @@ import { projectService } from "../services/projectService";
 import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import { baseUrl } from "../../../shared/services/base";
+import userService from "../../../shared/services/userService";
 
 const ProjectDetailContainer = styled.div`
   display: flex;
@@ -310,7 +311,7 @@ function CommentItem({ comment }: { comment: Comment }) {
     <CommentContainer>
       <CommentHeader>
         {comment.authorProfilePicturePath && (
-          <ProfilePic src={`${baseUrl}/api/Users/ProfilePicture/${comment.authorUsername}`} alt={comment.authorUsername || ''} />
+          <ProfilePic src={`${comment.authorUsername ? userService.getProfilePicture(comment.authorUsername): ""}`} alt={comment.authorUsername || ''} />
         )}
         <CommentUserLink to={`/profile/${comment.authorUsername}`}>
           {comment.authorUsername || 'Аноним'}
