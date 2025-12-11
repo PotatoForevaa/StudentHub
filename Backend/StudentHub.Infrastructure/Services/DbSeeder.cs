@@ -19,9 +19,9 @@ namespace StudentHub.Infrastructure.Services
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-            var username = config["Admin:Username"] ?? "Admin";
-            var password = config["Admin:Password"];
-            var name = config["Admin:FullName"] ?? "Admin";
+            var username = config["ADMIN:USERNAME"] ?? "Admin";
+            var password = config["ADMIN:PASSWORD"];
+            var name = config["ADMIN:FULLNAME"] ?? "Admin";
 
             const string roleName = "Admin";
 

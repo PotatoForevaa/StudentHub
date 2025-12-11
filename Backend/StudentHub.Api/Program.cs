@@ -38,10 +38,10 @@ namespace StudentHub.Api
                 builder.Services.AddSerilog();
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
+                    options.UseNpgsql(builder.Configuration.GetSection("CONNECTIONSTRING").Value));
 
                 builder.Services.AddDbContext<AppIdentityDbContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("PgSql")));
+                    options.UseNpgsql(builder.Configuration.GetSection("CONNECTIONSTRING").Value));
 
                 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppIdentityDbContext>()
@@ -72,7 +72,7 @@ namespace StudentHub.Api
                 {
                     options.AddPolicy("AllowFront", policy =>
                     {
-                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75:5173")
+                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75:81")
                         .SetIsOriginAllowed(origin => origin.StartsWith("http://192.168."))
                         .AllowAnyMethod()
                         .AllowAnyHeader()

@@ -23,10 +23,10 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__PgSql: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
-      Admin__Password: P@ssw0rd
-      Admin__FullName: Admin User
-      Admin__Username: Admin
+      CONNECTIONSTRING: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
+      ADMIN__PASSWORD: P@ssw0rd
+      ADMIN__FULLNAME: Admin User
+      ADMIN__USERNAME: Admin
     ports:
       - "80:5000"
     depends_on:
@@ -44,7 +44,7 @@ services:
       - ./Frontend:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - "81:5173"
     entrypoint: sh
     command: -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     depends_on:
