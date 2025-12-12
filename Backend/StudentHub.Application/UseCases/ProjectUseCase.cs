@@ -184,21 +184,16 @@ namespace StudentHub.Application.UseCases
 
             var newFilePaths = new List<string>();
 
-            if (updateProjectCommand.Base64Images != null && updateProjectCommand.Base64Images.Any())
+            if (updateProjectCommand.Files != null && updateProjectCommand.Files.Any())
             {
                 project.Images.Clear();
 
-                foreach (var base64 in updateProjectCommand.Base64Images)
+                foreach (var file in updateProjectCommand.Files)
                 {
-                    if (string.IsNullOrWhiteSpace(base64)) continue;
-
-                    var bytes = Convert.FromBase64String(base64);
-                    await using var stream = new MemoryStream(bytes);
-                    var fileName = $"{Guid.NewGuid()}.jpg";
-                    var saved = await _fileService.SaveFileAsync(stream, fileName);
-                    if (!saved.IsSuccess) return Result<ProjectDto?>.Failure(saved.Errors);
-                    newFilePaths.Add(saved.Value);
-                    project.Images.Add(new Image { Path = saved.Value });
+                    var fileResult = await _fileService.SaveFileAsync(file, "");
+                    if (!fileResult.IsSuccess) return Result<ProjectDto?>.Failure(fileResult.Errors);
+                    newFilePaths.Add(fileResult.Value);
+                    project.Images.Add(new Image { Path = fileResult.Value });
                 }
             }
             else

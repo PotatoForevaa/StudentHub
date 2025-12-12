@@ -62,7 +62,7 @@ namespace StudentHub.Api.Controllers.API
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProject([FromRoute] Guid id, [FromBody] UpdateProjectRequest request)
+        public async Task<IActionResult> UpdateProject([FromRoute] Guid id, [FromForm] UpdateProjectRequest request)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -72,7 +72,7 @@ namespace StudentHub.Api.Controllers.API
                 Name: request.Name,
                 Description: request.Description,
                 ExternalUrl: request.ExternalUrl,
-                Base64Images: request.Base64Images
+                Files: request.Files?.Select(f => f.OpenReadStream()).ToList()
             );
 
             var result = await _projectUseCase.UpdateAsync(command);

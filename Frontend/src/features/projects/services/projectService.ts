@@ -1,4 +1,4 @@
-import api, { baseUrl } from '../../../shared/services/base';
+import api, { API_BASE_URL } from '../../../shared/services/base';
 import type { ApiResponse } from '../../../shared/types';
 import type { Project, Comment, ScoreFormData, CommentFormData, UpdateProjectFormData } from '../types';
 
@@ -32,8 +32,12 @@ export const projectService = {
         return response.data;
     },
 
-    updateProject: async (id: string, data: UpdateProjectFormData): Promise<ApiResponse<Project>> => {
-        const response = await api.put(`/api/projects/${id}`, data);
+    updateProject: async (id: string, formData: FormData): Promise<ApiResponse<Project>> => {
+        const response = await api.put(`/api/projects/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     },
 
@@ -57,6 +61,6 @@ export const projectService = {
         return response.data;
     },
 
-    getProjectImagePath: (id: string, path: string): string => 
-        `${baseUrl}/api/projects/${id}/images/${path}`
+    getProjectImagePath: (id: string, path: string): string =>
+        `${API_BASE_URL}/api/projects/${id}/images/${path}`
 };

@@ -6,7 +6,6 @@ namespace StudentHub.Application.DTOs.Commands
         string Name,
         string Description,
         string? ExternalUrl,
-        List<string>? Base64Images
+        List<Stream>? Files
     );
 }
-

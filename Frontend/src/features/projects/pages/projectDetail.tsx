@@ -1,12 +1,14 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import styled from "styled-components";
 import { ProjectProvider } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
+import { ProjectUpdateForm } from "../components/ProjectUpdateForm";
 import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
-import { baseUrl } from "../../../shared/services/base";
+import { API_BASE_URL } from "../../../shared/services/base";
+import { AuthContext } from "../../auth/context/AuthContext";
 import userService from "../../../shared/services/userService";
 
 const ProjectDetailContainer = styled.div`
@@ -25,10 +27,32 @@ const ProjectHeader = styled.div`
 `;
 
 const ProjectTitle = styled.h1`
-  margin: 0 0 ${spacing.md} 0;
+  margin: 0;
   font-size: ${fonts.size['2xl']};
   font-weight: ${fonts.weight.bold};
   color: ${colors.textPrimary};
+`;
+
+const ProjectTitleContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${spacing.md};
+`;
+
+const EditButton = styled.button`
+  background: ${colors.gray400};
+  color: ${colors.white};
+  border: none;
+  padding: ${spacing.sm} ${spacing.md};
+  border-radius: ${borderRadius.sm};
+  cursor: pointer;
+  transition: background ${transitions.base};
+  font-weight: ${fonts.weight.semibold};
+
+  &:hover {
+    background: ${colors.gray500};
+  }
 `;
 
 const ProjectMeta = styled.div`
@@ -124,12 +148,14 @@ const BackLink = styled(Link)`
 
 function ProjectDetailContent() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useContext(AuthContext);
   const [project, setProject] = useState<Project | null>(null);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [newScore, setNewScore] = useState(0);
+  const [editing, setEditing] = useState(false);
 
   const loadProject = useCallback(async () => {
     try {
@@ -210,89 +236,107 @@ function ProjectDetailContent() {
       <ProjectDetailContainer>
         <BackLink to="/projects">← Назад к проектам</BackLink>
 
-        <ProjectHeader>
-          <ProjectTitle>{project.name}</ProjectTitle>
-          <ProjectMeta>
-            <span>Автор: <AuthorLink to={`/profile/${project.author}`}>{project.author}</AuthorLink></span>
-            <span>{formatDate(project.creationDate)}</span>
-          </ProjectMeta>
-          {project.description && (
-            <ProjectDescription>{project.description}</ProjectDescription>
-          )}
-          {project.externalUrl && (
-            <a href={project.externalUrl} target="_blank" rel="noopener noreferrer">
-              Посмотреть внешнюю ссылку
-            </a>
-          )}
-        </ProjectHeader>
+        {editing ? (
+          <ProjectUpdateForm
+            project={project}
+            onSuccess={() => {
+              setEditing(false);
+              loadProject();
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        ) : (
+          <>
+            <ProjectHeader>
+              <ProjectTitleContainer>
+                <ProjectTitle>{project.name}</ProjectTitle>
+                {user?.fullName === project.author && (
+                  <EditButton onClick={() => setEditing(true)}>Редактировать</EditButton>
+                )}
+              </ProjectTitleContainer>
+              <ProjectMeta>
+                <span>Автор: <AuthorLink to={`/profile/${project.author}`}>{project.author}</AuthorLink></span>
+                <span>{formatDate(project.creationDate)}</span>
+              </ProjectMeta>
+              {project.description && (
+                <ProjectDescription>{project.description}</ProjectDescription>
+              )}
+              {project.externalUrl && (
+                <a href={project.externalUrl} target="_blank" rel="noopener noreferrer">
+                  Посмотреть внешнюю ссылку
+                </a>
+              )}
+            </ProjectHeader>
 
-        {imagePaths.length > 0 && (
-          <div>
-            <h3>Изображения</h3>
-            <ImagesGrid>
-              {imagePaths.map((path, idx) => (
-                <FullImage
-                  key={idx}
-                  src={projectService.getProjectImagePath(project.id, path)}
-                  alt={`Изображение проекта ${idx + 1}`}
+            {imagePaths.length > 0 && (
+              <div>
+                <h3>Изображения</h3>
+                <ImagesGrid>
+                  {imagePaths.map((path, idx) => (
+                    <FullImage
+                      key={idx}
+                      src={projectService.getProjectImagePath(project.id, path)}
+                      alt={`Изображение проекта ${idx + 1}`}
+                    />
+                  ))}
+                </ImagesGrid>
+              </div>
+            )}
+
+            <ScoreSection>
+              <CommentsTitle>Оценить проект</CommentsTitle>
+              <ScoreSectionContent>
+                <AverageRating>
+                  Средняя оценка: {project.averageRating.toFixed(1)} / 5.0
+                </AverageRating>
+                <StarSelector>
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <StarButton
+                      key={star}
+                      type="button"
+                      selected={newScore >= star}
+                      onClick={async () => {
+                        setNewScore(star);
+                        try {
+                          const result = await projectService.addScore(id!, { score: star });
+                          if (result.isSuccess) {
+                            setProject(prev => prev ? { ...prev, averageRating: result.data ?? 0 } : prev);
+                          } else {
+                            alert('Не удалось отправить оценку');
+                            setNewScore(0);
+                          }
+                        } catch (error) {
+                          console.error("Failed to add score", error);
+                          alert('Не удалось отправить оценку');
+                          setNewScore(0);
+                        }
+                      }}
+                    >
+                      ★
+                    </StarButton>
+                  ))}
+                </StarSelector>
+              </ScoreSectionContent>
+            </ScoreSection>
+
+            <CommentsSection>
+              <CommentsTitle>Комментарии ({comments.length})</CommentsTitle>
+              <Form onSubmit={handleAddComment}>
+                <TextArea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Напишите комментарий..."
                 />
+                <Button type="submit" disabled={!newComment.trim()}>
+                  Опубликовать комментарий
+                </Button>
+              </Form>
+              {comments.map(comment => (
+                <CommentItem key={comment.id} comment={comment} />
               ))}
-            </ImagesGrid>
-          </div>
+            </CommentsSection>
+          </>
         )}
-
-        <ScoreSection>
-          <CommentsTitle>Оценить проект</CommentsTitle>
-          <ScoreSectionContent>
-            <AverageRating>
-              Средняя оценка: {project.averageRating.toFixed(1)} / 5.0
-            </AverageRating>
-            <StarSelector>
-              {[1, 2, 3, 4, 5].map(star => (
-                <StarButton
-                  key={star}
-                  type="button"
-                  selected={newScore >= star}
-                  onClick={async () => {
-                    setNewScore(star);
-                    try {
-                      const result = await projectService.addScore(id!, { score: star });
-                      if (result.isSuccess) {
-                        setProject(prev => prev ? { ...prev, averageRating: result.data ?? 0 } : prev);
-                      } else {
-                        alert('Не удалось отправить оценку');
-                        setNewScore(0);
-                      }
-                    } catch (error) {
-                      console.error("Failed to add score", error);
-                      alert('Не удалось отправить оценку');
-                      setNewScore(0);
-                    }
-                  }}
-                >
-                  ★
-                </StarButton>
-              ))}
-            </StarSelector>
-          </ScoreSectionContent>
-        </ScoreSection>
-
-        <CommentsSection>
-          <CommentsTitle>Комментарии ({comments.length})</CommentsTitle>
-          <Form onSubmit={handleAddComment}>
-            <TextArea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Напишите комментарий..."
-            />
-            <Button type="submit" disabled={!newComment.trim()}>
-              Опубликовать комментарий
-            </Button>
-          </Form>
-          {comments.map(comment => (
-            <CommentItem key={comment.id} comment={comment} />
-          ))}
-        </CommentsSection>
       </ProjectDetailContainer>
     </Container>
   );
