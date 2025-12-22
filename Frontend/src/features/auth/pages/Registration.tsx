@@ -4,7 +4,7 @@ import { useAuthForm } from "../hooks/useAuthForm";
 import { AuthForm } from "../components/AuthForm";
 import { AuthContext } from "../context/AuthContext";
 
-export const Registration = () => {
+const Registration = () => {
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
@@ -65,3 +65,5 @@ export const Registration = () => {
     />
   );
 };
+
+export default Registration;

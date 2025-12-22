@@ -1,15 +1,14 @@
 import { useEffect, useState, useCallback, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import styled from "styled-components";
-import { ProjectProvider } from "../context/ProjectContext";
+import { ProjectProvider, ProjectContext } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
 import { ProjectUpdateForm } from "../components/ProjectUpdateForm";
 import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
-import { API_BASE_URL } from "../../../shared/services/base";
-import { AuthContext } from "../../auth/context/AuthContext";
 import userService from "../../../shared/services/userService";
+import { AuthContext } from "../../auth/context/AuthContext";
 
 const ProjectDetailContainer = styled.div`
   display: flex;
@@ -148,6 +147,7 @@ const BackLink = styled(Link)`
 
 function ProjectDetailContent() {
   const { id } = useParams<{ id: string }>();
+  const { updateProject } = useContext(ProjectContext);
   const { user } = useContext(AuthContext);
   const [project, setProject] = useState<Project | null>(null);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
@@ -155,7 +155,11 @@ function ProjectDetailContent() {
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [newScore, setNewScore] = useState(0);
-  const [editing, setEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editExternalUrl, setEditExternalUrl] = useState('');
+  const [editFiles, setEditFiles] = useState<FileList | null>(null);
 
   const loadProject = useCallback(async () => {
     try {
@@ -223,6 +227,47 @@ function ProjectDetailContent() {
     }
   };
 
+  const handleStartEdit = () => {
+    setEditName(project?.name || '');
+    setEditDescription(project?.description || '');
+    setEditExternalUrl(project?.externalUrl || '');
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditFiles(null);
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    const formData = new FormData();
+    formData.append('Name', editName);
+    formData.append('Description', editDescription);
+    if (editExternalUrl.trim()) {
+      formData.append('ExternalUrl', editExternalUrl);
+    }
+    if (editFiles) {
+      Array.from(editFiles).forEach(file => {
+        formData.append('Files', file);
+      });
+    }
+
+    const success = await updateProject(id, formData);
+    if (success) {
+      setIsEditing(false);
+      setEditFiles(null);
+      await loadProject();
+      await loadImageList();
+    } else {
+      alert('Не удалось обновить проект');
+    }
+  };
+
+  const isAuthor = user && project && user.username === project.author;
+
   if (loading) {
     return <Container>Загрузка...</Container>;
   }
@@ -236,27 +281,61 @@ function ProjectDetailContent() {
       <ProjectDetailContainer>
         <BackLink to="/projects">← Назад к проектам</BackLink>
 
-        {editing ? (
-          <ProjectUpdateForm
-            project={project}
-            onSuccess={() => {
-              setEditing(false);
-              loadProject();
-            }}
-            onCancel={() => setEditing(false)}
-          />
-        ) : (
-          <>
-            <ProjectHeader>
-              <ProjectTitleContainer>
-                <ProjectTitle>{project.name}</ProjectTitle>
-                {user?.fullName === project.author && (
-                  <EditButton onClick={() => setEditing(true)}>Редактировать</EditButton>
-                )}
-              </ProjectTitleContainer>
+        <ProjectHeader>
+          {isEditing ? (
+            <EditForm onSubmit={handleUpdateProject}>
+              <InputGroup>
+                <Label>Название проекта</Label>
+                <Input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label>Описание</Label>
+                <TextArea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  required
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label>Внешняя ссылка</Label>
+                <Input
+                  type="url"
+                  value={editExternalUrl}
+                  onChange={(e) => setEditExternalUrl(e.target.value)}
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label>Изображения (новые изображения заменят существующие)</Label>
+                <FileInput
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => setEditFiles(e.target.files)}
+                />
+              </InputGroup>
+              <ButtonGroup>
+                <Button type="submit">Сохранить</Button>
+                <CancelButton type="button" onClick={handleCancelEdit}>
+                  Отмена
+                </CancelButton>
+              </ButtonGroup>
+            </EditForm>
+          ) : (
+            <>
+              <ProjectTitle>{project.name}</ProjectTitle>
               <ProjectMeta>
                 <span>Автор: <AuthorLink to={`/profile/${project.author}`}>{project.author}</AuthorLink></span>
                 <span>{formatDate(project.creationDate)}</span>
+                {isAuthor && (
+                  <EditButton onClick={handleStartEdit}>
+                    Редактировать
+                  </EditButton>
+                )}
               </ProjectMeta>
               {project.description && (
                 <ProjectDescription>{project.description}</ProjectDescription>
@@ -266,66 +345,19 @@ function ProjectDetailContent() {
                   Посмотреть внешнюю ссылку
                 </a>
               )}
-            </ProjectHeader>
+            </>
+          )}
+        </ProjectHeader>
 
-            {imagePaths.length > 0 && (
-              <div>
-                <h3>Изображения</h3>
-                <ImagesGrid>
-                  {imagePaths.map((path, idx) => (
-                    <FullImage
-                      key={idx}
-                      src={projectService.getProjectImagePath(project.id, path)}
-                      alt={`Изображение проекта ${idx + 1}`}
-                    />
-                  ))}
-                </ImagesGrid>
-              </div>
-            )}
-
-            <ScoreSection>
-              <CommentsTitle>Оценить проект</CommentsTitle>
-              <ScoreSectionContent>
-                <AverageRating>
-                  Средняя оценка: {project.averageRating.toFixed(1)} / 5.0
-                </AverageRating>
-                <StarSelector>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <StarButton
-                      key={star}
-                      type="button"
-                      selected={newScore >= star}
-                      onClick={async () => {
-                        setNewScore(star);
-                        try {
-                          const result = await projectService.addScore(id!, { score: star });
-                          if (result.isSuccess) {
-                            setProject(prev => prev ? { ...prev, averageRating: result.data ?? 0 } : prev);
-                          } else {
-                            alert('Не удалось отправить оценку');
-                            setNewScore(0);
-                          }
-                        } catch (error) {
-                          console.error("Failed to add score", error);
-                          alert('Не удалось отправить оценку');
-                          setNewScore(0);
-                        }
-                      }}
-                    >
-                      ★
-                    </StarButton>
-                  ))}
-                </StarSelector>
-              </ScoreSectionContent>
-            </ScoreSection>
-
-            <CommentsSection>
-              <CommentsTitle>Комментарии ({comments.length})</CommentsTitle>
-              <Form onSubmit={handleAddComment}>
-                <TextArea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Напишите комментарий..."
+        {imagePaths.length > 0 && (
+          <div>
+            <h3>Изображения</h3>
+            <ImagesGrid>
+              {imagePaths.map((path, idx) => (
+                <FullImage
+                  key={idx}
+                  src={projectService.getProjectImagePath(project.id, path)}
+                  alt={`Изображение проекта ${idx + 1}`}
                 />
                 <Button type="submit" disabled={!newComment.trim()}>
                   Опубликовать комментарий
@@ -355,10 +387,10 @@ function CommentItem({ comment }: { comment: Comment }) {
     <CommentContainer>
       <CommentHeader>
         {comment.authorProfilePicturePath && (
-          <ProfilePic src={`${comment.authorUsername ? userService.getProfilePicturePath(comment.authorUsername): ""}`} alt={comment.authorUsername || ''} />
+          <ProfilePic src={userService.getProfilePicturePath(comment.authorUsername)} alt={comment.authorUsername} />
         )}
         <CommentUserLink to={`/profile/${comment.authorUsername}`}>
-          {comment.authorUsername || 'Аноним'}
+          {comment.authorUsername}
         </CommentUserLink>
         {comment.userScore && <SmallStars>{Array.from({ length: comment.userScore }, () => '★').join('')}</SmallStars>}
         <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
@@ -502,8 +534,89 @@ const StarButton = styled.button<{ selected: boolean }>`
   }
 `;
 
-export const ProjectDetail = () => (
+const EditForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.md};
+`;
+
+const InputGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.xs};
+`;
+
+const Label = styled.label`
+  font-weight: ${fonts.weight.semibold};
+  color: ${colors.textPrimary};
+  font-size: ${fonts.size.sm};
+`;
+
+const Input = styled.input`
+  padding: ${spacing.sm};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.sm};
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary};
+  }
+`;
+
+const FileInput = styled.input`
+  padding: ${spacing.sm};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.sm};
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary};
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: ${spacing.sm};
+  justify-content: flex-end;
+`;
+
+const CancelButton = styled.button`
+  background: ${colors.muted};
+  color: ${colors.textPrimary};
+  border: none;
+  padding: ${spacing.sm} ${spacing.md};
+  border-radius: ${borderRadius.sm};
+  cursor: pointer;
+  transition: background ${transitions.base};
+  font-weight: ${fonts.weight.semibold};
+
+  &:hover {
+    background: ${colors.accentBorder};
+  }
+`;
+
+const EditButton = styled.button`
+  background: ${colors.gray500};
+  color: ${colors.white};
+  border: none;
+  padding: ${spacing.xs} ${spacing.sm};
+  border-radius: ${borderRadius.sm};
+  cursor: pointer;
+  transition: background ${transitions.base};
+  font-weight: ${fonts.weight.semibold};
+  font-size: ${fonts.size.sm};
+
+  &:hover {
+    background: ${colors.muted};
+  }
+`;
+
+const ProjectDetail = () => (
   <ProjectProvider>
     <ProjectDetailContent />
   </ProjectProvider>
 );
+
+export default ProjectDetail;

@@ -162,58 +162,45 @@ namespace StudentHub.Application.UseCases
             return await _projectRepository.GetImageListByIdAsync(id);
         }
 
-        public async Task<Result<ProjectDto?>> UpdateAsync(UpdateProjectCommand updateProjectCommand)
+        public async Task<Result<ProjectDto?>> UpdateAsync(UpdateProjectCommand command)
         {
-            if (string.IsNullOrWhiteSpace(updateProjectCommand.Name))
-                return Result<ProjectDto?>.Failure("Project name cannot be empty", "name", ErrorType.Validation);
-
-            if (string.IsNullOrWhiteSpace(updateProjectCommand.Description))
-                return Result<ProjectDto?>.Failure("Project description cannot be empty", "description", ErrorType.Validation);
-
-            var projectResult = await _projectRepository.GetByIdAsync(updateProjectCommand.ProjectId);
-            if (!projectResult.IsSuccess) return Result<ProjectDto?>.Failure(projectResult.Errors);
+            var projectResult = await _projectRepository.GetByIdAsync(command.ProjectId);
+            if (!projectResult.IsSuccess)
+                return Result<ProjectDto?>.Failure(projectResult.Errors);
 
             var project = projectResult.Value!;
 
-            if (project.AuthorId != updateProjectCommand.AuthorId)
-                return Result<ProjectDto?>.Failure("You can edit only your own projects", "authorId", ErrorType.Validation);
+            project.Name = command.Name;
+            project.Description = command.Description;
+            project.ExternalUrl = string.IsNullOrWhiteSpace(command.ExternalUrl)
+                ? null
+                : new Uri(command.ExternalUrl);
 
-            project.Name = updateProjectCommand.Name;
-            project.Description = updateProjectCommand.Description;
-            project.ExternalUrl = string.IsNullOrEmpty(updateProjectCommand.ExternalUrl) ? null : new Uri(updateProjectCommand.ExternalUrl);
-
-            var newFilePaths = new List<string>();
-
-            if (updateProjectCommand.Files != null && updateProjectCommand.Files.Any())
+            if (command.Files is { Count: > 0 })
             {
                 project.Images.Clear();
 
-                foreach (var file in updateProjectCommand.Files)
+                foreach (var file in command.Files)
                 {
                     var fileResult = await _fileService.SaveFileAsync(file, "");
-                    if (!fileResult.IsSuccess) return Result<ProjectDto?>.Failure(fileResult.Errors);
-                    newFilePaths.Add(fileResult.Value);
-                    project.Images.Add(new Image { Path = fileResult.Value });
+                    project.Images.Add(new Image
+                    {
+                        Path = fileResult.Value
+                    });
                 }
-            }
-            else
-            {
-                newFilePaths = project.Images.Select(i => i.Path).ToList();
             }
 
             var updateResult = await _projectRepository.UpdateAsync(project);
             if (!updateResult.IsSuccess) return Result<ProjectDto?>.Failure(updateResult.Errors);
 
-            var projectDto = new ProjectDto(
+            return Result<ProjectDto?>.Success(new ProjectDto(
                 Id: project.Id,
                 Name: project.Name,
                 Description: project.Description,
-                Files: newFilePaths,
+                Files: project.Images.Select(i => i.Path).ToList(),
                 Author: project.Author.FullName,
                 CreationDate: project.CreatedAt
-            );
-
-            return Result<ProjectDto?>.Success(projectDto);
+            ));
         }
 
         public async Task<Result<ProjectCommentDto>> AddCommentAsync(CreateProjectCommentCommand command)
@@ -313,47 +300,65 @@ namespace StudentHub.Application.UseCases
 
         public async Task<Result<List<ActivityDto>>> GetUserActivityAsync(Guid userId)
         {
-            throw new NotImplementedException();
-            //var activityList = new List<ActivityDto>();
+            var activityList = new List<ActivityDto>();
 
-            //var postsResult = await _projectRepository.GetBy(userId);
-            //if (!postsResult.IsSuccess) return Result<List<ActivityDto>>.Failure(postsResult.Errors);
-            //var posts = postsResult.Value;
-            //foreach (var post in posts)
-            //{
-            //    var activity = new ActivityDto(
-            //        Type: "post",
-            //        Id: post.Id,
-            //        Title: post.Title,
-            //        Content: post.Description,
-            //        CreatedAt: post.CreatedAt,
-            //        ProjectName: null,
-            //        ProjectId: null
-            //    );
-            //    activityList.Add(activity);
-            //}
+            var postsResult = await _projectRepository.GetProjectsByAuthorIdAsync(userId);
+            if (postsResult.IsSuccess)
+            {
+                foreach (var post in postsResult.Value)
+                {
+                    var activity = new ActivityDto(
+                        Type: "post",
+                        Id: post.Id,
+                        Title: post.Name,
+                        Content: post.Description,
+                        CreatedAt: post.CreatedAt,
+                        ProjectName: null,
+                        ProjectId: null
+                    );
+                    activityList.Add(activity);
+                }
+            }
 
-            //var commentsResult = await _projectRepository.GetCommentsByAuthorIdAsync(userId);
-            //if (commentsResult.IsSuccess)
-            //{
-            //    foreach (var comment in commentsResult.Value)
-            //    {
-            //        var activity = new ActivityDto(
-            //            Type: "comment",
-            //            Id: comment.Id,
-            //            Title: null,
-            //            Content: comment.Content,
-            //            CreatedAt: comment.CreatedAt,
-            //            ProjectName: comment.Project?.Name,
-            //            ProjectId: comment.ProjectId
-            //        );
-            //        activityList.Add(activity);
-            //    }
-            //}
+            var ratingsResult = await _projectRepository.GetRatingsByAuthorIdAsync(userId);
+            if (ratingsResult.IsSuccess)
+            {
+                foreach (var rating in ratingsResult.Value)
+                {
+                    var activity = new ActivityDto(
+                        Type: "rating",
+                        Id: rating.Id,
+                        Title: $"Rated {rating.Project.Name}",
+                        Content: rating.Score.ToString(),
+                        CreatedAt: rating.DateTime,
+                        ProjectName: rating.Project.Name,
+                        ProjectId: rating.ProjectId
+                    );
+                    activityList.Add(activity);
+                }
+            }
 
-            //activityList.Sort((a, b) => b.CreatedAt.CompareTo(a.CreatedAt));
+            var commentsResult = await _projectRepository.GetCommentsByAuthorIdAsync(userId);
+            if (commentsResult.IsSuccess)
+            {
+                foreach (var comment in commentsResult.Value)
+                {
+                    var activity = new ActivityDto(
+                        Type: "comment",
+                        Id: comment.Id,
+                        Title: null,
+                        Content: comment.Content,
+                        CreatedAt: comment.CreatedAt,
+                        ProjectName: comment.Project?.Name,
+                        ProjectId: comment.ProjectId
+                    );
+                    activityList.Add(activity);
+                }
+            }
 
-            //return Result<List<ActivityDto>>.Success(activityList);
+            activityList = activityList.OrderByDescending(a => a.CreatedAt).Take(10).ToList();
+
+            return Result<List<ActivityDto>>.Success(activityList);
         }
     }
 }

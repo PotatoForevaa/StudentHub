@@ -57,12 +57,21 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<Project?>.Success(project);
         }
 
-        public async Task<Result<Project?>> UpdateAsync(Project project)
+        public async Task<Result<Project>> UpdateAsync(Project project)
         {
-            _dbContext.Update(project);
-            await _dbContext.SaveChangesAsync();
-            return Result<Project?>.Success(project);
+            try
+            {
+                _dbContext.Update(project);
+                await _dbContext.SaveChangesAsync();
+                return Result<Project>.Success(project);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Result<Project>.Failure("The project was modified by another user. Please refresh and try again.", "concurrency", ErrorType.Conflict);
+            }
         }
+
+
 
         public async Task<Result<List<string>>> GetImageListByIdAsync(Guid id)
         {
@@ -155,6 +164,17 @@ namespace StudentHub.Infrastructure.Repositories
                 .ToListAsync();
 
             return Result<List<ProjectComment>>.Success(comments);
+        }
+
+        public async Task<Result<List<ProjectRating>>> GetRatingsByAuthorIdAsync(Guid authorId)
+        {
+            var ratings = await _dbContext.ProjectRatings
+                .Include(r => r.Project)
+                .Where(r => r.AuthorId == authorId)
+                .OrderByDescending(r => r.DateTime)
+                .ToListAsync();
+
+            return Result<List<ProjectRating>>.Success(ratings);
         }
 
         public Result<byte[]> GetImageAsync(string path)

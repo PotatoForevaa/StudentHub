@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
 import type { User } from "../../../shared/types";
 import { authService } from "../services/authService";
-import { baseUrl } from "../../../shared/services/base";
 
 export type AuthContextType = {
   isAuthenticated: boolean;

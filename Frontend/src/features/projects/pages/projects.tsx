@@ -43,7 +43,7 @@ const CreateButton = styled.button`
   }
 `;
 
-export const Projects = () => {
+const Projects = () => {
   const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -74,7 +74,7 @@ export const Projects = () => {
     if (!authLoading && isAuthenticated && projects?.length === 0) {
       getProjects();
     }
-  }, [isAuthenticated, authLoading, getProjects, projects]);
+  }, [isAuthenticated, authLoading, getProjects]);
 
   useEffect(() => {
     if (projects && projects.length > 0 && currentPage > totalPages && totalPages > 0) {
@@ -120,3 +120,5 @@ export const Projects = () => {
     </Container>
   );
 };
+
+export default Projects;

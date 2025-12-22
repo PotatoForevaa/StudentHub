@@ -13,10 +13,10 @@ export type Project = {
 export type Comment = {
     id: string;
     authorId: string;
-    authorUsername?: string;
-    authorFullName?: string;
+    authorUsername: string;
+    authorFullName: string;
     authorProfilePicturePath?: string;
-    content?: string;
+    content: string;
     createdAt: string;
     userScore?: number;
     projectId?: string;

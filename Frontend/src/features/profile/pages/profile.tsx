@@ -70,7 +70,7 @@ const HiddenFileInput = styled.input`
   display: none;
 `;
 
-export const Profile = () => {
+const Profile = () => {
   const { username } = useParams<{ username: string }>();
   const { user: currentUser, loading: authLoading } = useContext(AuthContext);
 
@@ -185,3 +185,5 @@ export const Profile = () => {
     </Container>
   );
 };
+
+export default Profile;
