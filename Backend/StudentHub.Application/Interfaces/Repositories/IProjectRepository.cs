@@ -17,6 +17,7 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<ProjectComment>> AddCommentAsync(ProjectComment comment);
         Task<Result<List<ProjectComment>>> GetCommentsByProjectIdAsync(Guid projectId);
         Task<Result<List<ProjectComment>>> GetCommentsByAuthorIdAsync(Guid authorId);
+        Task<Result<List<ProjectRating>>> GetRatingsByAuthorIdAsync(Guid authorId);
         Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId);
         Result<byte[]> GetImageAsync(string path);
     }

@@ -1,4 +1,4 @@
-import api, { baseUrl } from './base';
+import api, { API_BASE_URL } from './base';
 import type { ApiResponse, User, ActivityDto } from '../types';
 
 export const userService = {
@@ -23,7 +23,7 @@ export const userService = {
   },
 
   getProfilePicturePath: (username: string): string => 
-    `${baseUrl}/api/users/by-username/${username}/profile-picture`,
+    `${API_BASE_URL}/api/users/by-username/${username}/profile-picture`,
 
   uploadProfilePicture: async (file: File): Promise<ApiResponse> => {
     const formData = new FormData();

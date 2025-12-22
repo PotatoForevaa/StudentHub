@@ -12,7 +12,7 @@ const Title = styled.h1`
   margin: 0;
 `;
 
-export const UserList = () => {
+const UserList = () => {
   const { users, loading } = useContext(UserContext);
 
   return (
@@ -31,3 +31,5 @@ export const UserList = () => {
     </Container>
   );
 };
+
+export default UserList;

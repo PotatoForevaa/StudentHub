@@ -1,4 +1,4 @@
-import api, { baseUrl } from '../../../shared/services/base';
+import api, { API_BASE_URL } from '../../../shared/services/base';
 import type { ApiResponse } from '../../../shared/types';
 import type { User } from '../../../shared/types';
 
@@ -24,7 +24,7 @@ export const authService = {
   },
 
   getImagePath: (username: string): string => 
-    `${baseUrl}/api/users/by-username/${username}/profile-picture`,
+    `${API_BASE_URL}/api/users/by-username/${username}/profile-picture`,
   
 };
 

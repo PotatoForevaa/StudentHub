@@ -23,7 +23,7 @@ export type User = {
 
 export type ActivityDto = {
     id: string;
-    type: 'post' | 'comment';
+    type: 'post' | 'comment' | 'rating';
     title?: string;
     content?: string;
     createdAt: string;

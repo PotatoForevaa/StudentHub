@@ -68,6 +68,18 @@ namespace StudentHub.Api.Controllers.API
         }
 
         [Authorize]
+        [HttpGet("activity/{username}")]
+        public async Task<IActionResult> GetUserActivityByUsername([FromRoute] string username)
+        {
+            // First get user by username
+            var userResult = await _userUseCase.GetByUsernameAsync(username);
+            if (!userResult.IsSuccess) return userResult.ToActionResult();
+
+            var result = await _projectUseCase.GetUserActivityAsync(userResult.Value.Id);
+            return result.ToActionResult();
+        }
+
+        [Authorize]
         [HttpGet("{userId}/comments")]
         public async Task<IActionResult> GetUserComments([FromRoute] Guid userId)
         {

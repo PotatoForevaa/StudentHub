@@ -23,8 +23,10 @@ const ActivityHeader = styled.div`
   margin-bottom: ${spacing.sm};
 `;
 
-const ActivityType = styled.span<{ type: 'post' | 'comment' }>`
-  background: ${props => props.type === 'post' ? colors.primary : '#f59e0b'};
+const ActivityType = styled.span<{ type: 'post' | 'comment' | 'rating' }>`
+  background: ${props =>
+    props.type === 'post' ? colors.primary :
+    props.type === 'comment' ? '#f59e0b' : '#10b981'};
   color: ${colors.white};
   padding: ${spacing.xs} ${spacing.sm};
   border-radius: ${borderRadius.sm};
@@ -72,6 +74,8 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
         return `Создан пост: ${activity.title || activity.content}`;
       case 'comment':
         return `Комментарий: ${activity.content}`;
+      case 'rating':
+        return `${activity.title}`;
       default:
         return activity.content;
     }
@@ -81,7 +85,8 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
     <ActivityCard>
       <ActivityHeader>
         <ActivityType type={activity.type}>
-          {activity.type === 'post' ? 'Пост' : 'Комментарий'}
+          {activity.type === 'post' ? 'Пост' :
+           activity.type === 'comment' ? 'Комментарий' : 'Оценка'}
         </ActivityType>
         <ActivityDate>{formatDate(activity.createdAt)}</ActivityDate>
       </ActivityHeader>

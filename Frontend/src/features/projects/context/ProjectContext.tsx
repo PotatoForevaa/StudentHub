@@ -18,6 +18,7 @@ export type ProjectContextType = {
     getProject: (id: string) => Promise<void>;
     getProjects: () => Promise<void>;
     addProject: (formData: FormData) => Promise<boolean>;
+    updateProject: (id: string, formData: FormData) => Promise<boolean>;
 };
 
 export const ProjectContext = createContext<ProjectContextType>({
@@ -32,7 +33,8 @@ export const ProjectContext = createContext<ProjectContextType>({
     setPageSize: () => {},
     getProject: async (_id: string) => {},
     getProjects: async () => {},
-    addProject: async (_formData: FormData) => false
+    addProject: async (_formData: FormData) => false,
+    updateProject: async (_id: string, _formData: FormData) => false
 });
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
@@ -93,6 +95,21 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateProject = async (id: string, formData: FormData): Promise<boolean> => {
+    try {
+      const res = await projectService.updateProject(id, formData);
+      if (res.isSuccess) {
+        await getProjects();
+        await getProject(id);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to update project:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       getProjects();
@@ -105,6 +122,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         getProject,
         getProjects,
         addProject,
+        updateProject,
         project,
         projects,
         loading,
