@@ -302,7 +302,6 @@ namespace StudentHub.Application.UseCases
         {
             var activityList = new List<ActivityDto>();
 
-            // Get projects (posts)
             var postsResult = await _projectRepository.GetProjectsByAuthorIdAsync(userId);
             if (postsResult.IsSuccess)
             {
@@ -321,7 +320,6 @@ namespace StudentHub.Application.UseCases
                 }
             }
 
-            // Get ratings
             var ratingsResult = await _projectRepository.GetRatingsByAuthorIdAsync(userId);
             if (ratingsResult.IsSuccess)
             {
@@ -340,7 +338,6 @@ namespace StudentHub.Application.UseCases
                 }
             }
 
-            // Get comments
             var commentsResult = await _projectRepository.GetCommentsByAuthorIdAsync(userId);
             if (commentsResult.IsSuccess)
             {
@@ -359,7 +356,6 @@ namespace StudentHub.Application.UseCases
                 }
             }
 
-            // Sort by date descending and take top 10
             activityList = activityList.OrderByDescending(a => a.CreatedAt).Take(10).ToList();
 
             return Result<List<ActivityDto>>.Success(activityList);
