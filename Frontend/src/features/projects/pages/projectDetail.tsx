@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { ProjectProvider, ProjectContext } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
+import { ProjectUpdateForm } from "../components/ProjectUpdateForm";
 import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import userService from "../../../shared/services/userService";
@@ -25,10 +26,32 @@ const ProjectHeader = styled.div`
 `;
 
 const ProjectTitle = styled.h1`
-  margin: 0 0 ${spacing.md} 0;
+  margin: 0;
   font-size: ${fonts.size['2xl']};
   font-weight: ${fonts.weight.bold};
   color: ${colors.textPrimary};
+`;
+
+const ProjectTitleContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${spacing.md};
+`;
+
+const EditButton = styled.button`
+  background: ${colors.gray400};
+  color: ${colors.white};
+  border: none;
+  padding: ${spacing.sm} ${spacing.md};
+  border-radius: ${borderRadius.sm};
+  cursor: pointer;
+  transition: background ${transitions.base};
+  font-weight: ${fonts.weight.semibold};
+
+  &:hover {
+    background: ${colors.gray500};
+  }
 `;
 
 const ProjectMeta = styled.div`
@@ -336,63 +359,16 @@ function ProjectDetailContent() {
                   src={projectService.getProjectImagePath(project.id, path)}
                   alt={`Изображение проекта ${idx + 1}`}
                 />
+                <Button type="submit" disabled={!newComment.trim()}>
+                  Опубликовать комментарий
+                </Button>
+              </Form>
+              {comments.map(comment => (
+                <CommentItem key={comment.id} comment={comment} />
               ))}
-            </ImagesGrid>
-          </div>
+            </CommentsSection>
+          </>
         )}
-
-        <ScoreSection>
-          <CommentsTitle>Оценить проект</CommentsTitle>
-          <ScoreSectionContent>
-            <AverageRating>
-              Средняя оценка: {project.averageRating.toFixed(1)} / 5.0
-            </AverageRating>
-            <StarSelector>
-              {[1, 2, 3, 4, 5].map(star => (
-                <StarButton
-                  key={star}
-                  type="button"
-                  selected={newScore >= star}
-                  onClick={async () => {
-                    setNewScore(star);
-                    try {
-                      const result = await projectService.addScore(id!, { score: star });
-                      if (result.isSuccess) {
-                        setProject(prev => prev ? { ...prev, averageRating: result.data ?? 0 } : prev);
-                      } else {
-                        alert('Не удалось отправить оценку');
-                        setNewScore(0);
-                      }
-                    } catch (error) {
-                      console.error("Failed to add score", error);
-                      alert('Не удалось отправить оценку');
-                      setNewScore(0);
-                    }
-                  }}
-                >
-                  ★
-                </StarButton>
-              ))}
-            </StarSelector>
-          </ScoreSectionContent>
-        </ScoreSection>
-
-        <CommentsSection>
-          <CommentsTitle>Комментарии ({comments.length})</CommentsTitle>
-          <Form onSubmit={handleAddComment}>
-            <TextArea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Напишите комментарий..."
-            />
-            <Button type="submit" disabled={!newComment.trim()}>
-              Опубликовать комментарий
-            </Button>
-          </Form>
-          {comments.map(comment => (
-            <CommentItem key={comment.id} comment={comment} />
-          ))}
-        </CommentsSection>
       </ProjectDetailContainer>
     </Container>
   );
