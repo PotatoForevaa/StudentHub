@@ -183,22 +183,15 @@ namespace StudentHub.Application.UseCases
             project.ExternalUrl = string.IsNullOrEmpty(updateProjectCommand.ExternalUrl) ? null : new Uri(updateProjectCommand.ExternalUrl);
 
             var newFilePaths = new List<string>();
-
-            if (updateProjectCommand.Base64Images != null && updateProjectCommand.Base64Images.Any())
+            if (updateProjectCommand.Files?.Count > 0)
             {
                 project.Images.Clear();
 
-                foreach (var base64 in updateProjectCommand.Base64Images)
+                foreach (var file in updateProjectCommand.Files)
                 {
-                    if (string.IsNullOrWhiteSpace(base64)) continue;
-
-                    var bytes = Convert.FromBase64String(base64);
-                    await using var stream = new MemoryStream(bytes);
-                    var fileName = $"{Guid.NewGuid()}.jpg";
-                    var saved = await _fileService.SaveFileAsync(stream, fileName);
-                    if (!saved.IsSuccess) return Result<ProjectDto?>.Failure(saved.Errors);
-                    newFilePaths.Add(saved.Value);
-                    project.Images.Add(new Image { Path = saved.Value });
+                    var fileResult = await _fileService.SaveFileAsync(file, "");
+                    newFilePaths.Add(fileResult.Value);
+                    project.Images.Add(new Image { Path = fileResult.Value });
                 }
             }
             else
