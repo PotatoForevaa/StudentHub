@@ -133,7 +133,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
               alt={`${project.authorName} avatar`}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = `${API_BASE_URL}/api/users/by-username/default/profile-picture`;
+                target.src = `${API_BASE_URL}/api/users/by-username/admin/profile-picture`;
               }}
             />
             {project.authorName ? project.authorName.substring(0, 8) : 'Unknown'}
