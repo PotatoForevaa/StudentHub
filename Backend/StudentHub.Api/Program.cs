@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
+using System.IO;
 using StudentHub.Api.Extensions;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
@@ -143,6 +145,13 @@ namespace StudentHub.Api
 
                 app.UseRouting();
                 app.UseCors("AllowFront");
+
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+                        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+                    RequestPath = "/uploads"
+                });
 
                 app.UseAuthentication();
                 app.UseAuthorization();

@@ -5,6 +5,7 @@ import { colors, fonts, spacing, borderRadius, shadows } from "../../../shared/s
 import { LoadingSpinner } from "../../../shared/components/LoadingSpinner";
 import type { LeaderboardUser, LeaderboardType, LeaderboardPeriod } from "../types";
 import { LEADERBOARD_PERIODS, PERIOD_LABELS, TYPE_LABELS } from "../types";
+import { API_BASE_URL } from "../../../shared/services/base";
 
 const SectionContainer = styled.div`
   background: ${colors.white};
@@ -177,8 +178,12 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) 
               <Rank>{index + 1}</Rank>
               <UserInfo>
                 <UserAvatar
-                  src={`http://localhost:5192/uploads/${user.profilePicturePath}`}
+                  src={`http://localhost:5192/${user.profilePicturePath}`}
                   alt={`${user.fullName} avatar`}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `${API_BASE_URL}/api/users/by-username/default/profile-picture`;
+                  }}
                 />
                 <UserName>{user.fullName}</UserName>
               </UserInfo>

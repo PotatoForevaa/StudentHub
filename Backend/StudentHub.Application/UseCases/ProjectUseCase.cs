@@ -39,7 +39,7 @@ namespace StudentHub.Application.UseCases
             var result = await _projectRepository.AddAsync(project);
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
-            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, AuthorName: value.Author.FullName, AuthorUsername: value.Author.Username, AuthorProfilePicturePath: value.Author.ProfilePicturePath, CreationDate: value.CreatedAt);
+            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, AuthorName: value.Author.FullName, AuthorUsername: value.Author.Username, AuthorProfilePicturePath: $"api/users/by-username/{value.Author.Username}/profile-picture", CreationDate: value.CreatedAt);
             return Result<ProjectDto?>.Success(projectDto);
         }
 
@@ -90,7 +90,7 @@ namespace StudentHub.Application.UseCases
                     Id: p.Id,
                     AuthorName: p.Author.FullName,
                     AuthorUsername: p.Author.Username,
-                    AuthorProfilePicturePath: p.Author.ProfilePicturePath,
+                    AuthorProfilePicturePath: $"api/users/by-username/{p.Author.Username}/profile-picture",
                     CreationDate: p.CreatedAt,
                     AverageRating: avgRating
                 );
@@ -119,7 +119,7 @@ namespace StudentHub.Application.UseCases
                     Id: p.Id,
                     AuthorName: p.Author.FullName,
                     AuthorUsername: p.Author.Username,
-                    AuthorProfilePicturePath: p.Author.ProfilePicturePath,
+                    AuthorProfilePicturePath: $"api/users/by-username/{p.Author.Username}/profile-picture",
                     CreationDate: p.CreatedAt,
                     AverageRating: avgRating
                 );
@@ -148,7 +148,7 @@ namespace StudentHub.Application.UseCases
                 Files: project.Images.Select(i => i.Path).ToList(),
                 AuthorName: project.Author.FullName,
                 AuthorUsername: project.Author.Username,
-                AuthorProfilePicturePath: project.Author.ProfilePicturePath,
+                AuthorProfilePicturePath: $"api/users/by-username/{project.Author.Username}/profile-picture",
                 CreationDate: project.CreatedAt,
                 AverageRating: avgRating,
                 Comments: comments

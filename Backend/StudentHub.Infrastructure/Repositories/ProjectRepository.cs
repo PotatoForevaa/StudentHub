@@ -238,7 +238,9 @@ namespace StudentHub.Infrastructure.Repositories
                 .Select(x =>
                 {
                     var user = _dbContext.Users.FirstOrDefault(u => u.Id == x.UserId);
-                    return new LeaderboardUserDto(x.UserId, x.FullName, user?.ProfilePicturePath ?? "default-pfp.png", x.ActivityCount);
+                    var profilePicturePath = user?.ProfilePicturePath;
+                    if (string.IsNullOrEmpty(profilePicturePath)) profilePicturePath = "default-pfp.png";
+                    return new LeaderboardUserDto(x.UserId, x.FullName, $"api/users/by-username/{user?.Username ?? "default"}/profile-picture", x.ActivityCount);
                 })
                 .ToList();
 
@@ -280,7 +282,9 @@ namespace StudentHub.Infrastructure.Repositories
                 .Select(u =>
                 {
                     var user = _dbContext.Users.FirstOrDefault(us => us.Id == u.Id);
-                    return new LeaderboardUserDto(u.Id, u.FullName, user?.ProfilePicturePath ?? "default-pfp.png", userAverages[u.Id]);
+                    var profilePicturePath = user?.ProfilePicturePath;
+                    if (string.IsNullOrEmpty(profilePicturePath)) profilePicturePath = "default-pfp.png";
+                    return new LeaderboardUserDto(u.Id, u.FullName, $"api/users/by-username/{user?.Username ?? "default"}/profile-picture", userAverages[u.Id]);
                 })
                 .OrderByDescending(x => x.Score)
                 .ThenBy(x => x.FullName)

@@ -4,6 +4,7 @@ import type { Project } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import { formatDate } from "../../../shared/utils/date";
 import { ProjectImages } from "./ProjectImages";
+import { API_BASE_URL } from "../../../shared/services/base";
 
 const Card = styled.div`
   background: ${colors.surface};
@@ -128,8 +129,12 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         <AuthorDate>
           <AuthorLink to={`/${project.authorUsername}`} onClick={(e) => e.stopPropagation()}>
             <AuthorAvatar
-              src={`http://localhost:5192/uploads/${project.authorProfilePicturePath}`}
+              src={`${API_BASE_URL}/${project.authorProfilePicturePath}`}
               alt={`${project.authorName} avatar`}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `${API_BASE_URL}/api/users/by-username/default/profile-picture`;
+              }}
             />
             {project.authorName ? project.authorName.substring(0, 8) : 'Unknown'}
           </AuthorLink>
