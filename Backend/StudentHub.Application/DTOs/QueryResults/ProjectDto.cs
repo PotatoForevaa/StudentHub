@@ -8,6 +8,7 @@ namespace StudentHub.Application.DTOs.Responses
         List<string> Files,
         string AuthorName,
         string AuthorUsername,
+        string AuthorProfilePicturePath,
         DateTime CreationDate,
         double? AverageRating = null,
         List<ProjectCommentDto>? Comments = null

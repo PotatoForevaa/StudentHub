@@ -89,6 +89,17 @@ const Rank = styled.div`
 
 const UserInfo = styled.div`
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: ${spacing.md};
+`;
+
+const UserAvatar = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid ${colors.accentBorderLight};
 `;
 
 const UserName = styled.div`
@@ -165,6 +176,10 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) 
             <LeaderboardItem key={user.id}>
               <Rank>{index + 1}</Rank>
               <UserInfo>
+                <UserAvatar
+                  src={`http://localhost:5192/uploads/${user.profilePicturePath}`}
+                  alt={`${user.fullName} avatar`}
+                />
                 <UserName>{user.fullName}</UserName>
               </UserInfo>
               <Score>{Math.round(user.score * 100) / 100}</Score>

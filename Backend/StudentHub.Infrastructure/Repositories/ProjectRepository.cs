@@ -235,7 +235,11 @@ namespace StudentHub.Infrastructure.Repositories
                 .ThenBy(x => x.FullName)
                 .Skip(page * pageSize)
                 .Take(pageSize)
-                .Select(x => new LeaderboardUserDto(x.UserId, x.FullName, x.ActivityCount))
+                .Select(x =>
+                {
+                    var user = _dbContext.Users.FirstOrDefault(u => u.Id == x.UserId);
+                    return new LeaderboardUserDto(x.UserId, x.FullName, user?.ProfilePicturePath ?? "default-pfp.png", x.ActivityCount);
+                })
                 .ToList();
 
             return Result<List<LeaderboardUserDto>>.Success(leaderboard);
@@ -273,7 +277,11 @@ namespace StudentHub.Infrastructure.Repositories
                 .ToListAsync();
 
             var leaderboard = users
-                .Select(u => new LeaderboardUserDto(u.Id, u.FullName, userAverages[u.Id]))
+                .Select(u =>
+                {
+                    var user = _dbContext.Users.FirstOrDefault(us => us.Id == u.Id);
+                    return new LeaderboardUserDto(u.Id, u.FullName, user?.ProfilePicturePath ?? "default-pfp.png", userAverages[u.Id]);
+                })
                 .OrderByDescending(x => x.Score)
                 .ThenBy(x => x.FullName)
                 .Skip(page * pageSize)

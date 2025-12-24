@@ -1,6 +1,7 @@
 export type LeaderboardUser = {
     id: string;
     fullName: string;
+    profilePicturePath: string;
     score: number;
 }
 

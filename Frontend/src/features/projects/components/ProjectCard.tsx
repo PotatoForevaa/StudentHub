@@ -55,11 +55,22 @@ const AuthorLink = styled(Link)`
   text-decoration: none;
   cursor: pointer;
   transition: color ${transitions.base};
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
 
   &:hover {
     color: ${colors.primaryDark};
     text-decoration: underline;
   }
+`;
+
+const AuthorAvatar = styled.img`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid ${colors.accentBorderLight};
 `;
 
 const Rating = styled.span`
@@ -116,6 +127,10 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         />
         <AuthorDate>
           <AuthorLink to={`/${project.authorUsername}`} onClick={(e) => e.stopPropagation()}>
+            <AuthorAvatar
+              src={`http://localhost:5192/uploads/${project.authorProfilePicturePath}`}
+              alt={`${project.authorName} avatar`}
+            />
             {project.authorName ? project.authorName.substring(0, 8) : 'Unknown'}
           </AuthorLink>
           <Rating>☆ {project.averageRating?.toFixed(1) ?? 'N/A'}</Rating>

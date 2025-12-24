@@ -6,6 +6,7 @@ export type Project = {
     creationDate: string;
     authorName: string;
     authorUsername: string;
+    authorProfilePicturePath: string;
     imagePaths?: string[];
     comments?: Comment[];
     averageRating: number;

@@ -41,7 +41,6 @@ namespace StudentHub.Api.Controllers.API
             return result.ToActionResult();
         }
 
-        [Authorize]
         [HttpGet("by-username/{username}/profile-picture")]
         public async Task<IActionResult> GetProfilePicture([FromRoute] string username)
         {
