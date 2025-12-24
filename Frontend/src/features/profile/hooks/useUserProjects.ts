@@ -15,11 +15,6 @@ export interface UseUserProjectsReturn {
   setPageSize: (size: number) => void;
 }
 
-/**
- * Hook to fetch and paginate user's projects
- * @param userId - User ID to fetch projects for
- * @param username - Username for fallback filtering
- */
 export function useUserProjects(userId: string, username: string): UseUserProjectsReturn {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);

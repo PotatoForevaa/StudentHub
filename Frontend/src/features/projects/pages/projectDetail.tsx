@@ -227,6 +227,21 @@ function ProjectDetailContent() {
     }
   };
 
+  const handleAddScore = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newScore === 0) return;
+
+    try {
+      const result = await projectService.addScore(id!, { score: newScore });
+      if (result.isSuccess) {
+        await loadProject();
+        setNewScore(0);
+      }
+    } catch (error) {
+      console.error("Failed to add score", error);
+    }
+  };
+
   const handleStartEdit = () => {
     setEditName(project?.name || '');
     setEditDescription(project?.description || '');
@@ -359,16 +374,47 @@ function ProjectDetailContent() {
                   src={projectService.getProjectImagePath(project.id, path)}
                   alt={`Изображение проекта ${idx + 1}`}
                 />
-                <Button type="submit" disabled={!newComment.trim()}>
-                  Опубликовать комментарий
-                </Button>
-              </Form>
-              {comments.map(comment => (
-                <CommentItem key={comment.id} comment={comment} />
               ))}
-            </CommentsSection>
-          </>
+            </ImagesGrid>
+          </div>
         )}
+
+        <ScoreSection>
+          <ScoreSectionContent>
+            <AverageRating>{project.averageRating.toFixed(1)} ★</AverageRating>
+            <Form onSubmit={handleAddScore}>
+              <StarSelector>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarButton
+                    key={star}
+                    selected={newScore >= star}
+                    onClick={() => setNewScore(star)}
+                  >
+                    ★
+                  </StarButton>
+                ))}
+              </StarSelector>              
+            </Form>
+          </ScoreSectionContent>
+        </ScoreSection>
+
+        <CommentsSection>
+          <CommentsTitle>Комментарии</CommentsTitle>
+          <Form onSubmit={handleAddComment}>
+            <TextArea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Напишите комментарий..."
+              required
+            />
+            <Button type="submit" disabled={!newComment.trim()}>
+              Опубликовать комментарий
+            </Button>
+          </Form>
+          {comments.map((comment) => (
+            <CommentItem key={comment.id} comment={comment} />
+          ))}
+        </CommentsSection>
       </ProjectDetailContainer>
     </Container>
   );
@@ -594,22 +640,6 @@ const CancelButton = styled.button`
 
   &:hover {
     background: ${colors.accentBorder};
-  }
-`;
-
-const EditButton = styled.button`
-  background: ${colors.gray500};
-  color: ${colors.white};
-  border: none;
-  padding: ${spacing.xs} ${spacing.sm};
-  border-radius: ${borderRadius.sm};
-  cursor: pointer;
-  transition: background ${transitions.base};
-  font-weight: ${fonts.weight.semibold};
-  font-size: ${fonts.size.sm};
-
-  &:hover {
-    background: ${colors.muted};
   }
 `;
 

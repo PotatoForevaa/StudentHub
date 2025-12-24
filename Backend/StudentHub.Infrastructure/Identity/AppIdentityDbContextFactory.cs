@@ -21,7 +21,7 @@ namespace StudentHub.Infrastructure.Identity
                 .AddEnvironmentVariables()
                 .Build();
 
-            var connectionString = config.GetConnectionString("PgSql");
+            var connectionString = config.GetSection("CONNECTIONSTRING").Value;
 
             var optionsBuilder = new DbContextOptionsBuilder<AppIdentityDbContext>();
             optionsBuilder.UseNpgsql(connectionString);

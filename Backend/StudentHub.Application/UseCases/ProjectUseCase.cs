@@ -176,19 +176,21 @@ namespace StudentHub.Application.UseCases
                 ? null
                 : new Uri(command.ExternalUrl);
 
-            if (command.Files is { Count: > 0 })
-            {
-                project.Images.Clear();
-
+            var filePaths = new List<string>();
+            if (command.Files?.Count > 0) 
                 foreach (var file in command.Files)
                 {
                     var fileResult = await _fileService.SaveFileAsync(file, "");
-                    project.Images.Add(new Image
-                    {
-                        Path = fileResult.Value
-                    });
+                    filePaths.Add(fileResult.Value);
                 }
+
+            project.Images.Clear();
+
+            foreach (var path in filePaths)
+            {
+                project.Images.Add(new Image { Path = path, Project = project });
             }
+
 
             var updateResult = await _projectRepository.UpdateAsync(project);
             if (!updateResult.IsSuccess) return Result<ProjectDto?>.Failure(updateResult.Errors);

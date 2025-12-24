@@ -59,19 +59,9 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<Project>> UpdateAsync(Project project)
         {
-            try
-            {
-                _dbContext.Update(project);
-                await _dbContext.SaveChangesAsync();
-                return Result<Project>.Success(project);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Result<Project>.Failure("The project was modified by another user. Please refresh and try again.", "concurrency", ErrorType.Conflict);
-            }
+            await _dbContext.SaveChangesAsync();
+            return Result<Project>.Success(project);
         }
-
-
 
         public async Task<Result<List<string>>> GetImageListByIdAsync(Guid id)
         {
