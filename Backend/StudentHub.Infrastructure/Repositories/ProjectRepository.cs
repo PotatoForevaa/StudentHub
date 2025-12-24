@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentHub.Application.DTOs;
+using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
 using StudentHub.Infrastructure.Data;
@@ -177,6 +178,109 @@ namespace StudentHub.Infrastructure.Repositories
             {
                 return Result<byte[]>.Failure("File not found");
             }
+        }
+
+        private (DateTime Start, DateTime End) GetDateRange(string period)
+        {
+            var now = DateTime.UtcNow;
+            return period switch
+            {
+                "weekly-current" => (now.AddDays(-(int)now.DayOfWeek + 1), now.AddDays(7 - (int)now.DayOfWeek)),
+                "weekly-last" => (now.AddDays(-(int)now.DayOfWeek + 1 - 7), now.AddDays(-(int)now.DayOfWeek)),
+                "monthly-current" => (new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddDays(-1)),
+                "monthly-last" => (new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1), new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(-1)),
+                "yearly-current" => (new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(now.Year, 12, 31, 23, 59, 59, DateTimeKind.Utc)),
+                _ => throw new ArgumentException("Invalid period")
+            };
+        }
+
+        public async Task<Result<List<LeaderboardUserDto>>> GetActivityLeaderboardAsync(string period, int page, int pageSize)
+        {
+            var (start, end) = GetDateRange(period);
+
+            var projectCounts = await _dbContext.Projects
+                .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                .GroupBy(p => p.AuthorId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+            var ratingCounts = await _dbContext.ProjectRatings
+                .Where(r => r.DateTime >= start && r.DateTime <= end)
+                .GroupBy(r => r.AuthorId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+            var commentCounts = await _dbContext.ProjectComments
+                .Where(c => c.CreatedAt >= start && c.CreatedAt <= end)
+                .GroupBy(c => c.AuthorId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+            var userActivities = new List<(Guid UserId, string FullName, int ActivityCount)>();
+
+            foreach (var user in _dbContext.Users)
+            {
+                var activityCount = (projectCounts.GetValueOrDefault(user.Id, 0) +
+                                     ratingCounts.GetValueOrDefault(user.Id, 0) +
+                                     commentCounts.GetValueOrDefault(user.Id, 0));
+
+                if (activityCount > 0)
+                {
+                    userActivities.Add((user.Id, user.FullName, activityCount));
+                }
+            }
+
+            var leaderboard = userActivities
+                .OrderByDescending(x => x.ActivityCount)
+                .ThenBy(x => x.FullName)
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .Select(x => new LeaderboardUserDto(x.UserId, x.FullName, x.ActivityCount))
+                .ToList();
+
+            return Result<List<LeaderboardUserDto>>.Success(leaderboard);
+        }
+
+        public async Task<Result<List<LeaderboardUserDto>>> GetRatingLeaderboardAsync(string period, int page, int pageSize)
+        {
+            var (start, end) = GetDateRange(period);
+
+            var projectRatings = await _dbContext.Projects
+                .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                .Select(p => new
+                {
+                    AuthorId = p.AuthorId,
+                    AvgRating = _dbContext.ProjectRatings
+                        .Where(r => r.ProjectId == p.Id)
+                        .Average(r => (double?)r.Score) ?? 0.0
+                })
+                .Where(x => x.AvgRating > 0)
+                .ToListAsync();
+
+            var userAverages = projectRatings
+                .GroupBy(x => x.AuthorId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    AvgRating = g.Average(x => x.AvgRating)
+                })
+                .ToDictionary(x => x.UserId, x => x.AvgRating);
+
+            var userIds = userAverages.Keys.ToList();
+            var users = await _dbContext.Users
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.FullName })
+                .ToListAsync();
+
+            var leaderboard = users
+                .Select(u => new LeaderboardUserDto(u.Id, u.FullName, userAverages[u.Id]))
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.FullName)
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Result<List<LeaderboardUserDto>>.Success(leaderboard);
         }
     }
 }

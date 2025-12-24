@@ -14,7 +14,7 @@ export const authService = {
   },
 
   logout: async (): Promise<ApiResponse> => {
-    const res = await api.post('/api/auth/ogout');
+    const res = await api.post('/api/auth/logout');
     return res.data;
   },
 

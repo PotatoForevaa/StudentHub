@@ -1,4 +1,5 @@
 ﻿using StudentHub.Application.DTOs;
+using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Entities;
 
 namespace StudentHub.Application.Interfaces.Repositories
@@ -20,5 +21,7 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<List<ProjectRating>>> GetRatingsByAuthorIdAsync(Guid authorId);
         Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId);
         Result<byte[]> GetImageAsync(string path);
+        Task<Result<List<LeaderboardUserDto>>> GetActivityLeaderboardAsync(string period, int page, int pageSize);
+        Task<Result<List<LeaderboardUserDto>>> GetRatingLeaderboardAsync(string period, int page, int pageSize);
     }
 }

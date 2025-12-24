@@ -14,6 +14,7 @@ const Profile = lazy(() => import("../features/profile/pages/profile"));
 const Projects = lazy(() => import("../features/projects/pages/projects"));
 const ProjectDetail = lazy(() => import("../features/projects/pages/projectDetail"));
 const UserList = lazy(() => import("../features/users/pages/userlist"));
+const Leaderboard = lazy(() => import("../features/leaderboard/pages/leaderboard"));
 
 const GlobalStyles = createGlobalStyle`
   html, body, #root {
@@ -66,10 +67,10 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/registration" element={<Registration />} />
-
+                  <Route path="/leaderboard" element={<Leaderboard />}/>
                   <Route element={<PrivateRoute />}>
                     <Route path="/dashboard" element={null} />
-                    <Route path="/" element={<Profile />} />
+                    <Route path="/" element={<Leaderboard />} />
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/:id" element={<ProjectDetail />} />
                     <Route path="/users" element={<UserList />} />

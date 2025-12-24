@@ -77,13 +77,20 @@ const NavLinkStyled = styled(NavLink)`
   }
 `;
 
-const Logo = styled.div`
+const Logo = styled(NavLink)`
   font-size: ${fonts.size['3xl']};
   font-weight: ${fonts.weight.bold};
   color: ${colors.textPrimary};
   margin-right: 20px;
   display: flex;
   align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color ${transitions.base};
+
+  &:hover {
+    color: ${colors.primaryDark};
+  }
 
   span { color: ${colors.primary}; margin-left: 6px }
 
@@ -148,7 +155,7 @@ export const Header = () => {
     <StyledHeader>
       <Nav>
         <LeftSection>
-          <Logo>StudentHub</Logo>
+          <Logo to="/leaderboard">StudentHub</Logo>
           <Ul>
             <Li>
               <NavLinkStyled

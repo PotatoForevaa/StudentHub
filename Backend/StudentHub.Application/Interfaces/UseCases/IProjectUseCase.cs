@@ -20,5 +20,6 @@ namespace StudentHub.Application.Interfaces.UseCases
         Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId);
         Task<Result<List<ProjectCommentDto>>> GetCommentsByAuthorIdAsync(Guid authorId);
         Task<Result<List<ActivityDto>>> GetUserActivityAsync(Guid userId);
+        Task<Result<List<LeaderboardUserDto>>> GetLeaderboardAsync(string type, string period, int page, int pageSize);
     }
 }

@@ -20,5 +20,35 @@ namespace StudentHub.Infrastructure.Data
         public DbSet<ProjectComment> ProjectComments { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<User> Users { get; set; }
+
+        public override int SaveChanges()
+        {
+            ConvertDateTimeToUtc();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ConvertDateTimeToUtc();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void ConvertDateTimeToUtc()
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                foreach (var property in entry.Properties)
+                {
+                    if (property.Metadata.ClrType == typeof(DateTime) || property.Metadata.ClrType == typeof(DateTime?))
+                    {
+                        var dateTime = (DateTime?)property.CurrentValue;
+                        if (dateTime.HasValue && dateTime.Value.Kind != DateTimeKind.Utc)
+                        {
+                            property.CurrentValue = DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -366,5 +366,24 @@ namespace StudentHub.Application.UseCases
 
             return Result<List<ActivityDto>>.Success(activityList);
         }
+
+        public async Task<Result<List<LeaderboardUserDto>>> GetLeaderboardAsync(string type, string period, int page, int pageSize)
+        {
+            if (type != "activity" && type != "rating")
+                return Result<List<LeaderboardUserDto>>.Failure("Invalid type", "type", ErrorType.Validation);
+
+            var validPeriods = new[] { "weekly-current", "weekly-last", "monthly-current", "monthly-last", "yearly-current" };
+            if (!validPeriods.Contains(period))
+                return Result<List<LeaderboardUserDto>>.Failure("Invalid period", "period", ErrorType.Validation);
+
+            if (type == "activity")
+            {
+                return await _projectRepository.GetActivityLeaderboardAsync(period, page, pageSize);
+            }
+            else
+            {
+                return await _projectRepository.GetRatingLeaderboardAsync(period, page, pageSize);
+            }
+        }
     }
 }
