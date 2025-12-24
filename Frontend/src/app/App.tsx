@@ -8,7 +8,6 @@ import { ErrorBoundary } from "../shared/components/ErrorBoundary";
 import { LoadingSpinner } from "../shared/components/LoadingSpinner";
 import { colors, fonts } from "../shared/styles/tokens";
 
-// Lazy-loaded components
 const Login = lazy(() => import("../features/auth/pages/Login"));
 const Registration = lazy(() => import("../features/auth/pages/Registration"));
 const Profile = lazy(() => import("../features/profile/pages/profile"));

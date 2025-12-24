@@ -115,8 +115,8 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           maxImages={6}
         />
         <AuthorDate>
-          <AuthorLink to={`/profile/${project.author}`} onClick={(e) => e.stopPropagation()}>
-            {project.author ? project.author.substring(0, 8) : 'Unknown'}
+          <AuthorLink to={`/${project.authorUsername}`} onClick={(e) => e.stopPropagation()}>
+            {project.authorName ? project.authorName.substring(0, 8) : 'Unknown'}
           </AuthorLink>
           <Rating>☆ {project.averageRating?.toFixed(1) ?? 'N/A'}</Rating>
           <span>{project.creationDate && formatDate(project.creationDate)}</span>

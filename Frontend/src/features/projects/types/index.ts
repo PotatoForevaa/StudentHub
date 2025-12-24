@@ -4,7 +4,8 @@ export type Project = {
     description?: string;
     externalUrl?: string;
     creationDate: string;
-    author: string;
+    authorName: string;
+    authorUsername: string;
     imagePaths?: string[];
     comments?: Comment[];
     averageRating: number;

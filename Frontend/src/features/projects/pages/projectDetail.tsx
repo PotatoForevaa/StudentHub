@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useContext } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { ProjectProvider, ProjectContext } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
@@ -54,12 +54,33 @@ const EditButton = styled.button`
   }
 `;
 
+const DeleteButton = styled.button`
+  background: #dc3545;
+  color: ${colors.white};
+  border: none;
+  padding: ${spacing.sm} ${spacing.md};
+  border-radius: ${borderRadius.sm};
+  cursor: pointer;
+  transition: background ${transitions.base};
+  font-weight: ${fonts.weight.semibold};
+
+  &:hover {
+    background: #c82333;
+  }
+`;
+
 const ProjectMeta = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: ${fonts.size.sm};
   color: ${colors.textSecondary};
   margin-bottom: ${spacing.md};
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: ${spacing.sm};
+  align-items: center;
 `;
 
 const AverageRating = styled.div`
@@ -149,6 +170,7 @@ function ProjectDetailContent() {
   const { id } = useParams<{ id: string }>();
   const { updateProject } = useContext(ProjectContext);
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -281,7 +303,26 @@ function ProjectDetailContent() {
     }
   };
 
-  const isAuthor = user && project && user.username === project.author;
+  const handleDeleteProject = async () => {
+    if (!id) return;
+
+    const confirmed = window.confirm('Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить.');
+    if (!confirmed) return;
+
+    try {
+      const result = await projectService.deleteProject(id);
+      if (result.isSuccess) {
+        navigate('/projects');
+      } else {
+        alert('Не удалось удалить проект');
+      }
+    } catch (error) {
+      console.error('Failed to delete project', error);
+      alert('Произошла ошибка при удалении проекта');
+    }
+  };
+
+  const isAuthor = user && project && user.username === project.authorUsername;
 
   if (loading) {
     return <Container>Загрузка...</Container>;
@@ -344,12 +385,17 @@ function ProjectDetailContent() {
             <>
               <ProjectTitle>{project.name}</ProjectTitle>
               <ProjectMeta>
-                <span>Автор: <AuthorLink to={`/profile/${project.author}`}>{project.author}</AuthorLink></span>
+                <span>Автор: <AuthorLink to={`/${project.authorUsername}`}>{project.authorName}</AuthorLink></span>
                 <span>{formatDate(project.creationDate)}</span>
                 {isAuthor && (
-                  <EditButton onClick={handleStartEdit}>
-                    Редактировать
-                  </EditButton>
+                  <ButtonContainer>
+                    <EditButton onClick={handleStartEdit}>
+                      Редактировать
+                    </EditButton>
+                    <DeleteButton onClick={handleDeleteProject}>
+                      Удалить
+                    </DeleteButton>
+                  </ButtonContainer>
                 )}
               </ProjectMeta>
               {project.description && (
@@ -435,7 +481,7 @@ function CommentItem({ comment }: { comment: Comment }) {
         {comment.authorProfilePicturePath && (
           <ProfilePic src={userService.getProfilePicturePath(comment.authorUsername)} alt={comment.authorUsername} />
         )}
-        <CommentUserLink to={`/profile/${comment.authorUsername}`}>
+        <CommentUserLink to={`/${comment.authorUsername}`}>
           {comment.authorUsername}
         </CommentUserLink>
         {comment.userScore && <SmallStars>{Array.from({ length: comment.userScore }, () => '★').join('')}</SmallStars>}

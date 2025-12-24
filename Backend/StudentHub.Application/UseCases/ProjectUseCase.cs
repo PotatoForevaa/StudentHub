@@ -39,7 +39,7 @@ namespace StudentHub.Application.UseCases
             var result = await _projectRepository.AddAsync(project);
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
-            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, Author: value.Author.FullName, CreationDate: value.CreatedAt);
+            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, AuthorName: value.Author.FullName, AuthorUsername: value.Author.Username, CreationDate: value.CreatedAt);
             return Result<ProjectDto?>.Success(projectDto);
         }
 
@@ -88,7 +88,8 @@ namespace StudentHub.Application.UseCases
                     Description: p.Description,
                     Files: p.Images.Select(i => i.Path).ToList(),
                     Id: p.Id,
-                    Author: p.Author.FullName,
+                    AuthorName: p.Author.FullName,
+                    AuthorUsername: p.Author.Username,
                     CreationDate: p.CreatedAt,
                     AverageRating: avgRating
                 );
@@ -115,7 +116,8 @@ namespace StudentHub.Application.UseCases
                     Description: p.Description,
                     Files: p.Images.Select(i => i.Path).ToList(),
                     Id: p.Id,
-                    Author: p.Author.FullName,
+                    AuthorName: p.Author.FullName,
+                    AuthorUsername: p.Author.Username,
                     CreationDate: p.CreatedAt,
                     AverageRating: avgRating
                 );
@@ -142,7 +144,8 @@ namespace StudentHub.Application.UseCases
                 Name: project.Name,
                 Description: project.Description,
                 Files: project.Images.Select(i => i.Path).ToList(),
-                Author: project.Author.FullName,
+                AuthorName: project.Author.FullName,
+                AuthorUsername: project.Author.Username,
                 CreationDate: project.CreatedAt,
                 AverageRating: avgRating,
                 Comments: comments
@@ -200,7 +203,8 @@ namespace StudentHub.Application.UseCases
                 Name: project.Name,
                 Description: project.Description,
                 Files: project.Images.Select(i => i.Path).ToList(),
-                Author: project.Author.FullName,
+                AuthorName: project.Author.FullName,
+                AuthorUsername: project.Author.Username,
                 CreationDate: project.CreatedAt
             ));
         }
