@@ -13,12 +13,11 @@ services:
     labels:
       - "traefik.enable=true"
 
-      - "traefik.http.routers.traefik.rule=PathPrefix(`/traefik`)"
+      - "traefik.http.routers.traefik.rule=PathPrefix(`/dashboard`) || PathPrefix(`/api`)"
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=traefik-strip"
+      - "traefik.http.routers.traefik.priority=1000"
 
-      - "traefik.http.middlewares.traefik-strip.stripprefix.prefixes=/traefik"
 
 
     ports:
