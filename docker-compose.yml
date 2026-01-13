@@ -11,11 +11,11 @@ services:
       - "--api.dashboard=true"
 
     labels:
-          - "traefik.enable=true"
-          - "traefik.http.routers.traefik.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
-          - "traefik.http.routers.traefik.entrypoints=web"
-          - "traefik.http.routers.traefik.service=api@internal"
-          
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=PathPrefix(`/traefik`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.service=api@internal"
+
     ports:
       - "80:80"
 
