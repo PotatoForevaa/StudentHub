@@ -62,5 +62,5 @@ export const projectService = {
     },
 
     getProjectImagePath: (id: string, path: string): string =>
-        `${API_BASE_URL}/api/projects/${id}/images/${path}`
+        `${API_BASE_URL}/projects/${id}/images/${path}`
 };

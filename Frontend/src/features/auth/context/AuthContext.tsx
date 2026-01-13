@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(res.data);
         setAuth(true);
         if (res.data.username) {
-          setPicture(authService.getImagePath(res.data.username));
+          setPicture(authService.getProfilePicturePath(res.data.username));
         }
       } else {
         setUser(null);

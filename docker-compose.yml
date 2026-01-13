@@ -1,54 +1,105 @@
 services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+
+    ports:
+      - "80:80"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    networks:
+      - web
+
   db:
     image: postgres:15
     restart: unless-stopped
+
     environment:
       POSTGRES_DB: studenthub
       POSTGRES_USER: studenthub
       POSTGRES_PASSWORD: studenthubpassword
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U studenthub"]
       interval: 30s
       timeout: 10s
       retries: 5
 
+    networks:
+      - internal
+
   backend:
     build:
       context: ./Backend
       dockerfile: Dockerfile
     restart: unless-stopped
+
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       CONNECTIONSTRING: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
-      ADMIN__PASSWORD: P@ssw0rd
-      ADMIN__FULLNAME: Admin User
-      ADMIN__USERNAME: Admin
-    ports:
-      - "80:5000"
+
     depends_on:
       db:
         condition: service_healthy
+
     volumes:
       - ./Backend/StudentHub.Api/uploads:/app/uploads
       - ./Backend/logs:/app/logs
 
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+
+    networks:
+      - web
+      - internal
+
   frontend:
     image: node:20
     restart: unless-stopped
+
     working_dir: /app
     volumes:
       - ./Frontend:/app
       - /app/node_modules
-    ports:
-      - "81:5173"
+
     entrypoint: sh
     command: -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+
     depends_on:
       - backend
 
+    labels:
+      - "traefik.enable=true"
+
+      # всё остальное → фронт
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+
+    networks:
+      - web
+
 volumes:
   postgres_data:
+
+networks:
+  web:
+  internal:
+    internal: true

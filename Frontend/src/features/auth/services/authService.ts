@@ -4,27 +4,27 @@ import type { User } from '../../../shared/types';
 
 export const authService = {
   login: async (username: string, password: string): Promise<ApiResponse<{ token?: string }>> => {
-    const res = await api.post('/api/auth/login', { username, password });
+    const res = await api.post('/auth/login', { username, password });
     return res.data;
   },
 
   register: async (username: string, password: string, fullName: string): Promise<ApiResponse<User>> => {
-    const res = await api.post('/api/auth/register', { username, password, fullName });
+    const res = await api.post('/auth/register', { username, password, fullName });
     return res.data;
   },
 
   logout: async (): Promise<ApiResponse> => {
-    const res = await api.post('/api/auth/logout');
+    const res = await api.post('/auth/logout');
     return res.data;
   },
 
   getCurrentUser: async (): Promise<ApiResponse<User>> => {
-    const res = await api.get('/api/auth/me');
+    const res = await api.get('/auth/me');
     return res.data;
   },
 
-  getImagePath: (username: string): string => 
-    `${API_BASE_URL}/api/users/by-username/${username}/profile-picture`,
+  getProfilePicturePath: (username: string): string => 
+    `${API_BASE_URL}/users/by-username/${username}/profile-picture`,
   
 };
 
