@@ -8,7 +8,14 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true"
 
+    labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.traefik.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+          - "traefik.http.routers.traefik.entrypoints=web"
+          - "traefik.http.routers.traefik.service=api@internal"
+          
     ports:
       - "80:80"
 
@@ -86,8 +93,7 @@ services:
 
     labels:
       - "traefik.enable=true"
-
-      # всё остальное → фронт
+ 
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
 
