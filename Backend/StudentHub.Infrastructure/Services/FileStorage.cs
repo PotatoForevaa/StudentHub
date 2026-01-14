@@ -40,7 +40,7 @@ namespace StudentHub.Infrastructure.Services
             var fullPath = Path.Combine(_basePath, relativePath);
 
             if (!File.Exists(fullPath))
-                return Result<Stream>.Failure($"Файл не найден, полнйы путь:{fullPath}", null, ErrorType.NotFound);
+                return Result<Stream>.Failure($"Файл не найден\nполнйы путь:{fullPath}", null, ErrorType.NotFound);
 
             var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
             await stream.FlushAsync();

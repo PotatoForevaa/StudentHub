@@ -3,22 +3,22 @@ import type { ApiResponse, User, ActivityDto } from '../types';
 
 export const userService = {
   getAllUsers: async (): Promise<ApiResponse<User[]>> => {
-    const res = await api.get(`${API_BASE_URL}/users`);
+    const res = await api.get('/api/users');
     return res.data;
   },
 
   getById: async (id: string): Promise<ApiResponse<User>> => {
-    const res = await api.get(`${API_BASE_URL}/users/${id}`);
+    const res = await api.get(`/api/users/${id}`);
     return res.data;
   },
 
   getByUsername: async (username: string): Promise<ApiResponse<User>> => {
-    const res = await api.get(`${API_BASE_URL}/users/by-username/${username}`);
+    const res = await api.get(`/api/users/by-username/${username}`);
     return res.data;
   },
 
   getProfilePicture: async (username: string): Promise<Response> => {
-    const res = await api.get(`${API_BASE_URL}/users/by-username/${username}/profile-picture`);
+    const res = await api.get(`/api/users/by-username/${username}/profile-picture`);
     return res.data;
   },
 
@@ -28,7 +28,7 @@ export const userService = {
   uploadProfilePicture: async (file: File): Promise<ApiResponse> => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`${API_BASE_URL}/users/profile-picture`, formData, {
+    return api.post('/api/users/profile-picture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -36,12 +36,12 @@ export const userService = {
   },
 
   getUserActivity: async (userId: string): Promise<ApiResponse<ActivityDto[]>> => {
-    const res = await api.get(`${API_BASE_URL}/users/${userId}/activity`);
+    const res = await api.get(`/api/users/${userId}/activity`);
     return res.data;
   },
 
   getUserActivityByUsername: async (username: string): Promise<ApiResponse<ActivityDto[]>> => {
-    const res = await api.get(`${API_BASE_URL}/users/activity/${username}`);
+    const res = await api.get(`/api/users/activity/${username}`);
     return res.data;
   }
 };

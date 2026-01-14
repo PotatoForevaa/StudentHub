@@ -9,7 +9,7 @@ export const leaderboardService = {
         page: number = 0,
         size: number = 10
     ): Promise<ApiResponse<LeaderboardUser[]>> => {
-        const response = await api.get(`leaderboards/${type}/${period}`, {
+        const response = await api.get(`/api/leaderboards/${type}/${period}`, {
             params: { page, size }
         });
         return response.data;

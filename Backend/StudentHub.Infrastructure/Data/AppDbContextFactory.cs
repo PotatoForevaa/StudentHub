@@ -8,12 +8,15 @@ namespace StudentHub.Infrastructure.Data
     {
         public AppDbContext CreateDbContext(string[] args)
         {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-
-            var basePath = Directory.GetCurrentDirectory();
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "StudentHub.Api");
+            if (!Directory.Exists(basePath))
+            {
+                basePath = "/src/StudentHub.Api";
+            }
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
@@ -26,5 +29,4 @@ namespace StudentHub.Infrastructure.Data
             return new AppDbContext(optionsBuilder.Options);
         }
     }
-
 }
