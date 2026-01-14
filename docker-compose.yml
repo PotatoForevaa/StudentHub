@@ -12,6 +12,7 @@ services:
       - "--api.dashboard=true"
       - "--metrics.prometheus=true"
       - "--metrics.prometheus.entrypoint=metrics"
+      - "--accesslog=true"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=PathPrefix(`/`)"
@@ -80,7 +81,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       CONNECTIONSTRING: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
-
+      ASPNETCORE_URLS: "http://*:5000"
+          
     depends_on:
       db:
         condition: service_healthy
@@ -94,7 +96,7 @@ services:
 
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
-
+      - "traefik.http.routers.backend.priority=100"
       - "traefik.http.services.backend.loadbalancer.server.port=5000"
 
     networks:
@@ -121,7 +123,7 @@ services:
  
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
-
+      - "traefik.http.routers.frontend.priority=10"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173"
 
     networks:
