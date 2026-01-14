@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using StudentHub.Infrastructure.Data;
 
 namespace StudentHub.Infrastructure.Identity
 {
@@ -8,15 +9,12 @@ namespace StudentHub.Infrastructure.Identity
     {
         public AppIdentityDbContext CreateDbContext(string[] args)
         {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "StudentHub.Api");
-            if (!Directory.Exists(basePath))
-            {
-                basePath = "/src/StudentHub.Api";
-            }
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+
+            var basePath = Directory.GetCurrentDirectory();
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile($"appsettings.{env}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
