@@ -1,0 +1,22 @@
+entryPoints:
+  web:
+    address: ":80"
+  metrics:
+    address: ":8081"
+
+providers:
+  docker:
+    exposedByDefault: false
+
+api:
+  dashboard: true
+
+accessLog:
+  filePath: "/logs/access.log"
+  bufferingSize: 100
+  format: common
+
+metrics:
+  prometheus:
+    entryPoint: metrics
+

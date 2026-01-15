@@ -1,8 +1,7 @@
 global:
-  scrape_interval: 30s
+  scrape_interval: 15s 
 
 scrape_configs:
   - job_name: 'traefik'
-    metrics_path: '/metrics'
     static_configs:
-      - targets: ['traefik:8081']
+      - targets: ['traefik:8081']  # имя контейнера траефик и его ентрипоинт для метрик

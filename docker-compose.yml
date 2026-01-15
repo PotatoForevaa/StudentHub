@@ -3,35 +3,20 @@ services:
     image: traefik:v3.0
     container_name: traefik
     restart: unless-stopped
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.dashboard.address=:8080" 
-      - "--entrypoints.metrics.address=:8081"
-      - "--api.dashboard=true"
-      - "--metrics.prometheus=true"
-      - "--metrics.prometheus.entrypoint=metrics"
-      - "--accesslog=true"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.traefik.entrypoints=dashboard"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.priority=1000"
     ports:
       - "80:80"
-      - "8080:8080"
-      - "8081:8081"
+      - "8080:8080" #traefik dashboard
+
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - web
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik.yml:/traefik.yml:ro"
+      - ./traefik-logs:/logs   # для accessLog
+
 
   prometheus:
     image: prom/prometheus:latest
     restart: unless-stopped
-    volumes:
+    volumes:  
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
       - "9090:9090"
@@ -95,14 +80,13 @@ services:
       - ./Backend/StudentHub.Api/uploads:/app/uploads
       - ./Backend/logs:/app/logs
     
-   # ports:
-     # - "5000:5000"
+    ports:
+      - "5000:5000"
+
     labels:
       - "traefik.enable=true"
-
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
-      - "traefik.http.routers.backend.priority=100"
       - "traefik.http.services.backend.loadbalancer.server.port=5000"
 
     networks:
@@ -126,12 +110,10 @@ services:
 
     labels:
       - "traefik.enable=true"
- 
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend.priority=10"
-      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
-
+      - "traefik.http.services.backend.loadbalancer.server.port=5173"
+ 
     networks:
       - web
 
