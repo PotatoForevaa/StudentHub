@@ -124,7 +124,7 @@ namespace StudentHub.Api
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning(ex.Message);
+                    Log.Error(ex.Message);
                 }
 
                 app.UseSerilogRequestLogging();
