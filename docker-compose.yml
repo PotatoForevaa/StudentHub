@@ -12,6 +12,11 @@ services:
       - "./traefik.yml:/traefik.yml:ro"
       - ./traefik-logs:/logs   # для accessLog
 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.traefik.entrypoints=dashboard"
+
     networks:
       - web
 
