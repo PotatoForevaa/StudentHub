@@ -12,6 +12,9 @@ services:
       - "./traefik.yml:/traefik.yml:ro"
       - ./traefik-logs:/logs   # для accessLog
 
+    networks:
+      - web
+
 
   prometheus:
     image: prom/prometheus:latest
@@ -85,7 +88,7 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathRegexp(`^/api/.*`)"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=5000"
 
@@ -111,7 +114,7 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=PathRegexp(`^/(?!api).*`)"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173"
 
