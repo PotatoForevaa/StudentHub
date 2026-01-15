@@ -10,6 +10,7 @@ providers:
 
 api:
   dashboard: true
+  insecure: true
 
 accessLog:
   filePath: "/logs/access.log"
