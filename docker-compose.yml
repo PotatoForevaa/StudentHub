@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:latest
     container_name: traefik
     restart: unless-stopped
     ports:
@@ -19,30 +19,6 @@ services:
 
     networks:
       - web
-
-
-  prometheus:
-    image: prom/prometheus:latest
-    restart: unless-stopped
-    volumes:  
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-    networks:
-      - web
-
-  grafana:
-    image: grafana/grafana:latest
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    networks:
-      - web
-    depends_on:
-      - prometheus
-
 
   db:
     image: postgres:15

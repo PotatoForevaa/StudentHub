@@ -1,8 +1,8 @@
 entryPoints:
   web:
     address: ":80"
-  metrics:
-    address: ":8081"
+  dashboard:
+    address: ":8080"
 
 providers:
   docker:
@@ -16,8 +16,3 @@ accessLog:
   filePath: "/logs/access.log"
   bufferingSize: 100
   format: common
-
-metrics:
-  prometheus:
-    entryPoint: metrics
-
