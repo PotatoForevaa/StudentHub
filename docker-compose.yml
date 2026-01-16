@@ -8,6 +8,8 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.metrics.address=:9100"
       - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entryPoint=metrics"
+
       
     ports:
       - "80:80"
