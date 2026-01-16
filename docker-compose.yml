@@ -106,9 +106,33 @@ services:
       - web
     ports:
       - 9090:9090
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)"      
+      - "traefik.docker.network=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SERVER_ROOT_URL: "/grafana"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=PathPrefix(`/grafana`)"
+      - "traefik.docker.network=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
 volumes:
   postgres_data:
+  grafana_data:
 
 networks:
   web:
