@@ -12,6 +12,7 @@ using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Infrastructure.Services;
+using Serilog.Filters;
 
 namespace StudentHub.Api
 {
@@ -19,17 +20,42 @@ namespace StudentHub.Api
     {
         public static async Task Main(string[] args)
         {
+            string[] httpSources =
+            {
+                "Microsoft.AspNetCore.Hosting.Diagnostics",
+                "Microsoft.AspNetCore.HttpLogging",
+                "Microsoft.AspNetCore.Authorization",
+                "Microsoft.AspNetCore.Authentication"
+            };
+
             //Serilog configuration
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File("logs\\", rollingInterval: RollingInterval.Day)
+                
+                // все кроме ef core и запросов
+                .WriteTo.Logger(lc => lc
+                    .Filter.ByExcluding(Matching.FromSource("Microsoft.EntityFrameworkCore"))
+                    .Filter.ByExcluding(e => 
+                        httpSources.Any(s => Matching.FromSource(s)(e)))
+                    .WriteTo.Console()
+                    .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day))
+
+                // ef core
+                .WriteTo.Logger(lc => lc
+                    .Filter.ByIncludingOnly(Matching.FromSource("Microsoft.EntityFrameworkCore"))
+                    .WriteTo.File("logs/db.log", rollingInterval: RollingInterval.Day))
+
+                // запросы
+                .WriteTo.Logger(lc => lc
+                    .Filter.ByIncludingOnly(e =>
+                        httpSources.Any(s => Matching.FromSource(s)(e)))
+                    .WriteTo.File("logs/requests.log", rollingInterval: RollingInterval.Day))
+
                 .CreateLogger();
 
             try
             {
-                Log.Information("Building application...");
                 var builder = WebApplication.CreateBuilder(args);
 
                 builder.Configuration
@@ -55,8 +81,6 @@ namespace StudentHub.Api
                     options.Cookie.HttpOnly = true;
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 
-                    options.LoginPath = "/api/Account/Login";
-                    options.AccessDeniedPath = "/api/Account/Login";
                     options.SlidingExpiration = true;
                     options.Events.OnRedirectToLogin = context =>
                     {
@@ -74,16 +98,10 @@ namespace StudentHub.Api
                 {
                     options.AddPolicy("AllowFront", policy =>
                     {
-                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75:81")
+                        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.147.75")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();
-                    });
-                    options.AddPolicy("AllowFrontend", policy =>
-                    {
-                        policy.WithOrigins("http://192.168.147.75:5173")
-                              .AllowAnyHeader()
-                              .AllowAnyMethod();
                     });
                 });
 
@@ -107,6 +125,8 @@ namespace StudentHub.Api
                 });
 
                 var app = builder.Build();
+
+                // seeding
                 try
                 {
                     using (var scope = app.Services.CreateScope())
@@ -124,7 +144,7 @@ namespace StudentHub.Api
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error("Seeding error: " + ex.Message);
                 }
 
                 app.UseSerilogRequestLogging();
@@ -148,7 +168,7 @@ namespace StudentHub.Api
 
                 app.UseStaticFiles(new StaticFileOptions
                 {
-                    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+                    FileProvider = new PhysicalFileProvider(
                         Path.Combine(builder.Environment.ContentRootPath, "uploads")),
                     RequestPath = "/uploads"
                 });
@@ -157,8 +177,6 @@ namespace StudentHub.Api
                 app.UseAuthorization();
 
                 app.MapControllers();
-
-                //app.UseMiddleware<ValidationErrorMiddleware>();
 
                 app.Run();
             }
