@@ -120,6 +120,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_SERVER_ROOT_URL: "/grafana"
       GF_AUTH_ANONYMOUS_ENABLED: "true"
+      SERVER_FROM_SUB_PATH: "true"
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
