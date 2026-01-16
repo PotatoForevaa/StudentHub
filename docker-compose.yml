@@ -98,6 +98,15 @@ services:
     networks:
       - web
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - web
+    ports:
+      - 9090:9090
+
 volumes:
   postgres_data:
 
