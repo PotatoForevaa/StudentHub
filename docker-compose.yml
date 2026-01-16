@@ -11,8 +11,7 @@ services:
 
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./traefik.yml:/traefik.yml:ro"
-      - ./traefik-logs:/logs   # для accessLog
+      - ./traefik-logs:/logs
 
     networks:
       - web
@@ -56,6 +55,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+    labels:
+          - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
 
     volumes:
       - ./Backend/StudentHub.Api/uploads:/app/uploads
