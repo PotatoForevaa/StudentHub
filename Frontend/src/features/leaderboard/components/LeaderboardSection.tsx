@@ -182,7 +182,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) 
                   alt={`${user.fullName} avatar`}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = `${API_BASE_URL}/api/users/by-username/admin/profile-picture`;
+                    target.src = `${API_BASE_URL}/users/by-username/admin/profile-picture`;
                   }}
                 />
                 <UserName>{user.fullName}</UserName>
