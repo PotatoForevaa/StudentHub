@@ -118,6 +118,8 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - web
+    ports:
+    - 3000:3000
 
 volumes:
   postgres_data:
