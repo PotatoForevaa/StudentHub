@@ -32,8 +32,16 @@ namespace StudentHub.Infrastructure.Services
             if (admin == null)
             {
                 if (password == null) throw new Exception("Admin password not configured");
-                admin = new AppUser { UserName = username };
-                await userManager.CreateAsync(admin, password);
+                admin = new AppUser
+                {
+                    UserName = username,
+                    SecurityStamp = Guid.NewGuid().ToString()
+                };
+
+                var result = await userManager.CreateAsync(admin, password);
+                if (!result.Succeeded)
+                    throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
+               
                 await userManager.AddToRoleAsync(admin, roleName);
             }
 
