@@ -51,7 +51,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       CONNECTIONSTRING: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
       ASPNETCORE_URLS: "http://*:5000"
-      ADMIN__PASSWORD: "P@ssword"
+      ADMIN__PASSWORD: "P@ssw0rd"
           
     depends_on:
       db:
