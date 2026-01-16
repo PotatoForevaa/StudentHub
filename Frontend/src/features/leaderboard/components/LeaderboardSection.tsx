@@ -178,7 +178,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) 
               <Rank>{index + 1}</Rank>
               <UserInfo>
                 <UserAvatar
-                  src={`${API_BASE_URL}/${user.profilePicturePath}`}
+                  src={user.profilePicturePath}
                   alt={`${user.fullName} avatar`}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;

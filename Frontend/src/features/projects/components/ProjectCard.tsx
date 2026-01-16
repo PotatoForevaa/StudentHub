@@ -129,7 +129,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         <AuthorDate>
           <AuthorLink to={`/${project.authorUsername}`} onClick={(e) => e.stopPropagation()}>
             <AuthorAvatar
-              src={`${API_BASE_URL}/${project.authorProfilePicturePath}`}
+              src={project.authorProfilePicturePath}
               alt={`${project.authorName} avatar`}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
