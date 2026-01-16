@@ -58,6 +58,7 @@ services:
 
     labels:
           - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+          - "traefik.docker.network=web"
 
     volumes:
       - ./Backend/StudentHub.Api/uploads:/app/uploads
@@ -93,5 +94,6 @@ volumes:
 
 networks:
   web:
+    name: web
   internal:
     internal: false
