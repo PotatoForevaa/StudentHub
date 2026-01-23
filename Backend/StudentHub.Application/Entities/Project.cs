@@ -9,8 +9,8 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Guid AuthorId { get; set; }
         public User Author { get; set; }
-        public List<Image> Images { get; set; } = new List<Image>();
-        public List<ProjectRating> Ratings { get; set; } = new List<ProjectRating>();
-        public List<ProjectComment> Comments { get; set; } = new List<ProjectComment>();
+        public List<Attachment> Attachments { get; set; } = new List<Attachment>();
+        public List<Rating> Ratings { get; set; } = new List<Rating>();
+        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

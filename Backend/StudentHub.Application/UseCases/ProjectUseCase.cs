@@ -33,7 +33,7 @@ namespace StudentHub.Application.UseCases
                 Name = command.Name,
                 Description = command.Description,
                 ExternalUrl = string.IsNullOrEmpty(command.Url) ? null : new Uri(command.Url),
-                Images = filePaths.Select(fp => new Image { Path = fp }).ToList()
+                Images = filePaths.Select(fp => new Attachment { Path = fp }).ToList()
             };
 
             var result = await _projectRepository.AddAsync(project);
@@ -48,7 +48,7 @@ namespace StudentHub.Application.UseCases
             if (command.Score < 1 || command.Score > 5)
                 return Result<double>.Failure("Score must be between 1 and 5", "score", ErrorType.Validation);
 
-            var rating = new ProjectRating
+            var rating = new Rating
             {
                 AuthorId = command.AuthorId,
                 ProjectId = command.ProjectId,
@@ -194,7 +194,7 @@ namespace StudentHub.Application.UseCases
 
             foreach (var path in filePaths)
             {
-                project.Images.Add(new Image { Path = path, Project = project });
+                project.Images.Add(new Attachment { Path = path, Project = project });
             }
 
 
@@ -218,7 +218,7 @@ namespace StudentHub.Application.UseCases
             if (string.IsNullOrWhiteSpace(command.Content))
                 return Result<ProjectCommentDto>.Failure("Comment content cannot be empty", "content", ErrorType.Validation);
 
-            var comment = new ProjectComment
+            var comment = new Comment
             {
                 ProjectId = command.ProjectId,
                 AuthorId = command.AuthorId,
