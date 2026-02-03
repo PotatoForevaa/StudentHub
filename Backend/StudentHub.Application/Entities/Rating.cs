@@ -1,6 +1,6 @@
 namespace StudentHub.Application.Entities
 {
-    public class ProjectRating
+    public class Rating
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid AuthorId { get; set; }

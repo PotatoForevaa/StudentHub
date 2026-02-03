@@ -13,12 +13,12 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<Project?>> GetByIdAsync(Guid id);
         Task<Result<Project?>> UpdateAsync(Project project);
         Task<Result<List<string>>> GetImageListByIdAsync(Guid id);
-        Task<Result<double>> AddRatingAsync(ProjectRating rating);
+        Task<Result<double>> AddRatingAsync(Rating rating);
         Task<Result<double>> GetAverageRatingAsync(Guid projectId);
-        Task<Result<ProjectComment>> AddCommentAsync(ProjectComment comment);
-        Task<Result<List<ProjectComment>>> GetCommentsByProjectIdAsync(Guid projectId);
-        Task<Result<List<ProjectComment>>> GetCommentsByAuthorIdAsync(Guid authorId);
-        Task<Result<List<ProjectRating>>> GetRatingsByAuthorIdAsync(Guid authorId);
+        Task<Result<Comment>> AddCommentAsync(Comment comment);
+        Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId);
+        Task<Result<List<Comment>>> GetCommentsByAuthorIdAsync(Guid authorId);
+        Task<Result<List<Rating>>> GetRatingsByAuthorIdAsync(Guid authorId);
         Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId);
         Result<byte[]> GetImageAsync(string path);
         Task<Result<List<LeaderboardUserDto>>> GetActivityLeaderboardAsync(string period, int page, int pageSize);

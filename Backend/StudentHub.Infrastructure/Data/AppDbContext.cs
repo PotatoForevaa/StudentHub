@@ -16,9 +16,9 @@ namespace StudentHub.Infrastructure.Data
         }
 
         public DbSet<Project> Projects { get; set; }
-        public DbSet<ProjectRating> ProjectRatings { get; set; }
-        public DbSet<ProjectComment> ProjectComments { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Attachment> Attachments { get; set; }
         public DbSet<User> Users { get; set; }
 
         public override int SaveChanges()

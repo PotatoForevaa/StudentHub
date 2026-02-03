@@ -72,7 +72,7 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<List<string>>.Success(imageList);
         }
 
-        public async Task<Result<double>> AddRatingAsync(ProjectRating rating)
+        public async Task<Result<double>> AddRatingAsync(Rating rating)
         {
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == rating.ProjectId);
             if (project == null) return Result<double>.Failure($"Проект {rating.ProjectId} не найден", "projectId", ErrorType.NotFound);
@@ -105,13 +105,13 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<double>.Success(avg);
         }
 
-        public async Task<Result<ProjectComment>> AddCommentAsync(ProjectComment comment)
+        public async Task<Result<Comment>> AddCommentAsync(Comment comment)
         {
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == comment.ProjectId);
-            if (project == null) return Result<ProjectComment>.Failure($"Проект {comment.ProjectId} не найден", "projectId", ErrorType.NotFound);
+            if (project == null) return Result<Comment>.Failure($"Проект {comment.ProjectId} не найден", "projectId", ErrorType.NotFound);
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == comment.AuthorId);
-            if (user == null) return Result<ProjectComment>.Failure($"Пользователь {comment.AuthorId} не найден", "authorId", ErrorType.NotFound);
+            if (user == null) return Result<Comment>.Failure($"Пользователь {comment.AuthorId} не найден", "authorId", ErrorType.NotFound);
 
             await _dbContext.ProjectComments.AddAsync(comment);
             await _dbContext.SaveChangesAsync();
@@ -120,13 +120,13 @@ namespace StudentHub.Infrastructure.Repositories
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == comment.Id);
 
-            return Result<ProjectComment>.Success(commentWithAuthor ?? comment);
+            return Result<Comment>.Success(commentWithAuthor ?? comment);
         }
 
-        public async Task<Result<List<ProjectComment>>> GetCommentsByProjectIdAsync(Guid projectId)
+        public async Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId)
         {
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
-            if (project == null) return Result<List<ProjectComment>>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
+            if (project == null) return Result<List<Comment>>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
 
             var comments = await _dbContext.ProjectComments
                 .Include(c => c.Author)
@@ -134,7 +134,7 @@ namespace StudentHub.Infrastructure.Repositories
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
 
-            return Result<List<ProjectComment>>.Success(comments);
+            return Result<List<Comment>>.Success(comments);
         }
 
         public async Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId)
@@ -145,7 +145,7 @@ namespace StudentHub.Infrastructure.Repositories
             return rating?.Score;
         }
 
-        public async Task<Result<List<ProjectComment>>> GetCommentsByAuthorIdAsync(Guid authorId)
+        public async Task<Result<List<Comment>>> GetCommentsByAuthorIdAsync(Guid authorId)
         {
             var comments = await _dbContext.ProjectComments
                 .Include(c => c.Author)
@@ -154,10 +154,10 @@ namespace StudentHub.Infrastructure.Repositories
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
 
-            return Result<List<ProjectComment>>.Success(comments);
+            return Result<List<Comment>>.Success(comments);
         }
 
-        public async Task<Result<List<ProjectRating>>> GetRatingsByAuthorIdAsync(Guid authorId)
+        public async Task<Result<List<Rating>>> GetRatingsByAuthorIdAsync(Guid authorId)
         {
             var ratings = await _dbContext.ProjectRatings
                 .Include(r => r.Project)
@@ -165,7 +165,7 @@ namespace StudentHub.Infrastructure.Repositories
                 .OrderByDescending(r => r.DateTime)
                 .ToListAsync();
 
-            return Result<List<ProjectRating>>.Success(ratings);
+            return Result<List<Rating>>.Success(ratings);
         }
 
         public Result<byte[]> GetImageAsync(string path)
