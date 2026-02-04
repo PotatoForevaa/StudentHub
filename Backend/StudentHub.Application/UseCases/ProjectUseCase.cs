@@ -183,7 +183,7 @@ namespace StudentHub.Application.UseCases
                 : new Uri(command.ExternalUrl);
 
             var filePaths = new List<string>();
-            if (command.Files?.Count > 0) 
+            if (command.Files?.Count > 0)
                 foreach (var file in command.Files)
                 {
                     var fileResult = await _fileService.SaveFileAsync(file, "");

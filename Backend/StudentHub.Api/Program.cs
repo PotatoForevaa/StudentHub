@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
-using System.IO;
+using Serilog.Filters;
 using StudentHub.Api.Extensions;
 using StudentHub.Api.WebServices;
 using StudentHub.Application.Interfaces.Repositories;
@@ -12,7 +12,6 @@ using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Infrastructure.Services;
-using Serilog.Filters;
 
 namespace StudentHub.Api
 {
@@ -32,11 +31,11 @@ namespace StudentHub.Api
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
-                
+
                 // все кроме ef core и запросов
                 .WriteTo.Logger(lc => lc
                     .Filter.ByExcluding(Matching.FromSource("Microsoft.EntityFrameworkCore"))
-                    .Filter.ByExcluding(e => 
+                    .Filter.ByExcluding(e =>
                         httpSources.Any(s => Matching.FromSource(s)(e)))
                     .WriteTo.Console()
                     .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day))
