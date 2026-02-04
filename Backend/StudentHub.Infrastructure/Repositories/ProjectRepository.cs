@@ -35,8 +35,8 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<List<Project>>> GetAllAsync(int page = 0, int pageSize = 0)
         {
             var projects = page == 0 && pageSize == 0
-                ? await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).OrderByDescending(p => p.CreatedAt).ToListAsync()
-                : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Images).Include(p => p.Author).ToListAsync();
+                ? await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).OrderByDescending(p => p.CreatedAt).ToListAsync()
+                : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Attachments).Include(p => p.Author).ToListAsync();
             return Result<List<Project>>.Success(projects);
         }
 
@@ -44,7 +44,7 @@ namespace StudentHub.Infrastructure.Repositories
         {
             var projects = await _dbContext.Projects
                 .Where(p => p.AuthorId == authorId)
-                .Include(p => p.Images)
+                .Include(p => p.Attachments)
                 .Include(p => p.Author)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
@@ -53,7 +53,7 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<Project?>> GetByIdAsync(Guid id)
         {
-            var project = await _dbContext.Projects.Include(p => p.Images).Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
             if (project == null) return Result<Project?>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             return Result<Project?>.Success(project);
         }
@@ -66,9 +66,9 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<List<string>>> GetImageListByIdAsync(Guid id)
         {
-            var project = await _dbContext.Projects.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _dbContext.Projects.Include(p => p.Attachments).FirstOrDefaultAsync(p => p.Id == id);
             if (project == null) return Result<List<string>>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
-            var imageList = project.Images.Select(i => i.Path).ToList();
+            var imageList = project.Attachments.Select(i => i.Path).ToList();
             return Result<List<string>>.Success(imageList);
         }
 
@@ -77,21 +77,21 @@ namespace StudentHub.Infrastructure.Repositories
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == rating.ProjectId);
             if (project == null) return Result<double>.Failure($"Проект {rating.ProjectId} не найден", "projectId", ErrorType.NotFound);
 
-            var existing = await _dbContext.ProjectRatings.FirstOrDefaultAsync(r => r.ProjectId == rating.ProjectId && r.AuthorId == rating.AuthorId);
+            var existing = await _dbContext.Ratings.FirstOrDefaultAsync(r => r.ProjectId == rating.ProjectId && r.AuthorId == rating.AuthorId);
             if (existing != null)
             {
                 existing.Score = rating.Score;
                 existing.DateTime = DateTime.UtcNow;
-                _dbContext.ProjectRatings.Update(existing);
+                _dbContext.Ratings.Update(existing);
             }
             else
             {
-                await _dbContext.ProjectRatings.AddAsync(rating);
+                await _dbContext.Ratings.AddAsync(rating);
             }
 
             await _dbContext.SaveChangesAsync();
 
-            var avg = await _dbContext.ProjectRatings.Where(r => r.ProjectId == rating.ProjectId).AverageAsync(r => r.Score);
+            var avg = await _dbContext.Ratings.Where(r => r.ProjectId == rating.ProjectId).AverageAsync(r => r.Score);
             return Result<double>.Success(avg);
         }
 
@@ -100,7 +100,7 @@ namespace StudentHub.Infrastructure.Repositories
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null) return Result<double>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
 
-            var ratings = await _dbContext.ProjectRatings.Where(r => r.ProjectId == projectId).ToListAsync();
+            var ratings = await _dbContext.Ratings.Where(r => r.ProjectId == projectId).ToListAsync();
             var avg = ratings.Any() ? ratings.Average(r => r.Score) : 0.0;
             return Result<double>.Success(avg);
         }
@@ -113,10 +113,10 @@ namespace StudentHub.Infrastructure.Repositories
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == comment.AuthorId);
             if (user == null) return Result<Comment>.Failure($"Пользователь {comment.AuthorId} не найден", "authorId", ErrorType.NotFound);
 
-            await _dbContext.ProjectComments.AddAsync(comment);
+            await _dbContext.Comments.AddAsync(comment);
             await _dbContext.SaveChangesAsync();
 
-            var commentWithAuthor = await _dbContext.ProjectComments
+            var commentWithAuthor = await _dbContext.Comments
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == comment.Id);
 
@@ -128,7 +128,7 @@ namespace StudentHub.Infrastructure.Repositories
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null) return Result<List<Comment>>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
 
-            var comments = await _dbContext.ProjectComments
+            var comments = await _dbContext.Comments
                 .Include(c => c.Author)
                 .Where(c => c.ProjectId == projectId)
                 .OrderByDescending(c => c.CreatedAt)
@@ -139,7 +139,7 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId)
         {
-            var rating = await _dbContext.ProjectRatings
+            var rating = await _dbContext.Ratings
                 .FirstOrDefaultAsync(r => r.AuthorId == userId && r.ProjectId == projectId);
 
             return rating?.Score;
@@ -147,7 +147,7 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<List<Comment>>> GetCommentsByAuthorIdAsync(Guid authorId)
         {
-            var comments = await _dbContext.ProjectComments
+            var comments = await _dbContext.Comments
                 .Include(c => c.Author)
                 .Include(c => c.Project)
                 .Where(c => c.AuthorId == authorId)
@@ -159,7 +159,7 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<List<Rating>>> GetRatingsByAuthorIdAsync(Guid authorId)
         {
-            var ratings = await _dbContext.ProjectRatings
+            var ratings = await _dbContext.Ratings
                 .Include(r => r.Project)
                 .Where(r => r.AuthorId == authorId)
                 .OrderByDescending(r => r.DateTime)
@@ -204,13 +204,13 @@ namespace StudentHub.Infrastructure.Repositories
                 .Select(g => new { UserId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.UserId, x => x.Count);
 
-            var ratingCounts = await _dbContext.ProjectRatings
+            var ratingCounts = await _dbContext.Ratings
                 .Where(r => r.DateTime >= start && r.DateTime <= end)
                 .GroupBy(r => r.AuthorId)
                 .Select(g => new { UserId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.UserId, x => x.Count);
 
-            var commentCounts = await _dbContext.ProjectComments
+            var commentCounts = await _dbContext.Comments
                 .Where(c => c.CreatedAt >= start && c.CreatedAt <= end)
                 .GroupBy(c => c.AuthorId)
                 .Select(g => new { UserId = g.Key, Count = g.Count() })
@@ -256,7 +256,7 @@ namespace StudentHub.Infrastructure.Repositories
                 .Select(p => new
                 {
                     AuthorId = p.AuthorId,
-                    AvgRating = _dbContext.ProjectRatings
+                    AvgRating = _dbContext.Ratings
                         .Where(r => r.ProjectId == p.Id)
                         .Average(r => (double?)r.Score) ?? 0.0
                 })

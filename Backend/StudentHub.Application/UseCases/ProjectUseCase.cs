@@ -33,7 +33,7 @@ namespace StudentHub.Application.UseCases
                 Name = command.Name,
                 Description = command.Description,
                 ExternalUrl = string.IsNullOrEmpty(command.Url) ? null : new Uri(command.Url),
-                Images = filePaths.Select(fp => new Attachment { Path = fp }).ToList()
+                Attachments = filePaths.Select(fp => new Attachment { Path = fp }).ToList()
             };
 
             var result = await _projectRepository.AddAsync(project);
@@ -86,7 +86,7 @@ namespace StudentHub.Application.UseCases
                 var dto = new ProjectDto(
                     Name: p.Name,
                     Description: p.Description,
-                    Files: p.Images.Select(i => i.Path).ToList(),
+                    Files: p.Attachments.Select(i => i.Path).ToList(),
                     Id: p.Id,
                     AuthorName: p.Author.FullName,
                     AuthorUsername: p.Author.Username,
@@ -115,7 +115,7 @@ namespace StudentHub.Application.UseCases
                 var dto = new ProjectDto(
                     Name: p.Name,
                     Description: p.Description,
-                    Files: p.Images.Select(i => i.Path).ToList(),
+                    Files: p.Attachments.Select(i => i.Path).ToList(),
                     Id: p.Id,
                     AuthorName: p.Author.FullName,
                     AuthorUsername: p.Author.Username,
@@ -145,7 +145,7 @@ namespace StudentHub.Application.UseCases
                 Id: project.Id,
                 Name: project.Name,
                 Description: project.Description,
-                Files: project.Images.Select(i => i.Path).ToList(),
+                Files: project.Attachments.Select(i => i.Path).ToList(),
                 AuthorName: project.Author.FullName,
                 AuthorUsername: project.Author.Username,
                 AuthorProfilePicturePath: $"api/users/by-username/{project.Author.Username}/profile-picture",
@@ -190,11 +190,11 @@ namespace StudentHub.Application.UseCases
                     filePaths.Add(fileResult.Value);
                 }
 
-            project.Images.Clear();
+            project.Attachments.Clear();
 
             foreach (var path in filePaths)
             {
-                project.Images.Add(new Attachment { Path = path, Project = project });
+                project.Attachments.Add(new Attachment { Path = path, Project = project });
             }
 
 
@@ -205,7 +205,7 @@ namespace StudentHub.Application.UseCases
                 Id: project.Id,
                 Name: project.Name,
                 Description: project.Description,
-                Files: project.Images.Select(i => i.Path).ToList(),
+                Files: project.Attachments.Select(i => i.Path).ToList(),
                 AuthorName: project.Author.FullName,
                 AuthorUsername: project.Author.Username,
                 AuthorProfilePicturePath: project.Author.ProfilePicturePath,
