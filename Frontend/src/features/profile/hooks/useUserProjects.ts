@@ -39,7 +39,7 @@ export function useUserProjects(userId: string, username: string): UseUserProjec
             console.warn('Failed to fetch user projects via API, falling back to filtering', res?.errors);
             const allRes = await projectService.getProjects();
             if (allRes?.isSuccess && allRes.data) {
-              const filtered = allRes.data.filter(p => p.author === username);
+              const filtered = allRes.data.filter(p => p.authorUsername === username);
               const mapped = filtered.map((p: unknown) => ({
                 ...(p as Record<string, unknown>),
                 imagePaths: (p as { files?: string[] }).files || []
