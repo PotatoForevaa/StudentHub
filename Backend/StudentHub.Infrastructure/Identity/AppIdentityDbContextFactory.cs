@@ -9,11 +9,9 @@ namespace StudentHub.Infrastructure.Identity
         public AppIdentityDbContext CreateDbContext(string[] args)
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "StudentHub.Api");
-            if (!Directory.Exists(basePath))
-            {
-                basePath = "/src/StudentHub.Api";
-            }
+
+            var basePath = AppContext.BaseDirectory;
+
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json")
