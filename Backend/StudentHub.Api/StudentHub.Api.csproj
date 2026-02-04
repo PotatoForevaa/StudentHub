@@ -36,7 +36,7 @@
   </ItemGroup>
 
    <ItemGroup>
-    <ProjectReference Include="..\StudentHub.Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\StudentHub.Infrastructure\StudentHub.Infrastructure.csproj" />
    </ItemGroup>
 	<PropertyGroup>
 		<NeutralLanguage>en</NeutralLanguage>

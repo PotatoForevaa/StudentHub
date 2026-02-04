@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StudentHub.Application\Application.csproj" />
+    <ProjectReference Include="..\StudentHub.Application\StudentHub.Application.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "StudentHub.Application\Application.csproj", "{63CAB261-7690-D1CE-6670-0C72BB6FF9A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Application", "StudentHub.Application\StudentHub.Application.csproj", "{63CAB261-7690-D1CE-6670-0C72BB6FF9A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "StudentHub.Infrastructure\Infrastructure.csproj", "{D700367D-5925-0A09-E800-1E8EB3EBB364}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Infrastructure", "StudentHub.Infrastructure\StudentHub.Infrastructure.csproj", "{D700367D-5925-0A09-E800-1E8EB3EBB364}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "StudentHub.Api\Api.csproj", "{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentHub.Api", "StudentHub.Api\StudentHub.Api.csproj", "{27AF43D6-8F96-A2DC-9E5E-F68DC84C6D8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
