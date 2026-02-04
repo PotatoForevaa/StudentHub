@@ -9,6 +9,7 @@ namespace StudentHub.Infrastructure.Data
         public AppDbContext CreateDbContext(string[] args)
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
             var basePath = AppContext.BaseDirectory;
 
             var config = new ConfigurationBuilder()
