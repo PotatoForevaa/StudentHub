@@ -38,18 +38,18 @@ namespace StudentHub.Api
                     .Filter.ByExcluding(e =>
                         httpSources.Any(s => Matching.FromSource(s)(e)))
                     .WriteTo.Console()
-                    .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day))
+                    .WriteTo.File(Path.Combine("logs", "app-.log"), rollingInterval: RollingInterval.Day))
 
                 // ef core
                 .WriteTo.Logger(lc => lc
                     .Filter.ByIncludingOnly(Matching.FromSource("Microsoft.EntityFrameworkCore"))
-                    .WriteTo.File("logs/db.log", rollingInterval: RollingInterval.Day))
+                    .WriteTo.File(Path.Combine("logs", "db-.log"), rollingInterval: RollingInterval.Day))
 
                 // запросы
                 .WriteTo.Logger(lc => lc
                     .Filter.ByIncludingOnly(e =>
                         httpSources.Any(s => Matching.FromSource(s)(e)))
-                    .WriteTo.File("logs/requests.log", rollingInterval: RollingInterval.Day))
+                    .WriteTo.File(Path.Combine("logs", "requests-.log"), rollingInterval: RollingInterval.Day))
 
                 .CreateLogger();
 
