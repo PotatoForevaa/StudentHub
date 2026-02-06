@@ -136,7 +136,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
                 target.src = `${API_BASE_URL}/users/by-username/admin/profile-picture`;
               }}
             />
-            {project.authorName ? project.authorName.substring(0, 8) : 'Unknown'}
+            {project.authorName ? project.authorName.split(' ')[0] + ' ' + project.authorName.split(' ')[1] : 'Unknown'}
           </AuthorLink>
           <Rating>☆ {project.averageRating?.toFixed(1) ?? 'N/A'}</Rating>
           <span>{project.creationDate && formatDate(project.creationDate)}</span>
