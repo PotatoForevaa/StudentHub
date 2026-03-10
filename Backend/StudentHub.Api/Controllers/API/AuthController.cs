@@ -61,5 +61,49 @@ namespace StudentHub.Api.Controllers.API
             var userResult = await _userUseCase.GetByIdAsync(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!));
             return userResult.ToActionResult();
         }
+
+        [HttpGet("oauth2/challenge")]
+        public async Task<IActionResult> OAuth2Challenge(string redirectUri = null)
+        {
+            await _authService.ChallengeOAuth2Async(redirectUri);
+            return Ok(new ApiResponse { IsSuccess = true });
+        }
+
+        [HttpGet("oauth2/callback")]
+        public async Task<IActionResult> OAuth2Callback(string code, string state)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                return BadRequest(new ApiResponse { IsSuccess = false, Errors = new List<ApiError> { new ApiError { Message = "Authorization code is required" } } });
+            }
+
+            var externalId = User.FindFirstValue("sub") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var username = User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("preferred_username");
+            var fullName = User.FindFirstValue(ClaimTypes.GivenName) ?? User.FindFirstValue("name");
+
+            if (string.IsNullOrEmpty(externalId) || string.IsNullOrEmpty(username))
+            {
+                return BadRequest(new ApiResponse { IsSuccess = false, Errors = new List<ApiError> { new ApiError { Message = "Invalid OAuth2 response" } } });
+            }
+
+            var result = await _userUseCase.LoginWithOAuth2Async(externalId, username, fullName);
+            if (result.IsSuccess)
+            {
+                var user = result.Value!;
+                await _authService.SignInWithOAuth2Async(user.Id.ToString(), user.Username, user.FullName);
+                return Ok(new ApiResponse<StudentHub.Application.DTOs.Responses.UserDto> { IsSuccess = true, Data = user });
+            }
+            else
+            {
+                return Unauthorized(new ApiResponse<StudentHub.Application.DTOs.Responses.UserDto> { IsSuccess = false, Errors = result.Errors.Select(e => new ApiError { Message = e.Message, Field = e.Field }).ToList(), ErrorType = result.ErrorType.ToString() });
+            }
+        }
+
+        [HttpPost("oauth2/logout")]
+        public async Task<IActionResult> OAuth2Logout()
+        {
+            await _authService.SignOutAsync();
+            return Ok(new ApiResponse { IsSuccess = true });
+        }
     }
 }

@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -12,6 +15,7 @@ using StudentHub.Infrastructure.Data;
 using StudentHub.Infrastructure.Identity;
 using StudentHub.Infrastructure.Repositories;
 using StudentHub.Infrastructure.Services;
+using System.Security.Claims;
 
 namespace StudentHub.Api
 {
@@ -32,7 +36,7 @@ namespace StudentHub.Api
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
 
-                // âñå êğîìå ef core è çàïğîñîâ
+                // Ğ²ÑĞµ ĞºÑ€Ğ¾Ğ¼Ğµ ef core Ğ¸ Ğ·Ğ°Ğ¿Ñ€Ğ¾ÑĞ¾Ğ²
                 .WriteTo.Logger(lc => lc
                     .Filter.ByExcluding(Matching.FromSource("Microsoft.EntityFrameworkCore"))
                     .Filter.ByExcluding(e =>
@@ -45,7 +49,7 @@ namespace StudentHub.Api
                     .Filter.ByIncludingOnly(Matching.FromSource("Microsoft.EntityFrameworkCore"))
                     .WriteTo.File(Path.Combine("logs", "db-.log"), rollingInterval: RollingInterval.Day))
 
-                // çàïğîñû
+                // Ğ·Ğ°Ğ¿Ñ€Ğ¾ÑÑ‹
                 .WriteTo.Logger(lc => lc
                     .Filter.ByIncludingOnly(e =>
                         httpSources.Any(s => Matching.FromSource(s)(e)))
@@ -89,6 +93,33 @@ namespace StudentHub.Api
                     options.Events.OnRedirectToAccessDenied = context =>
                     {
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    };
+                });
+
+                builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+                {
+                    options.Authority = builder.Configuration["OAuth2:Authority"];
+                    options.ClientId = builder.Configuration["OAuth2:ClientId"];
+                    options.ClientSecret = builder.Configuration["OAuth2:ClientSecret"];
+                    options.ResponseType = builder.Configuration["OAuth2:ResponseType"];
+                    options.Scope.Clear();
+                    options.Scope.Add(builder.Configuration["OAuth2:Scope"]);
+                    options.SaveTokens = true;
+                    options.GetClaimsFromUserInfoEndpoint = true;
+                    
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+                    
+                    options.Events.OnTokenValidated = context =>
+                    {
                         return Task.CompletedTask;
                     };
                 });

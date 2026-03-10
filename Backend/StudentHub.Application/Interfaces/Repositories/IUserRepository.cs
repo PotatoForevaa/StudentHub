@@ -13,5 +13,7 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result> CreateRole(string roleName);
         Task<Result> AddToRoleAsync(string username, string role);
         Task<Result> CheckPasswordAsync(string username, string password);
+        Task<Result<User?>> GetByExternalIdAsync(string externalId);
+        Task<Result<User?>> AddOAuth2UserAsync(string externalId, string username, string fullName);
     }
 }

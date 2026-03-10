@@ -16,5 +16,6 @@ namespace StudentHub.Application.Interfaces.UseCases
         Task<Result<Stream?>> GetProfilePictureById(Guid id);
         Task<Result<Stream?>> GetProfilePictureByUsername(string username);
         Task<Result> AddProfilePicture(Guid id, Stream picture);
+        Task<Result<UserDto?>> LoginWithOAuth2Async(string externalId, string username, string fullName);
     }
 }

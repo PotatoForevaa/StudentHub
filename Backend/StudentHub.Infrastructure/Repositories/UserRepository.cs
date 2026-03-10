@@ -126,5 +126,42 @@ namespace StudentHub.Infrastructure.Repositories
             _db.Update<User>(user);
             await _db.SaveChangesAsync();
         }
+
+        public async Task<Result<User?>> GetByExternalIdAsync(string externalId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.ExternalId == externalId);
+            if (user == null) return Result<User?>.Failure($"Пользователь с externalId {externalId} не найден", "externalId", ErrorType.NotFound);
+            return Result<User?>.Success(user);
+        }
+
+        public async Task<Result<User?>> AddOAuth2UserAsync(string externalId, string username, string fullName)
+        {
+            // Check if user with this externalId already exists
+            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.ExternalId == externalId);
+            if (existingUser != null)
+            {
+                return Result<User?>.Failure($"Пользователь с externalId {externalId} уже существует", "externalId", ErrorType.Conflict);
+            }
+
+            // Check if user with this username already exists
+            var existingUsername = await _db.Users.FirstOrDefaultAsync(u => u.Username.ToUpper() == username.ToUpper());
+            if (existingUsername != null)
+            {
+                return Result<User?>.Failure($"Пользователь с именем '{username}' уже существует", "username", ErrorType.Conflict);
+            }
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = username,
+                FullName = fullName,
+                ExternalId = externalId
+            };
+
+            await _db.Users.AddAsync(user);
+            await _db.SaveChangesAsync();
+
+            return Result<User?>.Success(user);
+        }
     }
 }

@@ -136,5 +136,37 @@ namespace StudentHub.Application.UseCases
             await _userRepository.UpdateAsync(user);
             return Result.Success();
         }
+
+        public async Task<Result<UserDto?>> LoginWithOAuth2Async(string externalId, string username, string fullName)
+        {
+            // Try to find existing user by externalId
+            var userResult = await _userRepository.GetByExternalIdAsync(externalId);
+            if (userResult.IsSuccess)
+            {
+                var user = userResult.Value!;
+                var userDto = new UserDto(user.Id, user.Username, user.FullName);
+                return Result<UserDto?>.Success(userDto);
+            }
+
+            // If user not found by externalId, try to find by username
+            var existingUserResult = await _userRepository.GetByUsernameAsync(username);
+            if (existingUserResult.IsSuccess)
+            {
+                // User exists with this username, update with externalId
+                var user = existingUserResult.Value!;
+                user.ExternalId = externalId;
+                await _userRepository.UpdateAsync(user);
+                var userDto = new UserDto(user.Id, user.Username, user.FullName);
+                return Result<UserDto?>.Success(userDto);
+            }
+
+            // Create new user with OAuth2 data
+            var newUserResult = await _userRepository.AddOAuth2UserAsync(externalId, username, fullName);
+            if (!newUserResult.IsSuccess) return Result<UserDto?>.Failure(newUserResult.Errors, newUserResult.ErrorType);
+
+            var newUser = newUserResult.Value!;
+            var newUserDto = new UserDto(newUser.Id, newUser.Username, newUser.FullName);
+            return Result<UserDto?>.Success(newUserDto);
+        }
     }
 }
