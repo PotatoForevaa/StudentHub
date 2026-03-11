@@ -100,6 +100,28 @@ services:
     networks:
       - web
 
+  toxic_filter:
+    build:
+      context: ./comment_filter
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.toxic_filter.rule=PathPrefix(`/toxic_filter`)"
+      - "traefik.http.routers.toxic_filter.entrypoints=web"
+
+      - "traefik.http.routers.toxic_filter.middlewares=toxic_filter-stripprefix"
+      - "traefik.http.middlewares.toxic_filter-stripprefix.stripprefix.prefixes=/toxic_filter"
+
+      - "traefik.http.services.toxic_filter.loadbalancer.server.port=8000"
+      - "traefik.docker.network=web"
+    networks:
+      - web
+    ports:
+      - "7272:8000"
+    volumes:
+      - ./comment_filter/toxic_model_balanced:/app/toxic_model_balanced
+
   prometheus:
     image: prom/prometheus:latest    
     container_name: prometheus
@@ -107,6 +129,7 @@ services:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
     networks:
       - web
+      - internal
     ports:
       - 9090:9090
 
@@ -121,8 +144,42 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - web
+      - internal
     ports:
     - 3000:3000
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    networks:
+      - internal
+  
+  celery_worker:
+    build:
+      context: ./comment_filter
+      dockerfile: Dockerfile
+    command: celery -A celery_app.celery_app worker --loglevel=info
+    restart: unless-stopped
+    depends_on:
+      - redis
+    volumes:
+      - ./comment_filter/toxic_model_balanced:/app/toxic_model_balanced
+    networks:
+      - internal
+
+  model_service:
+    build:
+      context: ./comment_filter
+      dockerfile: Dockerfile
+    command: uvicorn model_service:app --host 0.0.0.0 --port 8001
+    restart: unless-stopped
+    volumes:
+      - ./comment_filter/toxic_model_balanced:/app/toxic_model_balanced
+    networks:
+      - web
+      - internal
+    ports:
+      - "8001:8001"
 
 volumes:
   postgres_data:
