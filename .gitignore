@@ -390,3 +390,4 @@ FodyWeavers.xsd
 comment_filter.zip
 
 .venv
+model.safetensors
