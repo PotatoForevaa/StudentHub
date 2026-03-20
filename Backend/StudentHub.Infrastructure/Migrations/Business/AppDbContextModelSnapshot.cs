@@ -132,6 +132,9 @@ namespace StudentHub.Infrastructure.Migrations.Business
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("text");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("text");

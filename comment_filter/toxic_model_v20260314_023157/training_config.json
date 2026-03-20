@@ -1,0 +1,14 @@
+{
+  "model_name": "DeepPavlov/rubert-base-cased",
+  "max_length": 128,
+  "batch_size": 16,
+  "learning_rate": 2e-05,
+  "num_epochs": 3,
+  "warmup_steps": 500,
+  "early_stopping_patience": 2,
+  "class_weights": [
+    0.6389002799987793,
+    2.2998528480529785
+  ],
+  "device": "cuda"
+}

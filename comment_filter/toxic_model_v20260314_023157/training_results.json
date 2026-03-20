@@ -1,0 +1,26 @@
+{
+  "train_runtime": 0.1779828254063924,
+  "eval_metrics": {
+    "eval_loss": 0.34408074617385864,
+    "eval_accuracy": 0.9580874262278684,
+    "eval_f1": 0.9022626545369722,
+    "eval_precision": 0.9148533585619678,
+    "eval_recall": 0.8900138057984354,
+    "eval_confusion_matrix": [
+      [
+        7644,
+        180
+      ],
+      [
+        239,
+        1934
+      ]
+    ],
+    "eval_runtime": 641.5488,
+    "eval_samples_per_second": 15.583,
+    "eval_steps_per_second": 0.974,
+    "epoch": 3.0
+  },
+  "model_path": "toxic_model_v20260314_023157",
+  "timestamp": "2026-03-14T10:29:04.413588"
+}

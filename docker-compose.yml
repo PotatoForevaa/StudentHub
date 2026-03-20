@@ -166,6 +166,7 @@ services:
       - ./comment_filter/toxic_model_balanced:/app/toxic_model_balanced
     networks:
       - internal
+      - web
 
   model_service:
     build:

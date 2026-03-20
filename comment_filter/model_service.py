@@ -3,7 +3,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-MODEL_PATH = "toxic_model_balanced"
+MODEL_PATH = "toxic_model_v20260314_023157"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
