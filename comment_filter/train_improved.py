@@ -67,19 +67,10 @@ def clean_text(text):
     if pd.isna(text):
         return ""
     
-    # Convert to string
-    text = str(text)
-    
-    # Remove HTML tags
-    text = re.sub(r'<[^>]+>', '', text)
-    
-    # Remove URLs
+    text = str(text)    
+    text = re.sub(r'<[^>]+>', '', text)    
     text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-    
-    # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text).strip()
-    
-    # Remove special characters but keep Cyrillic and basic punctuation
     text = re.sub(r'[^\w\sа-яА-ЯёЁ.,!?-]', ' ', text)
     
     return text
@@ -88,32 +79,24 @@ def load_and_preprocess_data(csv_path):
     """Load and preprocess the dataset"""
     logger.info(f"Loading data from {csv_path}")
     
-    # Load data
     data = load_hf_parquet_dataset("train-00000-of-00001.parquet", "test-00000-of-00001.parquet", sample_size=50000)
-    
-    # Basic validation
     if 'comment' not in data.columns or 'toxic' not in data.columns:
         raise ValueError("CSV must contain 'comment' and 'toxic' columns")
     
-    # Remove rows with missing values
     initial_count = len(data)
     data = data.dropna(subset=['comment', 'toxic'])
     logger.info(f"Removed {initial_count - len(data)} rows with missing values")
     
-    # Clean text
     logger.info("Cleaning text data...")
     data['comment'] = data['comment'].apply(clean_text)
     
-    # Remove empty comments
     data = data[data['comment'].str.len() > 0]
     logger.info(f"Removed empty comments, remaining: {len(data)}")
     
-    # Validate labels
     unique_labels = data['toxic'].unique()
     if not set(unique_labels).issubset({0, 1}):
         raise ValueError(f"Labels must be 0 or 1, found: {unique_labels}")
     
-    # Class distribution
     class_dist = data['toxic'].value_counts()
     logger.info(f"Class distribution: {dict(class_dist)}")
     
@@ -204,25 +187,21 @@ def save_training_config(model_dir, config):
     logger.info(f"Training config saved to {config_path}")
 
 def main():
-    # Load and preprocess data
     data = load_and_preprocess_data("toxic_comments.csv")
     
-    # Compute class weights
     class_weights = compute_class_weights(data['toxic'].values)
     
-    # Split data with stratification
     train_texts, test_texts, train_labels, test_labels = train_test_split(
         data['comment'].tolist(),
         data['toxic'].tolist(),
         test_size=0.2,
         random_state=42,
-        stratify=data['toxic']  # Ensure balanced splits
+        stratify=data['toxic']  
     )
     
     logger.info(f"Training set size: {len(train_texts)}")
     logger.info(f"Test set size: {len(test_texts)}")
     
-    # Initialize tokenizer and model
     logger.info("Loading tokenizer and model...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     model = AutoModelForSequenceClassification.from_pretrained(
@@ -231,14 +210,11 @@ def main():
     )
     model.to(device)
     
-    # Create datasets
     train_dataset = ToxicDataset(train_texts, train_labels, tokenizer, MAX_LENGTH)
     test_dataset = ToxicDataset(test_texts, test_labels, tokenizer, MAX_LENGTH)
     
-    # Create model directory
     model_dir = create_model_dir()
     
-    # Training arguments with improvements
     training_args = TrainingArguments(
         output_dir=str(model_dir),
         num_train_epochs=NUM_EPOCHS,
@@ -260,7 +236,6 @@ def main():
         remove_unused_columns=False
     )
     
-    # Create trainer with callbacks
     trainer = WeightedTrainer(
         class_weights=class_weights,
         model=model,
@@ -273,20 +248,16 @@ def main():
         ]
     )
     
-    # Train model
     logger.info("Starting training...")
     train_result = trainer.train()
     
-    # Evaluate model
     logger.info("Evaluating model...")
     eval_result = trainer.evaluate()
     
-    # Save model and tokenizer
     logger.info(f"Saving model to {model_dir}")
     trainer.save_model(str(model_dir))
     tokenizer.save_pretrained(str(model_dir))
     
-    # Save training results
     results = {
         'train_runtime': train_result.training_loss,
         'eval_metrics': eval_result,
@@ -298,7 +269,6 @@ def main():
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2, default=str)
     
-    # Save training configuration
     config = {
         'model_name': MODEL_NAME,
         'max_length': MAX_LENGTH,

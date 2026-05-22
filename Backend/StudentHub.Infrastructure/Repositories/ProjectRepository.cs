@@ -118,21 +118,32 @@ namespace StudentHub.Infrastructure.Repositories
 
             var commentWithAuthor = await _dbContext.Comments
                 .Include(c => c.Author)
+                .Include(c => c.Reports)
                 .FirstOrDefaultAsync(c => c.Id == comment.Id);
 
             return Result<Comment>.Success(commentWithAuthor ?? comment);
         }
 
-        public async Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId)
+        public async Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId, int page = 0, int pageSize = 0, bool onlyApproved = true)
         {
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null) return Result<List<Comment>>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
 
-            var comments = await _dbContext.Comments
+            var query = _dbContext.Comments
                 .Include(c => c.Author)
-                .Where(c => c.ProjectId == projectId)
-                .OrderByDescending(c => c.CreatedAt)
-                .ToListAsync();
+                .Include(c => c.Reports)
+                .Where(c => c.ProjectId == projectId);
+
+            if (onlyApproved)
+            {
+                query = query.Where(c => c.ModerationStatus == CommentModerationStatus.Approved);
+            }
+
+            query = query.OrderByDescending(c => c.CreatedAt);
+
+            var comments = page <= 0 || pageSize <= 0
+                ? await query.ToListAsync()
+                : await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return Result<List<Comment>>.Success(comments);
         }
@@ -145,16 +156,102 @@ namespace StudentHub.Infrastructure.Repositories
             return rating?.Score;
         }
 
-        public async Task<Result<List<Comment>>> GetCommentsByAuthorIdAsync(Guid authorId)
+        public async Task<Result<List<Comment>>> GetCommentsByAuthorIdAsync(Guid authorId, int page = 0, int pageSize = 0, bool onlyApproved = true)
         {
-            var comments = await _dbContext.Comments
+            var query = _dbContext.Comments
                 .Include(c => c.Author)
                 .Include(c => c.Project)
-                .Where(c => c.AuthorId == authorId)
-                .OrderByDescending(c => c.CreatedAt)
-                .ToListAsync();
+                .Include(c => c.Reports)
+                .Where(c => c.AuthorId == authorId);
+
+            if (onlyApproved)
+            {
+                query = query.Where(c => c.ModerationStatus == CommentModerationStatus.Approved);
+            }
+
+            query = query.OrderByDescending(c => c.CreatedAt);
+
+            var comments = page <= 0 || pageSize <= 0
+                ? await query.ToListAsync()
+                : await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return Result<List<Comment>>.Success(comments);
+        }
+
+        public async Task<Result<List<Comment>>> GetCommentsByModerationStatusAsync(CommentModerationStatus status, CommentModerationOrigin? origin = null, int page = 0, int pageSize = 0)
+        {
+            var query = _dbContext.Comments
+                .Include(c => c.Author)
+                .Include(c => c.Project)
+                .Include(c => c.Reports)
+                .Where(c => c.ModerationStatus == status);
+
+            if (origin.HasValue)
+            {
+                query = query.Where(c => c.ModeratedBy == origin.Value);
+            }
+
+            query = query.OrderByDescending(c => c.CreatedAt);
+
+            var comments = page <= 0 || pageSize <= 0
+                ? await query.ToListAsync()
+                : await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return Result<List<Comment>>.Success(comments);
+        }
+
+        public async Task<Result<List<Comment>>> GetReportedCommentsAsync(int page = 0, int pageSize = 0)
+        {
+            var query = _dbContext.Comments
+                .Include(c => c.Author)
+                .Include(c => c.Project)
+                .Include(c => c.Reports)
+                .Where(c => c.Reports.Any())
+                .OrderByDescending(c => c.Reports.Count)
+                .ThenByDescending(c => c.CreatedAt);
+
+            var comments = page <= 0 || pageSize <= 0
+                ? await query.ToListAsync()
+                : await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return Result<List<Comment>>.Success(comments);
+        }
+
+        public async Task<Result<Comment>> GetCommentByIdAsync(Guid commentId)
+        {
+            var comment = await _dbContext.Comments
+                .Include(c => c.Author)
+                .Include(c => c.Project)
+                .Include(c => c.Reports)
+                .FirstOrDefaultAsync(c => c.Id == commentId);
+
+            if (comment == null) return Result<Comment>.Failure($"Комментарий {commentId} не найден", "commentId", ErrorType.NotFound);
+            return Result<Comment>.Success(comment);
+        }
+
+        public async Task<Result> UpdateCommentAsync(Comment comment)
+        {
+            _dbContext.Comments.Update(comment);
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
+        }
+
+        public async Task<Result<CommentReport>> AddCommentReportAsync(CommentReport report)
+        {
+            var comment = await _dbContext.Comments.FirstOrDefaultAsync(c => c.Id == report.CommentId);
+            if (comment == null) return Result<CommentReport>.Failure($"Комментарий {report.CommentId} не найден", "commentId", ErrorType.NotFound);
+
+            var reporter = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == report.ReporterId);
+            if (reporter == null) return Result<CommentReport>.Failure($"Пользователь {report.ReporterId} не найден", "reporterId", ErrorType.NotFound);
+
+            if (await _dbContext.CommentReports.AnyAsync(r => r.CommentId == report.CommentId && r.ReporterId == report.ReporterId))
+            {
+                return Result<CommentReport>.Failure("Comment already reported by this user", "reporterId", ErrorType.Conflict);
+            }
+
+            await _dbContext.CommentReports.AddAsync(report);
+            await _dbContext.SaveChangesAsync();
+            return Result<CommentReport>.Success(report);
         }
 
         public async Task<Result<List<Rating>>> GetRatingsByAuthorIdAsync(Guid authorId)

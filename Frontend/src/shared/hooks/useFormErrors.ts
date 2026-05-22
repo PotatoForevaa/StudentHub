@@ -10,7 +10,6 @@ export function useFormErrors() {
       return { formError: "Произошла неизвестная ошибка", fieldErrors: {} };
     }
 
-    // Handle array of errors
     if (data.errors && Array.isArray(data.errors)) {
       const fieldErrors: FieldErrors = {};
       let generalError: string | null = null;
@@ -34,7 +33,6 @@ export function useFormErrors() {
       };
     }
 
-    // Handle object of errors
     if (data.errors && typeof data.errors === 'object') {
       const fieldErrors: FieldErrors = {};
       for (const [key, value] of Object.entries(data.errors)) {
@@ -45,7 +43,6 @@ export function useFormErrors() {
       return { formError: null, fieldErrors };
     }
 
-    // Handle single detail error
     if (data.detail) {
       return { formError: data.detail, fieldErrors: {} };
     }

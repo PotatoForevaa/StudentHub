@@ -32,7 +32,6 @@ namespace StudentHub.Api
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
 
-                // ��� ����� ef core � ��������
                 .WriteTo.Logger(lc => lc
                     .Filter.ByExcluding(Matching.FromSource("Microsoft.EntityFrameworkCore"))
                     .Filter.ByExcluding(e =>
@@ -40,12 +39,10 @@ namespace StudentHub.Api
                     .WriteTo.Console()
                     .WriteTo.File(Path.Combine("logs", "app-.log"), rollingInterval: RollingInterval.Day))
 
-                // ef core
                 .WriteTo.Logger(lc => lc
                     .Filter.ByIncludingOnly(Matching.FromSource("Microsoft.EntityFrameworkCore"))
                     .WriteTo.File(Path.Combine("logs", "db-.log"), rollingInterval: RollingInterval.Day))
 
-                // �������
                 .WriteTo.Logger(lc => lc
                     .Filter.ByIncludingOnly(e =>
                         httpSources.Any(s => Matching.FromSource(s)(e)))

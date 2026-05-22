@@ -1,0 +1,10 @@
+# Training dependencies (includes all runtime deps from requirements.txt)
+# Install for local model training only; not needed in Docker containers
+
+-r requirements.txt
+
+# Training and analysis tools
+pandas
+matplotlib
+scikit-learn
+python-dotenv

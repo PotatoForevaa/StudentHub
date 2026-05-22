@@ -1,0 +1,10 @@
+# Exclude large model files from Docker build context
+toxic_model_v*
+__pycache__
+*.pyc
+.pytest_cache
+.venv
+*.log
+.git
+.gitignore
+node_modules
