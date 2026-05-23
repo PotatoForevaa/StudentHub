@@ -1,5 +1,5 @@
 import api, { API_BASE_URL } from '../../../shared/services/base';
-import type { ApiResponse } from '../../../shared/types';
+import type { ApiResponse, PaginatedResponse } from '../../../shared/types';
 import type { Project, Comment, ScoreFormData, CommentFormData, UpdateProjectFormData } from '../types';
 
 export const projectService = {
@@ -41,8 +41,8 @@ export const projectService = {
         return response.data;
     },
 
-    getComments: async (id: string): Promise<ApiResponse<Comment[]>> => {
-        const response = await api.get(`projects/${id}/comments`);
+    getComments: async (id: string, page = 1, pageSize = 10): Promise<ApiResponse<PaginatedResponse<Comment>>> => {
+        const response = await api.get(`projects/${id}/comments`, { params: { page, pageSize } });
         return response.data;
     },
 

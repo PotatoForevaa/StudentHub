@@ -3,6 +3,7 @@ import { styled } from "styled-components";
 import { AuthContext } from "../features/auth/context/AuthContext";
 import { useContext } from "react";
 import { colors, shadows, transitions, fonts } from "../shared/styles/tokens";
+import { isAdmin } from "../shared/utils/roles";
 
 const StyledHeader = styled.header`
   background: ${colors.surface};
@@ -173,6 +174,16 @@ export const Header = () => {
                 Пользователи
               </NavLinkStyled>
             </Li>
+            {isAdmin(user) && (
+              <Li>
+                <NavLinkStyled
+                  to="admin"
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  WebAdmin
+                </NavLinkStyled>
+              </Li>
+            )}
           </Ul>
         </LeftSection>
 

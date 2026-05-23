@@ -12,10 +12,13 @@ namespace StudentHub.Application.Interfaces.UseCases
         Task<Result<UserDto?>> GetByUsernameAsync(string username);
         Task<Result<UserDto?>> GetByIdAsync(Guid id);
         Task<Result<List<UserDto>>> GetAllAsync();
+        Task<Result<PaginatedResponse<UserDto>>> SearchAsync(string? search, string? role, int page, int pageSize);
         Task<Result<UserInfoDto?>> GetInfoById(Guid id);
         Task<Result<Stream?>> GetProfilePictureById(Guid id);
         Task<Result<Stream?>> GetProfilePictureByUsername(string username);
         Task<Result> AddProfilePicture(Guid id, Stream picture);
+        Task<Result> DeleteAsync(Guid id);
+        Task<Result> ReplaceAssignableRoleAsync(Guid id, string role);
         Task<Result<UserDto?>> LoginWithOAuth2Async(string externalId, string username, string fullName);
     }
 }

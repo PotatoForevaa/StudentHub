@@ -126,9 +126,9 @@ namespace StudentHub.Api.Controllers.API
 
         [Authorize]
         [HttpGet("{id}/comments")]
-        public async Task<IActionResult> GetComments([FromRoute] Guid id)
+        public async Task<IActionResult> GetComments([FromRoute] Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _projectUseCase.GetCommentsByProjectIdAsync(id);
+            var result = await _projectUseCase.GetCommentsByProjectIdAsync(id, page, pageSize);
             return result.ToActionResult();
         }
     }

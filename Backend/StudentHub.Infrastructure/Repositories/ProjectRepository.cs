@@ -25,8 +25,18 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result> DeleteAsync(Guid id)
         {
-            var project = await _dbContext.Projects.FindAsync(id);
+            var project = await _dbContext.Projects
+                .Include(p => p.Attachments)
+                .Include(p => p.Ratings)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Reports)
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (project == null) return Result.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
+
+            _dbContext.CommentReports.RemoveRange(project.Comments.SelectMany(c => c.Reports));
+            _dbContext.Comments.RemoveRange(project.Comments);
+            _dbContext.Ratings.RemoveRange(project.Ratings);
+            _dbContext.Attachments.RemoveRange(project.Attachments);
             _dbContext.Projects.Remove(project);
             await _dbContext.SaveChangesAsync();
             return Result.Success();
@@ -38,6 +48,35 @@ namespace StudentHub.Infrastructure.Repositories
                 ? await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).OrderByDescending(p => p.CreatedAt).ToListAsync()
                 : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Attachments).Include(p => p.Author).ToListAsync();
             return Result<List<Project>>.Success(projects);
+        }
+
+        public async Task<(List<Project> Projects, int TotalCount)> SearchProjectsAsync(string? search, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = _dbContext.Projects
+                .Include(p => p.Author)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToUpper();
+                query = query.Where(p =>
+                    p.Name.ToUpper().Contains(term) ||
+                    p.Description.ToUpper().Contains(term) ||
+                    p.Author.Username.ToUpper().Contains(term) ||
+                    p.Author.FullName.ToUpper().Contains(term));
+            }
+
+            var total = await query.CountAsync();
+            var projects = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (projects, total);
         }
 
         public async Task<Result<List<Project>>> GetProjectsByAuthorIdAsync(Guid authorId)
@@ -136,7 +175,9 @@ namespace StudentHub.Infrastructure.Repositories
 
             if (onlyApproved)
             {
-                query = query.Where(c => c.ModerationStatus == CommentModerationStatus.Approved);
+                query = query.Where(c =>
+                    c.ModerationStatus == CommentModerationStatus.Approved &&
+                    !c.Reports.Any());
             }
 
             query = query.OrderByDescending(c => c.CreatedAt);
@@ -146,6 +187,22 @@ namespace StudentHub.Infrastructure.Repositories
                 : await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return Result<List<Comment>>.Success(comments);
+        }
+
+        public async Task<int> CountCommentsByProjectIdAsync(Guid projectId, bool onlyApproved = true)
+        {
+            var query = _dbContext.Comments
+                .Include(c => c.Reports)
+                .Where(c => c.ProjectId == projectId);
+
+            if (onlyApproved)
+            {
+                query = query.Where(c =>
+                    c.ModerationStatus == CommentModerationStatus.Approved &&
+                    !c.Reports.Any());
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId)
@@ -166,7 +223,9 @@ namespace StudentHub.Infrastructure.Repositories
 
             if (onlyApproved)
             {
-                query = query.Where(c => c.ModerationStatus == CommentModerationStatus.Approved);
+                query = query.Where(c =>
+                    c.ModerationStatus == CommentModerationStatus.Approved &&
+                    !c.Reports.Any());
             }
 
             query = query.OrderByDescending(c => c.CreatedAt);
@@ -200,6 +259,17 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<List<Comment>>.Success(comments);
         }
 
+        public async Task<int> CountCommentsByModerationStatusAsync(CommentModerationStatus status, CommentModerationOrigin? origin = null)
+        {
+            var query = _dbContext.Comments.Where(c => c.ModerationStatus == status);
+            if (origin.HasValue)
+            {
+                query = query.Where(c => c.ModeratedBy == origin.Value);
+            }
+
+            return await query.CountAsync();
+        }
+
         public async Task<Result<List<Comment>>> GetReportedCommentsAsync(int page = 0, int pageSize = 0)
         {
             var query = _dbContext.Comments
@@ -217,6 +287,11 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<List<Comment>>.Success(comments);
         }
 
+        public async Task<int> CountReportedCommentsAsync()
+        {
+            return await _dbContext.Comments.CountAsync(c => c.Reports.Any());
+        }
+
         public async Task<Result<Comment>> GetCommentByIdAsync(Guid commentId)
         {
             var comment = await _dbContext.Comments
@@ -231,6 +306,15 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result> UpdateCommentAsync(Comment comment)
         {
+            var existingReports = await _dbContext.CommentReports
+                .Where(r => r.CommentId == comment.Id)
+                .ToListAsync();
+
+            if (comment.Reports.Count == 0 && existingReports.Count > 0)
+            {
+                _dbContext.CommentReports.RemoveRange(existingReports);
+            }
+
             _dbContext.Comments.Update(comment);
             await _dbContext.SaveChangesAsync();
             return Result.Success();

@@ -27,6 +27,38 @@ namespace StudentHub.Infrastructure.Repositories
             return await _db.Users.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
         }
 
+        public async Task<(List<User> Users, int TotalCount)> SearchAsync(string? search, string? role, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = _db.Users.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToUpper();
+                query = query.Where(u =>
+                    u.Username.ToUpper().Contains(term) ||
+                    u.FullName.ToUpper().Contains(term));
+            }
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                var userIdsInRole = new List<Guid>();
+                var identityUsers = await _userManager.GetUsersInRoleAsync(role);
+                userIdsInRole = identityUsers.Select(u => u.Id).ToList();
+                query = query.Where(u => userIdsInRole.Contains(u.Id));
+            }
+
+            var total = await query.CountAsync();
+            var users = await query
+                .OrderBy(u => u.Username)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (users, total);
+        }
+
         public async Task<Result<User?>> GetByUsernameAsync(string username)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Username.ToUpper() == username.ToUpper());
@@ -52,6 +84,10 @@ namespace StudentHub.Infrastructure.Repositories
 
             if (result.Succeeded)
             {
+                if (await _roleManager.RoleExistsAsync("User"))
+                {
+                    await _userManager.AddToRoleAsync(appUser, "User");
+                }
                 await _db.SaveChangesAsync();
                 return Result<User>.Success(user);
             }
@@ -103,6 +139,45 @@ namespace StudentHub.Infrastructure.Repositories
                 }).ToList());
         }
 
+        public async Task<Result> ReplaceAssignableRoleAsync(Guid userId, string role)
+        {
+            var allowed = new[] { "User", "Teacher", "Moderator" };
+            if (!allowed.Contains(role))
+                return Result.Failure("Role must be User, Teacher, or Moderator", "role", ErrorType.Validation);
+
+            var appUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (appUser == null)
+                return Result.Failure($"Пользователь {userId} не найден", "id", ErrorType.NotFound);
+
+            if (!await _roleManager.RoleExistsAsync(role))
+                await _roleManager.CreateAsync(new IdentityRole<Guid>(role));
+
+            var currentRoles = await _userManager.GetRolesAsync(appUser);
+            var removable = currentRoles.Where(r => allowed.Contains(r)).ToList();
+            if (removable.Count > 0)
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(appUser, removable);
+                if (!removeResult.Succeeded)
+                    return Result.Failure(removeResult.Errors.Select(e => new Error { Message = e.Description }).ToList());
+            }
+
+            if (!await _userManager.IsInRoleAsync(appUser, role))
+            {
+                var addResult = await _userManager.AddToRoleAsync(appUser, role);
+                if (!addResult.Succeeded)
+                    return Result.Failure(addResult.Errors.Select(e => new Error { Message = e.Description }).ToList());
+            }
+
+            return Result.Success();
+        }
+
+        public async Task<List<string>> GetRolesAsync(Guid userId)
+        {
+            var appUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (appUser == null) return new List<string>();
+            return (await _userManager.GetRolesAsync(appUser)).ToList();
+        }
+
         public async Task<Result> CreateRole(string roleName)
         {
             var role = new IdentityRole<Guid>
@@ -125,6 +200,54 @@ namespace StudentHub.Infrastructure.Repositories
         {
             _db.Update<User>(user);
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<Result> DeleteAsync(Guid id)
+        {
+            var user = await _db.Users
+                .Include(u => u.Projects)
+                    .ThenInclude(p => p.Attachments)
+                .Include(u => u.Projects)
+                    .ThenInclude(p => p.Ratings)
+                .Include(u => u.Projects)
+                    .ThenInclude(p => p.Comments)
+                        .ThenInclude(c => c.Reports)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null) return Result.Failure($"Пользователь {id} не найден", "id", ErrorType.NotFound);
+
+            var authoredComments = await _db.Comments.Where(c => c.AuthorId == id).ToListAsync();
+            var authoredCommentIds = authoredComments.Select(c => c.Id).ToList();
+            var projectIds = user.Projects.Select(p => p.Id).ToList();
+            var projectComments = await _db.Comments
+                .Include(c => c.Reports)
+                .Where(c => projectIds.Contains(c.ProjectId) && c.AuthorId != id)
+                .ToListAsync();
+            var projectCommentIds = projectComments.Select(c => c.Id).ToList();
+            var reports = await _db.CommentReports
+                .Where(r => r.ReporterId == id || authoredCommentIds.Contains(r.CommentId) || projectCommentIds.Contains(r.CommentId))
+                .ToListAsync();
+            var ratings = await _db.Ratings.Where(r => r.AuthorId == id || projectIds.Contains(r.ProjectId)).ToListAsync();
+            var attachments = user.Projects.SelectMany(p => p.Attachments).ToList();
+
+            _db.CommentReports.RemoveRange(reports);
+            _db.Comments.RemoveRange(projectComments);
+            _db.Comments.RemoveRange(authoredComments);
+            _db.Ratings.RemoveRange(ratings);
+            _db.Attachments.RemoveRange(attachments);
+            _db.Projects.RemoveRange(user.Projects);
+            _db.Users.Remove(user);
+            await _db.SaveChangesAsync();
+
+            var appUser = await _userManager.FindByIdAsync(id.ToString());
+            if (appUser != null)
+            {
+                var deleteResult = await _userManager.DeleteAsync(appUser);
+                if (!deleteResult.Succeeded)
+                    return Result.Failure(deleteResult.Errors.Select(e => new Error { Message = e.Description }).ToList());
+            }
+
+            return Result.Success();
         }
 
         public async Task<Result<User?>> GetByExternalIdAsync(string externalId)

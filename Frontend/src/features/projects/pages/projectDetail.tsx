@@ -5,10 +5,13 @@ import { ProjectProvider, ProjectContext } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
 import { ProjectUpdateForm } from "../components/ProjectUpdateForm";
+import { Pagination } from "../components/Pagination";
 import type { Project, Comment } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import userService from "../../../shared/services/userService";
 import { AuthContext } from "../../auth/context/AuthContext";
+import { isAdmin } from "../../../shared/utils/roles";
+import { adminService } from "../../admin/services/adminService";
 
 const ProjectDetailContainer = styled.div`
   display: flex;
@@ -174,6 +177,8 @@ function ProjectDetailContent() {
   const [project, setProject] = useState<Project | null>(null);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [commentsTotalPages, setCommentsTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [newScore, setNewScore] = useState(0);
@@ -207,16 +212,17 @@ function ProjectDetailContent() {
 
   const loadComments = useCallback(async () => {
     try {
-      const result = await projectService.getComments(id!);
+      const result = await projectService.getComments(id!, commentsPage, 10);
       if (result.isSuccess) {
-        setComments(result.data || []);
+        setComments(result.data?.items || []);
+        setCommentsTotalPages(result.data?.totalPages || 0);
       }
       setLoading(false);
     } catch (error) {
       console.error("Failed to load comments", error);
       setLoading(false);
     }
-  }, [id]);
+  }, [id, commentsPage]);
 
   useEffect(() => {
     if (id) {
@@ -241,8 +247,9 @@ function ProjectDetailContent() {
     try {
       const result = await projectService.addComment(id!, { content: newComment });
       if (result.isSuccess) {
-        setComments(prev => [result.data!, ...prev]);
         setNewComment('');
+        setCommentsPage(1);
+        await loadComments();
       }
     } catch (error) {
       console.error("Failed to add comment", error);
@@ -323,6 +330,18 @@ function ProjectDetailContent() {
   };
 
   const isAuthor = user && project && user.username === project.authorUsername;
+  const userIsAdmin = isAdmin(user);
+
+  const handleMarkCommentToxic = async (commentId: string) => {
+    try {
+      const result = await adminService.markCommentToxic(commentId);
+      if (result.isSuccess) {
+        setComments(prev => prev.filter(comment => comment.id !== commentId));
+      }
+    } catch (error) {
+      console.error("Failed to mark comment toxic", error);
+    }
+  };
 
   if (loading) {
     return <Container>Загрузка...</Container>;
@@ -458,15 +477,33 @@ function ProjectDetailContent() {
             </Button>
           </Form>
           {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              showAdminActions={userIsAdmin}
+              onMarkToxic={handleMarkCommentToxic}
+            />
           ))}
+          <Pagination
+            currentPage={commentsPage}
+            totalPages={commentsTotalPages}
+            onPageChange={setCommentsPage}
+          />
         </CommentsSection>
       </ProjectDetailContainer>
     </Container>
   );
 }
 
-function CommentItem({ comment }: { comment: Comment }) {
+function CommentItem({
+  comment,
+  showAdminActions,
+  onMarkToxic
+}: {
+  comment: Comment;
+  showAdminActions: boolean;
+  onMarkToxic: (commentId: string) => void;
+}) {
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString();
@@ -488,6 +525,13 @@ function CommentItem({ comment }: { comment: Comment }) {
         <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
       </CommentHeader>
       <CommentText>{comment.content}</CommentText>
+      {showAdminActions && (
+        <CommentActions>
+          <ToxicButton onClick={() => onMarkToxic(comment.id)}>
+            Mark toxic
+          </ToxicButton>
+        </CommentActions>
+      )}
     </CommentContainer>
   );
 }
@@ -547,6 +591,26 @@ const CommentText = styled.p`
   color: ${colors.textPrimary};
   line-height: 1.5;
   word-break: break-all;
+`;
+
+const CommentActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: ${spacing.sm};
+`;
+
+const ToxicButton = styled.button`
+  background: #dc3545;
+  color: ${colors.white};
+  border: none;
+  padding: ${spacing.xs} ${spacing.sm};
+  border-radius: ${borderRadius.sm};
+  cursor: pointer;
+  font-weight: ${fonts.weight.semibold};
+
+  &:hover {
+    background: #c82333;
+  }
 `;
 
 const AuthorLink = styled(Link)`

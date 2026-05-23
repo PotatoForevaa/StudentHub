@@ -37,7 +37,7 @@ namespace StudentHub.Api.Controllers.API
             {
                 var user = loginResult.Value!;
 
-                await _authService.SignInAsync(user.Id, loginRequest.Password);
+                await _authService.SignInAsync(user.Id, user.Username);
 
                 return Ok(new ApiResponse<StudentHub.Application.DTOs.Responses.UserDto> { IsSuccess = true, Data = user });
             }

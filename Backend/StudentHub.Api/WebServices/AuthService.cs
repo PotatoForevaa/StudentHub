@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using StudentHub.Application.Interfaces.UseCases;
+using StudentHub.Infrastructure.Identity;
 using System.Security.Claims;
 
 namespace StudentHub.Api.WebServices
@@ -12,10 +13,12 @@ namespace StudentHub.Api.WebServices
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
-        public AuthService(IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+        private readonly UserManager<AppUser> _userManager;
+        public AuthService(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, UserManager<AppUser> userManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
+            _userManager = userManager;
         }
 
         public async Task SignInAsync(Guid id, string username)
@@ -25,6 +28,13 @@ namespace StudentHub.Api.WebServices
                     new Claim(ClaimTypes.NameIdentifier, id.ToString()),
                     new Claim(ClaimTypes.Name, username)
                 };
+
+            var appUser = await _userManager.FindByIdAsync(id.ToString());
+            if (appUser != null)
+            {
+                var roles = await _userManager.GetRolesAsync(appUser);
+                claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            }
 
             var claimsIdentity = new ClaimsIdentity(
                 claims, CookieAuthenticationDefaults.AuthenticationScheme);

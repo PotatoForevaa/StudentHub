@@ -23,10 +23,13 @@ namespace StudentHub.Infrastructure.Services
             var password = config["ADMIN:PASSWORD"];
             var name = config["ADMIN:FULLNAME"] ?? "Admin";
 
-            const string roleName = "Admin";
+            var roles = new[] { "Admin", "User", "Teacher", "Moderator" };
 
-            if (!await roleManager.RoleExistsAsync(roleName))
-                await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
+            foreach (var roleName in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                    await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
+            }
 
             var admin = await userManager.FindByNameAsync(username);
             if (admin == null)
@@ -42,7 +45,11 @@ namespace StudentHub.Infrastructure.Services
                 if (!result.Succeeded)
                     throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
 
-                await userManager.AddToRoleAsync(admin, roleName);
+                await userManager.AddToRoleAsync(admin, "Admin");
+            }
+            else if (!await userManager.IsInRoleAsync(admin, "Admin"))
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
             }
 
             if (!await appDb.Users.AnyAsync(u => u.Id == admin.Id))

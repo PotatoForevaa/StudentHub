@@ -23,6 +23,9 @@ export type Comment = {
     userScore?: number;
     projectId?: string;
     projectName?: string;
+    moderationStatus?: string;
+    moderatedBy?: string;
+    reportCount?: number;
 }
 
 export type ScoreFormData = {

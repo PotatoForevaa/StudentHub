@@ -15,10 +15,19 @@ export interface ApiResponse<T = unknown> {
   errorType?: string;
 }
 
+export type PaginatedResponse<T> = {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 export type User = {
     id: string;
     fullName: string;
     username: string;
+    roles?: string[];
 }
 
 export type ActivityDto = {

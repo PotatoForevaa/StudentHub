@@ -17,6 +17,27 @@ namespace StudentHub.Application.UseCases
             _fileService = fileService;
         }
 
+        private async Task<ProjectCommentDto> ToCommentDto(Comment comment)
+        {
+            var userScore = await _projectRepository.GetUserScoreForProjectAsync(comment.AuthorId, comment.ProjectId);
+
+            return new ProjectCommentDto(
+                Id: comment.Id,
+                AuthorId: comment.AuthorId,
+                AuthorUsername: comment.Author.Username,
+                AuthorFullName: comment.Author.FullName,
+                AuthorProfilePicturePath: string.IsNullOrEmpty(comment.Author.ProfilePicturePath) ? null : comment.Author.ProfilePicturePath,
+                Content: comment.Content,
+                CreatedAt: comment.CreatedAt,
+                UserScore: userScore,
+                ProjectId: comment.ProjectId,
+                ProjectName: comment.Project?.Name,
+                ModerationStatus: comment.ModerationStatus.ToString(),
+                ModeratedBy: comment.ModeratedBy.ToString(),
+                ReportCount: comment.Reports?.Count ?? 0
+            );
+        }
+
         public async Task<Result<ProjectDto?>> CreateAsync(CreateProjectCommand command)
         {
             var filePaths = new List<string>();
@@ -98,6 +119,28 @@ namespace StudentHub.Application.UseCases
             }
 
             return Result<List<ProjectDto>>.Success(dtoList);
+        }
+
+        public async Task<Result<PaginatedResponse<AdminProjectDto>>> SearchProjectsAsync(string? search, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var (projects, totalCount) = await _projectRepository.SearchProjectsAsync(search, page, pageSize);
+            var dtos = projects.Select(p => new AdminProjectDto(
+                p.Id,
+                p.Name,
+                p.Description,
+                p.Author.Username,
+                p.Author.FullName,
+                p.CreatedAt)).ToList();
+
+            return Result<PaginatedResponse<AdminProjectDto>>.Success(new PaginatedResponse<AdminProjectDto>(
+                dtos,
+                page,
+                pageSize,
+                totalCount,
+                (int)Math.Ceiling(totalCount / (double)pageSize)));
         }
 
         public async Task<Result<List<ProjectDto>>> GetProjectsByAuthorIdAsync(Guid authorId)
@@ -231,21 +274,10 @@ namespace StudentHub.Application.UseCases
 
             var commentEntity = result.Value;
 
-            var userScore = await _projectRepository.GetUserScoreForProjectAsync(command.AuthorId, command.ProjectId);
-
             if (commentEntity.Author == null)
                 return Result<ProjectCommentDto>.Failure("Failed to load comment author", "author", ErrorType.NotFound);
 
-            var commentDto = new ProjectCommentDto(
-                Id: commentEntity.Id,
-                AuthorId: commentEntity.AuthorId,
-                AuthorUsername: commentEntity.Author.Username,
-                AuthorFullName: commentEntity.Author.FullName,
-                AuthorProfilePicturePath: string.IsNullOrEmpty(commentEntity.Author.ProfilePicturePath) ? null : commentEntity.Author.ProfilePicturePath,
-                Content: commentEntity.Content,
-                CreatedAt: commentEntity.CreatedAt,
-                UserScore: userScore
-            );
+            var commentDto = await ToCommentDto(commentEntity);
 
             return Result<ProjectCommentDto>.Success(commentDto);
         }
@@ -260,23 +292,33 @@ namespace StudentHub.Application.UseCases
 
             foreach (var comment in comments)
             {
-                var userScore = await _projectRepository.GetUserScoreForProjectAsync(comment.AuthorId, projectId);
-
-                var commentDto = new ProjectCommentDto(
-                    Id: comment.Id,
-                    AuthorId: comment.AuthorId,
-                    AuthorUsername: comment.Author.Username,
-                    AuthorFullName: comment.Author.FullName,
-                    AuthorProfilePicturePath: string.IsNullOrEmpty(comment.Author.ProfilePicturePath) ? null : comment.Author.ProfilePicturePath,
-                    Content: comment.Content,
-                    CreatedAt: comment.CreatedAt,
-                    UserScore: userScore
-                );
-
-                commentDtos.Add(commentDto);
+                commentDtos.Add(await ToCommentDto(comment));
             }
 
             return Result<List<ProjectCommentDto>>.Success(commentDtos);
+        }
+
+        public async Task<Result<PaginatedResponse<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId, page, pageSize);
+            if (!result.IsSuccess) return Result<PaginatedResponse<ProjectCommentDto>>.Failure(result.Errors, result.ErrorType);
+
+            var commentDtos = new List<ProjectCommentDto>();
+            foreach (var comment in result.Value)
+            {
+                commentDtos.Add(await ToCommentDto(comment));
+            }
+
+            var totalCount = await _projectRepository.CountCommentsByProjectIdAsync(projectId);
+            return Result<PaginatedResponse<ProjectCommentDto>>.Success(new PaginatedResponse<ProjectCommentDto>(
+                commentDtos,
+                page,
+                pageSize,
+                totalCount,
+                (int)Math.Ceiling(totalCount / (double)pageSize)));
         }
 
         public async Task<Result<List<ProjectCommentDto>>> GetCommentsByAuthorIdAsync(Guid authorId)
@@ -289,23 +331,86 @@ namespace StudentHub.Application.UseCases
 
             foreach (var comment in comments)
             {
-                var userScore = await _projectRepository.GetUserScoreForProjectAsync(comment.AuthorId, comment.ProjectId);
-
-                var commentDto = new ProjectCommentDto(
-                    Id: comment.Id,
-                    AuthorId: comment.AuthorId,
-                    AuthorUsername: comment.Author.Username,
-                    AuthorFullName: comment.Author.FullName,
-                    AuthorProfilePicturePath: string.IsNullOrEmpty(comment.Author.ProfilePicturePath) ? null : comment.Author.ProfilePicturePath,
-                    Content: comment.Content,
-                    CreatedAt: comment.CreatedAt,
-                    UserScore: userScore
-                );
-
-                commentDtos.Add(commentDto);
+                commentDtos.Add(await ToCommentDto(comment));
             }
 
             return Result<List<ProjectCommentDto>>.Success(commentDtos);
+        }
+
+        public async Task<Result<PaginatedResponse<ProjectCommentDto>>> GetModerationCommentsAsync(string queue, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            Result<List<Comment>> result;
+            int totalCount;
+
+            if (queue == "reported")
+            {
+                result = await _projectRepository.GetReportedCommentsAsync(page, pageSize);
+                totalCount = await _projectRepository.CountReportedCommentsAsync();
+            }
+            else if (queue == "ai-toxic")
+            {
+                result = await _projectRepository.GetCommentsByModerationStatusAsync(
+                    CommentModerationStatus.Toxic,
+                    CommentModerationOrigin.AI,
+                    page,
+                    pageSize);
+                totalCount = await _projectRepository.CountCommentsByModerationStatusAsync(
+                    CommentModerationStatus.Toxic,
+                    CommentModerationOrigin.AI);
+            }
+            else
+            {
+                return Result<PaginatedResponse<ProjectCommentDto>>.Failure("Queue must be reported or ai-toxic", "queue", ErrorType.Validation);
+            }
+
+            if (!result.IsSuccess) return Result<PaginatedResponse<ProjectCommentDto>>.Failure(result.Errors, result.ErrorType);
+
+            var commentDtos = new List<ProjectCommentDto>();
+            foreach (var comment in result.Value)
+            {
+                commentDtos.Add(await ToCommentDto(comment));
+            }
+
+            return Result<PaginatedResponse<ProjectCommentDto>>.Success(new PaginatedResponse<ProjectCommentDto>(
+                commentDtos,
+                page,
+                pageSize,
+                totalCount,
+                (int)Math.Ceiling(totalCount / (double)pageSize)));
+        }
+
+        public async Task<Result<ProjectCommentDto>> ApproveCommentAsync(Guid commentId)
+        {
+            var result = await _projectRepository.GetCommentByIdAsync(commentId);
+            if (!result.IsSuccess) return Result<ProjectCommentDto>.Failure(result.Errors, result.ErrorType);
+
+            var comment = result.Value;
+            comment.ModerationStatus = CommentModerationStatus.Approved;
+            comment.ModeratedBy = CommentModerationOrigin.Human;
+            comment.Reports.Clear();
+
+            var updateResult = await _projectRepository.UpdateCommentAsync(comment);
+            if (!updateResult.IsSuccess) return Result<ProjectCommentDto>.Failure(updateResult.Errors, updateResult.ErrorType);
+
+            return Result<ProjectCommentDto>.Success(await ToCommentDto(comment));
+        }
+
+        public async Task<Result<ProjectCommentDto>> MarkCommentToxicAsync(Guid commentId)
+        {
+            var result = await _projectRepository.GetCommentByIdAsync(commentId);
+            if (!result.IsSuccess) return Result<ProjectCommentDto>.Failure(result.Errors, result.ErrorType);
+
+            var comment = result.Value;
+            comment.ModerationStatus = CommentModerationStatus.Toxic;
+            comment.ModeratedBy = CommentModerationOrigin.Human;
+
+            var updateResult = await _projectRepository.UpdateCommentAsync(comment);
+            if (!updateResult.IsSuccess) return Result<ProjectCommentDto>.Failure(updateResult.Errors, updateResult.ErrorType);
+
+            return Result<ProjectCommentDto>.Success(await ToCommentDto(comment));
         }
 
         public async Task<Result<List<ActivityDto>>> GetUserActivityAsync(Guid userId)

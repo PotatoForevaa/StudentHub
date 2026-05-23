@@ -25,8 +25,32 @@ namespace StudentHub.Application.UseCases
         public async Task<Result<List<UserDto>>> GetAllAsync()
         {
             var users = await _userRepository.GetAllAsync();
-            var userDtos = users.Select(u => new UserDto(u.Id, u.Username, u.FullName)).ToList();
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id)));
+            }
             return Result<List<UserDto>>.Success(userDtos);
+        }
+
+        public async Task<Result<PaginatedResponse<UserDto>>> SearchAsync(string? search, string? role, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var (users, totalCount) = await _userRepository.SearchAsync(search, role, page, pageSize);
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id)));
+            }
+
+            return Result<PaginatedResponse<UserDto>>.Success(new PaginatedResponse<UserDto>(
+                userDtos,
+                page,
+                pageSize,
+                totalCount,
+                (int)Math.Ceiling(totalCount / (double)pageSize)));
         }
 
         public async Task<Result<UserDto?>> GetByIdAsync(Guid id)
@@ -35,7 +59,7 @@ namespace StudentHub.Application.UseCases
             if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Errors, userResult.ErrorType);
 
             var user = userResult.Value;
-            var userDto = new UserDto(user.Id, user.Username, user.FullName);
+            var userDto = new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id));
 
             return Result<UserDto?>.Success(userDto);
         }
@@ -46,7 +70,7 @@ namespace StudentHub.Application.UseCases
             if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Errors, userResult.ErrorType);
 
             var user = userResult.Value;
-            var userDto = new UserDto(user.Id, user.Username, user.FullName);
+            var userDto = new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id));
 
             return Result<UserDto?>.Success(userDto);
         }
@@ -60,7 +84,7 @@ namespace StudentHub.Application.UseCases
             if (!passwordResult.IsSuccess) return Result<UserDto?>.Failure(passwordResult.Errors, passwordResult.ErrorType);
 
             var user = userResult.Value;
-            var userDto = new UserDto(user.Id, user.Username, user.FullName);
+            var userDto = new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id));
 
             return Result<UserDto?>.Success(userDto);
         }
@@ -76,7 +100,7 @@ namespace StudentHub.Application.UseCases
             if (!userResult.IsSuccess) return Result<UserDto?>.Failure(userResult.Errors, userResult.ErrorType);
 
             user = userResult.Value;
-            var userDto = new UserDto(user.Id, user.Username, user.FullName);
+            var userDto = new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id));
 
             return Result<UserDto?>.Success(userDto);
         }
@@ -137,6 +161,16 @@ namespace StudentHub.Application.UseCases
             return Result.Success();
         }
 
+        public async Task<Result> DeleteAsync(Guid id)
+        {
+            return await _userRepository.DeleteAsync(id);
+        }
+
+        public async Task<Result> ReplaceAssignableRoleAsync(Guid id, string role)
+        {
+            return await _userRepository.ReplaceAssignableRoleAsync(id, role);
+        }
+
         public async Task<Result<UserDto?>> LoginWithOAuth2Async(string externalId, string username, string fullName)
         {
             // Try to find existing user by externalId
@@ -144,7 +178,7 @@ namespace StudentHub.Application.UseCases
             if (userResult.IsSuccess)
             {
                 var user = userResult.Value!;
-                var userDto = new UserDto(user.Id, user.Username, user.FullName);
+                var userDto = new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id));
                 return Result<UserDto?>.Success(userDto);
             }
 
@@ -156,7 +190,7 @@ namespace StudentHub.Application.UseCases
                 var user = existingUserResult.Value!;
                 user.ExternalId = externalId;
                 await _userRepository.UpdateAsync(user);
-                var userDto = new UserDto(user.Id, user.Username, user.FullName);
+                var userDto = new UserDto(user.Id, user.Username, user.FullName, await _userRepository.GetRolesAsync(user.Id));
                 return Result<UserDto?>.Success(userDto);
             }
 
@@ -165,7 +199,7 @@ namespace StudentHub.Application.UseCases
             if (!newUserResult.IsSuccess) return Result<UserDto?>.Failure(newUserResult.Errors, newUserResult.ErrorType);
 
             var newUser = newUserResult.Value!;
-            var newUserDto = new UserDto(newUser.Id, newUser.Username, newUser.FullName);
+            var newUserDto = new UserDto(newUser.Id, newUser.Username, newUser.FullName, await _userRepository.GetRolesAsync(newUser.Id));
             return Result<UserDto?>.Success(newUserDto);
         }
     }

@@ -15,6 +15,7 @@ const Projects = lazy(() => import("../features/projects/pages/projects"));
 const ProjectDetail = lazy(() => import("../features/projects/pages/projectDetail"));
 const UserList = lazy(() => import("../features/users/pages/userlist"));
 const Leaderboard = lazy(() => import("../features/leaderboard/pages/leaderboard"));
+const WebAdmin = lazy(() => import("../features/admin/pages/WebAdmin"));
 
 const GlobalStyles = createGlobalStyle`
   html, body, #root {
@@ -75,6 +76,9 @@ function App() {
                     <Route path="/projects/:id" element={<ProjectDetail />} />
                     <Route path="/users" element={<UserList />} />
                     <Route path="/:username" element={<Profile />} />
+                  </Route>
+                  <Route element={<PrivateRoute roles={["Admin", "Moderator"]} />}>
+                    <Route path="/admin" element={<WebAdmin />} />
                   </Route>
                 </Routes>
               </Suspense>

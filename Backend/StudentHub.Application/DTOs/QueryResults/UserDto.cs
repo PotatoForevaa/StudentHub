@@ -3,5 +3,6 @@
     public record UserDto(
         Guid Id,
         string Username,
-        string FullName);
+        string FullName,
+        List<string>? Roles = null);
 }

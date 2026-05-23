@@ -8,7 +8,12 @@ namespace StudentHub.Application.DTOs.Responses
         string? AuthorProfilePicturePath,
         string Content,
         DateTime CreatedAt,
-        int? UserScore
+        int? UserScore,
+        Guid? ProjectId = null,
+        string? ProjectName = null,
+        string? ModerationStatus = null,
+        string? ModeratedBy = null,
+        int ReportCount = 0
     );
 }
 
