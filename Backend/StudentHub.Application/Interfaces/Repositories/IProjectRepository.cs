@@ -29,8 +29,42 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<CommentReport>> AddCommentReportAsync(CommentReport report);
         Task<Result<List<Rating>>> GetRatingsByAuthorIdAsync(Guid authorId);
         Task<int?> GetUserScoreForProjectAsync(Guid userId, Guid projectId);
+        Task<Result<List<Comment>>> GetCommentsWithAppealPendingAsync(int page = 1, int pageSize = 20);
+        Task<int> CountCommentsWithAppealPendingAsync();
         Result<byte[]> GetImageAsync(string path);
         Task<Result<List<LeaderboardUserDto>>> GetActivityLeaderboardAsync(string period, int page, int pageSize);
         Task<Result<List<LeaderboardUserDto>>> GetRatingLeaderboardAsync(string period, int page, int pageSize);
+
+        // Categories
+        Task<List<Category>> GetAllCategoriesAsync();
+        Task<Category?> GetCategoryByIdAsync(Guid id);
+        Task<Category> CreateCategoryAsync(Category category);
+        Task DeleteCategoryAsync(Guid id);
+
+        // Tags
+        Task<List<Tag>> GetAllTagsAsync();
+        Task<Tag?> GetTagByIdAsync(Guid id);
+        Task<Tag> CreateTagAsync(Tag tag);
+        Task DeleteTagAsync(Guid id);
+
+        // Criteria
+        Task<List<Criterion>> GetCriteriaByCategoryIdAsync(Guid categoryId);
+        Task<Criterion?> GetCriterionByIdAsync(Guid id);
+        Task<Criterion> CreateCriterionAsync(Criterion criterion);
+        Task DeleteCriterionAsync(Guid id);
+
+        // Criterion Scores
+        Task<CriterionScore> AddCriterionScoreAsync(CriterionScore score);
+        Task<List<CriterionScore>> GetCriterionScoresByProjectIdAsync(Guid projectId);
+        Task<List<CriterionScore>> GetCriterionScoresByProjectAndTeacherAsync(Guid projectId, Guid teacherId);
+
+        // Project filtering
+        Task<(List<Project> Projects, int TotalCount)> GetFilteredProjectsAsync(string? search, Guid? categoryId, Guid? tagId, int page, int pageSize);
+
+        // Project categories/tags management
+        Task AddProjectCategoriesAsync(Guid projectId, List<Guid> categoryIds);
+        Task AddProjectTagsAsync(Guid projectId, List<Guid> tagIds);
+        Task ClearProjectCategoriesAsync(Guid projectId);
+        Task ClearProjectTagsAsync(Guid projectId);
     }
 }

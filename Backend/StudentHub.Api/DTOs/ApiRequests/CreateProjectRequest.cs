@@ -15,5 +15,7 @@ namespace StudentHub.Api.DTOs.Requests
         [Extensions.Attributes.FileExtensions("jpg,jpeg,png,gif,webp")]
         [FileSize(8 * 1024 * 1024 * 10)] // 10 MB
         public List<IFormFile>? Files { get; set; }
+        public List<Guid>? CategoryIds { get; set; }
+        public List<Guid>? TagIds { get; set; }
     }
 }

@@ -141,9 +141,9 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result> ReplaceAssignableRoleAsync(Guid userId, string role)
         {
-            var allowed = new[] { "User", "Teacher", "Moderator" };
+            var allowed = new[] { "User", "Teacher" };
             if (!allowed.Contains(role))
-                return Result.Failure("Role must be User, Teacher, or Moderator", "role", ErrorType.Validation);
+                return Result.Failure("Role must be User or Teacher", "role", ErrorType.Validation);
 
             var appUser = await _userManager.FindByIdAsync(userId.ToString());
             if (appUser == null)
@@ -285,6 +285,83 @@ namespace StudentHub.Infrastructure.Repositories
             await _db.SaveChangesAsync();
 
             return Result<User?>.Success(user);
+        }
+
+        public async Task<Result<UserMute>> MuteUserAsync(Guid userId, Guid mutedByUserId, TimeSpan duration, string? reason)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null) return Result<UserMute>.Failure($"User {userId} not found", "userId", ErrorType.NotFound);
+
+            // Deactivate any existing active mutes
+            var existingMutes = await _db.UserMutes
+                .Where(m => m.UserId == userId && m.MutedUntil > DateTime.UtcNow)
+                .ToListAsync();
+            
+            // Mark all existing active mutes as expired by setting MutedUntil to now
+            foreach (var mute in existingMutes)
+            {
+                mute.MutedUntil = DateTime.UtcNow;
+            }
+
+            var userMute = new UserMute
+            {
+                UserId = userId,
+                MutedByUserId = mutedByUserId,
+                Reason = reason ?? "No reason provided",
+                MutedUntil = DateTime.UtcNow.Add(duration),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _db.UserMutes.AddAsync(userMute);
+            await _db.SaveChangesAsync();
+
+            return Result<UserMute>.Success(userMute);
+        }
+
+        public async Task<Result> UnmuteUserAsync(Guid userId)
+        {
+            var activeMute = await _db.UserMutes
+                .Where(m => m.UserId == userId && m.MutedUntil > DateTime.UtcNow)
+                .FirstOrDefaultAsync();
+
+            if (activeMute == null) return Result.Success(); // No active mute, nothing to do
+
+            activeMute.MutedUntil = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Result.Success();
+        }
+
+        public async Task<Result<UserMute?>> GetActiveMuteAsync(Guid userId)
+        {
+            var mute = await _db.UserMutes
+                .Include(m => m.MutedByUser)
+                .Where(m => m.UserId == userId && m.MutedUntil > DateTime.UtcNow)
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            return Result<UserMute?>.Success(mute);
+        }
+
+        public async Task<Result<List<UserMute>>> GetAllActiveMutesAsync(int page = 1, int pageSize = 20)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var mutes = await _db.UserMutes
+                .Include(m => m.User)
+                .Include(m => m.MutedByUser)
+                .Where(m => m.MutedUntil > DateTime.UtcNow)
+                .OrderByDescending(m => m.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Result<List<UserMute>>.Success(mutes);
+        }
+
+        public async Task<int> CountActiveMutesAsync()
+        {
+            return await _db.UserMutes.CountAsync(m => m.MutedUntil > DateTime.UtcNow);
         }
     }
 }

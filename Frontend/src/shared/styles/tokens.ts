@@ -1,30 +1,50 @@
 export const colors = {
-  // primary palette
-  primary: '#2563eb',       // blue-600
-  primaryDark: '#1d4ed8',   // blue-700
-  primaryLight: '#3b82f6',  // blue-500
+  // primary palette - modern vibrant blue
+  primary: '#3b82f6',       // vibrant blue-500
+  primaryDark: '#2563eb',  // blue-600
+  primaryLight: '#60a5fa', // blue-400
+  primaryLighter: '#dbeafe', // blue-100 for backgrounds
+
+  // secondary palette - elegant violet
+  secondary: '#8b5cf6',    // violet-500
+  secondaryDark: '#7c3aed', // violet-600
+  secondaryLight: '#a78bfa', // violet-400
 
   // white palette
   white: '#ffffff',
-  bg: '#f4f6fb',            // page background
+  bg: '#f8fafc',            // page background - subtle cool gray
   surface: '#ffffff',       // cards, panels
 
-  // gray palette
-  gray100: '#f3f4f6',
-  gray300: '#d1d5db',
-  gray400: '#9ca3af',
-  gray500: '#6b7280',
+  // gray palette - refined
+  gray100: '#f1f5f9',
+  gray200: '#e2e8f0',
+  gray300: '#cbd5e1',
+  gray400: '#94a3b8',
+  gray500: '#64748b',
+  gray600: '#475569',
 
-  // text
-  textPrimary: '#0f172a',   // dark text
-  textSecondary: '#374151', // secondary text
-  muted: '#6b7280',         // tertiary / muted text
-  placeholder: 'rgba(15,23,42,0.36)',
+  // text - improved contrast
+  textPrimary: '#0f172a',   // slate-900
+  textSecondary: '#334155', // slate-700
+  muted: '#64748b',         // slate-500
+  placeholder: 'rgba(15,23,42,0.4)',
 
   // accents
-  accentBorder: 'rgba(37,99,235,0.08)',
-  accentBorderLight: 'rgba(2,6,23,0.04)',
-  accentBorderDark: 'rgba(2,6,23,0.06)',
+  accentBorder: 'rgba(59,130,246,0.12)',
+  accentBorderLight: 'rgba(15,23,42,0.06)',
+  accentBorderDark: 'rgba(15,23,42,0.1)',
+
+  // semantic colors
+  success: '#10b981',       // emerald-500
+  successLight: '#d1fae5', // emerald-100
+  warning: '#f59e0b',       // amber-500
+  warningLight: '#fef3c7', // amber-100
+  error: '#ef4444',         // red-500
+  errorLight: '#fee2e2',    // red-100
+
+  // gradients
+  gradientPrimary: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+  gradientBg: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
 };
 
 export const shadows = {

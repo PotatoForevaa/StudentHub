@@ -1,4 +1,4 @@
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, CardsContainer } from "../../../shared/components/Container";
 import { AuthContext } from "../../auth/context/AuthContext";
@@ -10,6 +10,8 @@ import { useProfile } from "../hooks/useProfile";
 import { useUserProjects } from "../hooks/useUserProjects";
 import { useUserActivities } from "../hooks/useUserActivities";
 import { ActivityList } from "../components/ActivityList";
+import { canModerate } from "../../../shared/utils/roles";
+import { MuteModal } from "../../moderation/components/MuteModal";
 
 const Picture = styled.img`
         width: 300px;
@@ -82,6 +84,8 @@ const Profile = () => {
   const { activities, loading: activitiesLoading, error: activitiesError } = useUserActivities(user?.username || '');
 
   const isOwnProfile = currentUser?.username === user?.username;
+  const userCanModerate = canModerate(currentUser);
+  const [showMuteModal, setShowMuteModal] = useState(false);
 
 
 
@@ -182,6 +186,15 @@ const Profile = () => {
         loading={activitiesLoading}
         error={activitiesError}
       />
+      {showMuteModal && user && (
+        <MuteModal
+          isOpen={true}
+          onClose={() => setShowMuteModal(false)}
+          userId={user.id}
+          userName={user.username}
+          onMuted={() => setShowMuteModal(false)}
+        />
+      )}
     </Container>
   );
 };

@@ -11,6 +11,9 @@ namespace StudentHub.Application.DTOs.Responses
         string AuthorProfilePicturePath,
         DateTime CreationDate,
         double? AverageRating = null,
-        List<ProjectCommentDto>? Comments = null
+        List<ProjectCommentDto>? Comments = null,
+        List<CategoryDto>? Categories = null,
+        List<TagDto>? Tags = null,
+        List<CriterionScoreDto>? CriterionScores = null
         );
 }

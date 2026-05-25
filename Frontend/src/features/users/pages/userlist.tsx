@@ -21,11 +21,11 @@ const UserList = () => {
 
       <CardsContainer>
         {loading ? (
-          <p>Loading users...</p>
+          <p>Загрузка пользователей...</p>
         ) : users && users.length > 0 ? (
           users.map((user) => <UserCard key={user.id} user={user} />)
         ) : (
-          <p>No users found.</p>
+          <p>Пользователи не найдены.</p>
         )}
       </CardsContainer>
     </Container>

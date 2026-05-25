@@ -25,4 +25,7 @@ celery_app.conf.update(
     task_default_queue="default",
 )
 
+# Import tasks so Celery registers them when the worker starts
+import tasks  # noqa: F401
+
 # Expose celery_app for AsyncResult, control, etc.

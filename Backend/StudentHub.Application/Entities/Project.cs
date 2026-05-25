@@ -12,5 +12,8 @@
         public List<Attachment> Attachments { get; set; } = new List<Attachment>();
         public List<Rating> Ratings { get; set; } = new List<Rating>();
         public List<Comment> Comments { get; set; } = new List<Comment>();
+        public List<ProjectCategory> ProjectCategories { get; set; } = new List<ProjectCategory>();
+        public List<ProjectTag> ProjectTags { get; set; } = new List<ProjectTag>();
+        public List<CriterionScore> CriterionScores { get; set; } = new List<CriterionScore>();
     }
 }

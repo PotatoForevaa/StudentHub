@@ -13,7 +13,9 @@ namespace StudentHub.Application.DTOs.Responses
         string? ProjectName = null,
         string? ModerationStatus = null,
         string? ModeratedBy = null,
-        int ReportCount = 0
+        int ReportCount = 0,
+        string? AppealStatus = null,
+        string? AppealMessage = null
     );
 }
 

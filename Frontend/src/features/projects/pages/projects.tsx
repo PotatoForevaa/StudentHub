@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectCreateForm } from "../components/ProjectCreateForm";
 import { Pagination } from "../components/Pagination";
 import { CardsContainer, Container } from "../../../shared/components/Container";
 import { useProjects } from "../hooks/useProjects";
-import { useContext } from "react";
 import { AuthContext } from "../../auth/context/AuthContext";
 import { LoadingSpinner } from "../../../shared/components/LoadingSpinner";
 import { styled } from "styled-components";
@@ -43,6 +42,98 @@ const CreateButton = styled.button`
   }
 `;
 
+const FiltersContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing.md};
+  margin-bottom: ${spacing.lg};
+  align-items: flex-end;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.xs};
+  flex: 1;
+  min-width: 200px;
+`;
+
+const FilterLabel = styled.label`
+  font-size: ${fonts.size.sm};
+  color: ${colors.textSecondary};
+  font-weight: ${fonts.weight.medium};
+`;
+
+const SearchInput = styled.input`
+  background: ${colors.surface};
+  color: ${colors.textPrimary};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.md};
+  padding: ${spacing.sm} ${spacing.md};
+  font-size: ${fonts.size.base};
+  outline: none;
+  transition: border-color ${transitions.fast};
+
+  &::placeholder { color: ${colors.muted}; }
+  &:focus { border-color: ${colors.primary}; }
+`;
+
+const Select = styled.select`
+  background: ${colors.surface};
+  color: ${colors.textPrimary};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.md};
+  padding: ${spacing.sm} ${spacing.md};
+  font-size: ${fonts.size.base};
+  outline: none;
+  cursor: pointer;
+  transition: border-color ${transitions.fast};
+
+  &:focus { border-color: ${colors.primary}; }
+`;
+
+const FilterButton = styled.button`
+  background: ${colors.primary};
+  color: ${colors.white};
+  border: none;
+  border-radius: ${borderRadius.md};
+  padding: ${spacing.sm} ${spacing.lg};
+  font-size: ${fonts.size.base};
+  font-weight: ${fonts.weight.semibold};
+  cursor: pointer;
+  transition: background ${transitions.base};
+  height: 40px;
+
+  &:hover {
+    background: ${colors.primaryDark};
+  }
+`;
+
+const ResetButton = styled.button`
+  background: transparent;
+  color: ${colors.textSecondary};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.md};
+  padding: ${spacing.sm} ${spacing.lg};
+  font-size: ${fonts.size.base};
+  font-weight: ${fonts.weight.semibold};
+  cursor: pointer;
+  transition: all ${transitions.base};
+  height: 40px;
+
+  &:hover {
+    border-color: ${colors.primary};
+    color: ${colors.primary};
+  }
+`;
+
+const InfoText = styled.p`
+  color: ${colors.textSecondary};
+  text-align: center;
+  padding: ${spacing.xl};
+  font-size: ${fonts.size.base};
+`;
+
 const Projects = () => {
   const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -54,8 +145,48 @@ const Projects = () => {
     refetch: getProjects,
     currentPage,
     totalPages,
-    setCurrentPage
+    setCurrentPage,
+    setSearchTerm,
+    setSelectedCategoryId,
+    setSelectedTagId,
+    categories,
+    tags,
   } = useProjects();
+
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && projects?.length === 0) {
+      getProjects();
+    }
+  }, [isAuthenticated, authLoading, getProjects]);
+
+  useEffect(() => {
+    if (projects && projects.length > 0 && currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [projects, currentPage, totalPages, setCurrentPage]);
+
+  const handleSearch = () => {
+    setSearchTerm(localSearchTerm);
+    setCurrentPage(1);
+    getProjects();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleReset = () => {
+    setLocalSearchTerm("");
+    setSearchTerm("");
+    setSelectedCategoryId(undefined);
+    setSelectedTagId(undefined);
+    setCurrentPage(1);
+    setTimeout(() => getProjects(), 0);
+  };
 
   const handleCreateSuccess = () => {
     setShowCreateForm(false);
@@ -69,18 +200,6 @@ const Projects = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && projects?.length === 0) {
-      getProjects();
-    }
-  }, [isAuthenticated, authLoading, getProjects]);
-
-  useEffect(() => {
-    if (projects && projects.length > 0 && currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [projects, currentPage, totalPages, setCurrentPage]);
 
   return (
     <Container>
@@ -98,15 +217,57 @@ const Projects = () => {
         />
       )}
 
+      <FiltersContainer>
+        <FilterGroup>
+          <FilterLabel>Поиск по названию</FilterLabel>
+          <SearchInput
+            type="text"
+            placeholder="🔍 Введите название проекта..."
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </FilterGroup>
+
+        <FilterGroup>
+          <FilterLabel>Категория</FilterLabel>
+          <Select
+            value=""
+            onChange={(e) => setSelectedCategoryId(e.target.value || undefined)}
+          >
+            <option value="">Все категории</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </Select>
+        </FilterGroup>
+
+        <FilterGroup>
+          <FilterLabel>Тег</FilterLabel>
+          <Select
+            value=""
+            onChange={(e) => setSelectedTagId(e.target.value || undefined)}
+          >
+            <option value="">Все теги</option>
+            {tags.map((tag) => (
+              <option key={tag.id} value={tag.id}>{tag.name}</option>
+            ))}
+          </Select>
+        </FilterGroup>
+
+        <FilterButton onClick={handleSearch}>Найти</FilterButton>
+        <ResetButton onClick={handleReset}>Сбросить</ResetButton>
+      </FiltersContainer>
+
       <CardsContainer>
         {projectsLoading ? (
           <LoadingSpinner text="Загрузка проектов..." size="md" />
         ) : paginatedProjects && paginatedProjects.length > 0 ? (
           paginatedProjects.map((p) => <ProjectCard key={p.id} project={p} />)
         ) : projects && projects.length > 0 ? (
-          <p>No projects found on this page.</p>
+          <InfoText>На этой странице нет проектов.</InfoText>
         ) : (
-          <p>No projects found.</p>
+          <InfoText>Проекты не найдены. Попробуйте изменить параметры поиска.</InfoText>
         )}
       </CardsContainer>
 

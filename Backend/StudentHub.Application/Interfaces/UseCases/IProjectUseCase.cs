@@ -21,10 +21,35 @@ namespace StudentHub.Application.Interfaces.UseCases
         Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId);
         Task<Result<PaginatedResponse<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, int page, int pageSize);
         Task<Result<List<ProjectCommentDto>>> GetCommentsByAuthorIdAsync(Guid authorId);
+        Task<Result> ReportCommentAsync(Guid commentId, Guid reporterId);
         Task<Result<PaginatedResponse<ProjectCommentDto>>> GetModerationCommentsAsync(string queue, int page, int pageSize);
         Task<Result<ProjectCommentDto>> ApproveCommentAsync(Guid commentId);
         Task<Result<ProjectCommentDto>> MarkCommentToxicAsync(Guid commentId);
+        Task<Result<ProjectCommentDto>> AppealCommentAsync(Guid commentId, Guid userId, string? message);
+        Task<Result<ProjectCommentDto>> ResolveAppealAsync(Guid commentId, bool approved);
         Task<Result<List<ActivityDto>>> GetUserActivityAsync(Guid userId);
         Task<Result<List<LeaderboardUserDto>>> GetLeaderboardAsync(string type, string period, int page, int pageSize);
+
+        // Categories
+        Task<Result<List<CategoryDto>>> GetAllCategoriesAsync();
+        Task<Result<CategoryDto>> CreateCategoryAsync(string name);
+        Task<Result> DeleteCategoryAsync(Guid id);
+
+        // Tags
+        Task<Result<List<TagDto>>> GetAllTagsAsync();
+        Task<Result<TagDto>> CreateTagAsync(string name);
+        Task<Result> DeleteTagAsync(Guid id);
+
+        // Criteria
+        Task<Result<List<CriterionDto>>> GetCriteriaByCategoryIdAsync(Guid categoryId);
+        Task<Result<CriterionDto>> CreateCriterionAsync(string name, Guid categoryId);
+        Task<Result> DeleteCriterionAsync(Guid id);
+
+        // Criterion Scores
+        Task<Result> SubmitCriterionScoresAsync(Guid projectId, Guid teacherId, List<(Guid CriterionId, int Score, string? Comment)> scores);
+        Task<Result<List<CriterionScoreDto>>> GetCriterionScoresAsync(Guid projectId);
+
+        // Project filtering
+        Task<Result<PaginatedResponse<ProjectDto>>> GetFilteredProjectsAsync(string? search, Guid? categoryId, Guid? tagId, int page, int pageSize);
     }
 }

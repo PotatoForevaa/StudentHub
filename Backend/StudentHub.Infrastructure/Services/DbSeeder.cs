@@ -23,7 +23,7 @@ namespace StudentHub.Infrastructure.Services
             var password = config["ADMIN:PASSWORD"];
             var name = config["ADMIN:FULLNAME"] ?? "Admin";
 
-            var roles = new[] { "Admin", "User", "Teacher", "Moderator" };
+            var roles = new[] { "Admin", "User", "Teacher" };
 
             foreach (var roleName in roles)
             {

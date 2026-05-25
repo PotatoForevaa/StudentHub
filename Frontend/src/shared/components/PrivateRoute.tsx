@@ -7,7 +7,7 @@ export const PrivateRoute = ({ roles }: { roles?: string[] }) => {
   const { isAuthenticated, loading, user } = useContext(AuthContext);
   const location = useLocation();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Загрузка...</div>;
 
   if (!isAuthenticated) {
     return (

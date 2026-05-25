@@ -1,17 +1,18 @@
 import { useEffect, useState, useCallback, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { ProjectProvider, ProjectContext } from "../context/ProjectContext";
+import { ProjectProvider } from "../context/ProjectContext";
 import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
 import { ProjectUpdateForm } from "../components/ProjectUpdateForm";
 import { Pagination } from "../components/Pagination";
-import type { Project, Comment } from "../types";
+import type { Project, Comment, CriterionDto, CategoryDto } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import userService from "../../../shared/services/userService";
 import { AuthContext } from "../../auth/context/AuthContext";
-import { isAdmin } from "../../../shared/utils/roles";
+import { isAdmin, isTeacher } from "../../../shared/utils/roles";
 import { adminService } from "../../admin/services/adminService";
+import { moderationService } from "../../moderation/services/moderationService";
 
 const ProjectDetailContainer = styled.div`
   display: flex;
@@ -33,13 +34,6 @@ const ProjectTitle = styled.h1`
   font-size: ${fonts.size['2xl']};
   font-weight: ${fonts.weight.bold};
   color: ${colors.textPrimary};
-`;
-
-const ProjectTitleContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: ${spacing.md};
 `;
 
 const EditButton = styled.button`
@@ -140,6 +134,13 @@ const CommentsSection = styled.div`
   box-shadow: ${shadows.sm};
 `;
 
+const CriteriaScoreSection = styled.div`
+  background: ${colors.surface};
+  border-radius: ${borderRadius.lg};
+  padding: ${spacing.lg};
+  box-shadow: ${shadows.sm};
+`;
+
 const ScoreSection = styled.div`
   background: ${colors.surface};
   border-radius: ${borderRadius.lg};
@@ -150,6 +151,13 @@ const ScoreSection = styled.div`
 const CommentsTitle = styled.h3`
   margin: 0 0 ${spacing.lg} 0;
   font-size: ${fonts.size.xl};
+  font-weight: ${fonts.weight.semibold};
+  color: ${colors.textPrimary};
+`;
+
+const SectionTitle = styled.h3`
+  margin: 0 0 ${spacing.md} 0;
+  font-size: ${fonts.size.lg};
   font-weight: ${fonts.weight.semibold};
   color: ${colors.textPrimary};
 `;
@@ -169,9 +177,107 @@ const BackLink = styled(Link)`
   }
 `;
 
+const ScoreTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: ${spacing.md};
+`;
+
+const ScoreTh = styled.th`
+  text-align: left;
+  padding: ${spacing.sm};
+  border-bottom: 1px solid ${colors.accentBorder};
+  color: ${colors.textSecondary};
+  font-size: ${fonts.size.sm};
+  font-weight: ${fonts.weight.semibold};
+`;
+
+const ScoreTd = styled.td`
+  padding: ${spacing.sm};
+  border-bottom: 1px solid ${colors.accentBorderLight};
+  font-size: ${fonts.size.sm};
+  color: ${colors.textPrimary};
+`;
+
+const ScoreValue = styled.span`
+  font-weight: ${fonts.weight.bold};
+  color: ${colors.primary};
+  font-size: ${fonts.size.base};
+`;
+
+const TeacherScoreForm = styled.form`
+  margin-top: ${spacing.md};
+  padding: ${spacing.md};
+  background: ${colors.bg};
+  border-radius: ${borderRadius.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.md};
+`;
+
+const Select = styled.select`
+  padding: ${spacing.sm};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.sm};
+  font-size: ${fonts.size.sm};
+  background: ${colors.white};
+  width: 100%;
+  max-width: 300px;
+`;
+
+const CriterionScoreRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing.sm};
+  align-items: center;
+  padding: ${spacing.sm};
+  border-bottom: 1px solid ${colors.accentBorderLight};
+`;
+
+const CriterionName = styled.span`
+  flex: 1;
+  min-width: 150px;
+  font-size: ${fonts.size.sm};
+  color: ${colors.textPrimary};
+  font-weight: ${fonts.weight.medium};
+`;
+
+const ScoreInput = styled.input`
+  width: 60px;
+  padding: ${spacing.xs} ${spacing.sm};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.sm};
+  font-size: ${fonts.size.sm};
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary};
+  }
+`;
+
+const CommentInput = styled.input`
+  flex: 1;
+  min-width: 200px;
+  padding: ${spacing.xs} ${spacing.sm};
+  border: 1px solid ${colors.accentBorder};
+  border-radius: ${borderRadius.sm};
+  font-size: ${fonts.size.sm};
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary};
+  }
+`;
+
+const EmptyScores = styled.p`
+  color: ${colors.textSecondary};
+  font-size: ${fonts.size.sm};
+  font-style: italic;
+`;
+
 function ProjectDetailContent() {
   const { id } = useParams<{ id: string }>();
-  const { updateProject } = useContext(ProjectContext);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
@@ -183,16 +289,22 @@ function ProjectDetailContent() {
   const [newComment, setNewComment] = useState('');
   const [newScore, setNewScore] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editExternalUrl, setEditExternalUrl] = useState('');
-  const [editFiles, setEditFiles] = useState<FileList | null>(null);
+
+  // Teacher scoring state
+  const [isTeacherUser, setIsTeacherUser] = useState(false);
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [criteria, setCriteria] = useState<CriterionDto[]>([]);
+  const [scores, setScores] = useState<Record<string, { score: number; comment: string }>>({});
+  const [submittingScores, setSubmittingScores] = useState(false);
+  const [criterionScores, setCriterionScores] = useState<Project['criterionScores']>([]);
 
   const loadProject = useCallback(async () => {
     try {
       const result = await projectService.getProject(id!);
       if (result.isSuccess) {
         setProject(result.data || null);
+        setCriterionScores(result.data?.criterionScores || []);
       }
     } catch (error) {
       console.error("Failed to load project", error);
@@ -231,6 +343,39 @@ function ProjectDetailContent() {
       loadComments();
     }
   }, [id, loadProject, loadImageList, loadComments]);
+
+  // Load categories for teacher form
+  useEffect(() => {
+    if (id && isTeacherUser) {
+      projectService.getCategories().then(result => {
+        if (result.isSuccess && result.data) {
+          setCategories(result.data);
+        }
+      });
+    }
+  }, [id, isTeacherUser]);
+
+  // Load criteria when category changes
+  useEffect(() => {
+    if (selectedCategoryId) {
+      projectService.getCriteriaByCategory(selectedCategoryId).then(result => {
+        if (result.isSuccess && result.data) {
+          setCriteria(result.data);
+          // Reset scores when category changes
+          setScores({});
+        }
+      });
+    } else {
+      setCriteria([]);
+      setScores({});
+    }
+  }, [selectedCategoryId]);
+
+  useEffect(() => {
+    if (user) {
+      setIsTeacherUser(isTeacher(user) || isAdmin(user));
+    }
+  }, [user]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -272,42 +417,11 @@ function ProjectDetailContent() {
   };
 
   const handleStartEdit = () => {
-    setEditName(project?.name || '');
-    setEditDescription(project?.description || '');
-    setEditExternalUrl(project?.externalUrl || '');
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditFiles(null);
-  };
-
-  const handleUpdateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id) return;
-
-    const formData = new FormData();
-    formData.append('Name', editName);
-    formData.append('Description', editDescription);
-    if (editExternalUrl.trim()) {
-      formData.append('ExternalUrl', editExternalUrl);
-    }
-    if (editFiles) {
-      Array.from(editFiles).forEach(file => {
-        formData.append('Files', file);
-      });
-    }
-
-    const success = await updateProject(id, formData);
-    if (success) {
-      setIsEditing(false);
-      setEditFiles(null);
-      await loadProject();
-      await loadImageList();
-    } else {
-      alert('Не удалось обновить проект');
-    }
   };
 
   const handleDeleteProject = async () => {
@@ -329,6 +443,59 @@ function ProjectDetailContent() {
     }
   };
 
+  const handleCriterionScoreChange = (criterionId: string, value: string) => {
+    const numValue = parseInt(value, 10);
+    if (value === '' || (numValue >= 1 && numValue <= 10)) {
+      setScores(prev => ({
+        ...prev,
+        [criterionId]: { ...prev[criterionId], score: value === '' ? 0 : numValue }
+      }));
+    }
+  };
+
+  const handleCriterionCommentChange = (criterionId: string, comment: string) => {
+    setScores(prev => ({
+      ...prev,
+      [criterionId]: { ...prev[criterionId], comment }
+    }));
+  };
+
+  const handleSubmitCriterionScores = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !selectedCategoryId) return;
+
+    const scoresData = criteria
+      .filter(c => scores[c.id] && scores[c.id].score > 0)
+      .map(c => ({
+        criterionId: c.id,
+        score: scores[c.id].score,
+        comment: scores[c.id].comment || undefined,
+      }));
+
+    if (scoresData.length === 0) {
+      alert('Выберите хотя бы одну оценку');
+      return;
+    }
+
+    setSubmittingScores(true);
+    try {
+      const result = await projectService.submitScores(id, { scores: scoresData });
+      if (result.isSuccess) {
+        await loadProject();
+        setSelectedCategoryId("");
+        setScores({});
+        alert('Оценки успешно сохранены');
+      } else {
+        alert('Не удалось сохранить оценки');
+      }
+    } catch (error) {
+      console.error("Failed to submit scores", error);
+      alert('Ошибка при сохранении оценок');
+    } finally {
+      setSubmittingScores(false);
+    }
+  };
+
   const isAuthor = user && project && user.username === project.authorUsername;
   const userIsAdmin = isAdmin(user);
 
@@ -340,6 +507,33 @@ function ProjectDetailContent() {
       }
     } catch (error) {
       console.error("Failed to mark comment toxic", error);
+    }
+  };
+
+  const handleAppealComment = async (commentId: string) => {
+    const confirmed = window.confirm('Отправить апелляцию на этот комментарий?');
+    if (!confirmed) return;
+
+    try {
+      const result = await moderationService.submitAppeal(commentId, 'Я считаю, что этот комментарий был ошибочно помечен.');
+      if (result.isSuccess) {
+        await loadComments();
+      }
+    } catch (error) {
+      console.error("Failed to submit appeal", error);
+    }
+  };
+
+  const handleReportComment = async (commentId: string) => {
+    if (!id) return;
+
+    try {
+      const result = await projectService.reportComment(id, commentId);
+      if (result.isSuccess) {
+        await loadComments();
+      }
+    } catch (error) {
+      console.error("Failed to report comment", error);
     }
   };
 
@@ -357,54 +551,21 @@ function ProjectDetailContent() {
         <BackLink to="/projects">← Назад к проектам</BackLink>
 
         <ProjectHeader>
-          {isEditing ? (
-            <EditForm onSubmit={handleUpdateProject}>
-              <InputGroup>
-                <Label>Название проекта</Label>
-                <Input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  required
-                />
-              </InputGroup>
-              <InputGroup>
-                <Label>Описание</Label>
-                <TextArea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  required
-                />
-              </InputGroup>
-              <InputGroup>
-                <Label>Внешняя ссылка</Label>
-                <Input
-                  type="url"
-                  value={editExternalUrl}
-                  onChange={(e) => setEditExternalUrl(e.target.value)}
-                />
-              </InputGroup>
-              <InputGroup>
-                <Label>Изображения (новые изображения заменят существующие)</Label>
-                <FileInput
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => setEditFiles(e.target.files)}
-                />
-              </InputGroup>
-              <ButtonGroup>
-                <Button type="submit">Сохранить</Button>
-                <CancelButton type="button" onClick={handleCancelEdit}>
-                  Отмена
-                </CancelButton>
-              </ButtonGroup>
-            </EditForm>
+          {isEditing && project ? (
+            <ProjectUpdateForm
+              project={project}
+              onSuccess={() => {
+                setIsEditing(false);
+                loadProject();
+                loadImageList();
+              }}
+              onCancel={handleCancelEdit}
+            />
           ) : (
             <>
               <ProjectTitle>{project.name}</ProjectTitle>
               <ProjectMeta>
-                <span>Автор: <AuthorLink to={`/${project.authorUsername}`}>{project.authorName}</AuthorLink></span>
+                <span>Автор: <AuthorLink to={`/users/${project.authorUsername}`}>{project.authorName}</AuthorLink></span>
                 <span>{formatDate(project.creationDate)}</span>
                 {isAuthor && (
                   <ButtonContainer>
@@ -417,6 +578,24 @@ function ProjectDetailContent() {
                   </ButtonContainer>
                 )}
               </ProjectMeta>
+              {(project.categories && project.categories.length > 0) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                  {project.categories.map((cat) => (
+                    <span key={cat.id} style={{ background: '#dbeafe', color: '#1e40af', padding: '4px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 500 }}>
+                      📁 {cat.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {(project.tags && project.tags.length > 0) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                  {project.tags.map((tag) => (
+                    <span key={tag.id} style={{ background: '#f3f4f6', color: '#6b7280', padding: '4px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }}>
+                      🏷️ {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
               {project.description && (
                 <ProjectDescription>{project.description}</ProjectDescription>
               )}
@@ -442,6 +621,89 @@ function ProjectDetailContent() {
               ))}
             </ImagesGrid>
           </div>
+        )}
+
+        {/* Criteria scores section - visible to everyone */}
+        <CriteriaScoreSection>
+          <SectionTitle>Оценки преподавателей</SectionTitle>
+          {criterionScores && criterionScores.length > 0 ? (
+            <ScoreTable>
+              <thead>
+                <tr>
+                  <ScoreTh>Критерий</ScoreTh>
+                  <ScoreTh>Категория</ScoreTh>
+                  <ScoreTh>Оценка</ScoreTh>
+                  <ScoreTh>Комментарий</ScoreTh>
+                  <ScoreTh>Преподаватель</ScoreTh>
+                  <ScoreTh>Дата</ScoreTh>
+                </tr>
+              </thead>
+              <tbody>
+                {criterionScores.map((cs, idx) => (
+                  <tr key={idx}>
+                    <ScoreTd>{cs.criterionName}</ScoreTd>
+                    <ScoreTd>{cs.criterionName ? (criteria.find(c => c.id === cs.criterionId)?.categoryName || '') : ''}</ScoreTd>
+                    <ScoreTd><ScoreValue>{cs.score}/10</ScoreValue></ScoreTd>
+                    <ScoreTd>{cs.comment || '—'}</ScoreTd>
+                    <ScoreTd>{cs.teacherName}</ScoreTd>
+                    <ScoreTd>{formatDate(cs.createdAt)}</ScoreTd>
+                  </tr>
+                ))}
+              </tbody>
+            </ScoreTable>
+          ) : (
+            <EmptyScores>Оценки ещё не выставлены.</EmptyScores>
+          )}
+        </CriteriaScoreSection>
+
+        {/* Teacher scoring form - only for teachers */}
+        {isTeacherUser && (
+          <CriteriaScoreSection>
+            <SectionTitle>Выставить оценки</SectionTitle>
+            <TeacherScoreForm onSubmit={handleSubmitCriterionScores}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: colors.textSecondary, fontWeight: 500 }}>
+                  Выберите категорию
+                </label>
+                <Select value={selectedCategoryId} onChange={e => setSelectedCategoryId(e.target.value)}>
+                  <option value="">-- Выберите категорию --</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </Select>
+              </div>
+
+              {selectedCategoryId && criteria.length === 0 && (
+                <EmptyScores>Нет критериев для выбранной категории.</EmptyScores>
+              )}
+
+              {criteria.map(criterion => (
+                <CriterionScoreRow key={criterion.id}>
+                  <CriterionName>{criterion.name}</CriterionName>
+                  <ScoreInput
+                    type="number"
+                    min={1}
+                    max={10}
+                    placeholder="1-10"
+                    value={scores[criterion.id]?.score || ''}
+                    onChange={e => handleCriterionScoreChange(criterion.id, e.target.value)}
+                  />
+                  <CommentInput
+                    type="text"
+                    placeholder="Комментарий (необязательно)"
+                    value={scores[criterion.id]?.comment || ''}
+                    onChange={e => handleCriterionCommentChange(criterion.id, e.target.value)}
+                  />
+                </CriterionScoreRow>
+              ))}
+
+              {selectedCategoryId && criteria.length > 0 && (
+                <Button type="submit" disabled={submittingScores}>
+                  {submittingScores ? 'Сохранение...' : 'Сохранить оценки'}
+                </Button>
+              )}
+            </TeacherScoreForm>
+          </CriteriaScoreSection>
         )}
 
         <ScoreSection>
@@ -481,7 +743,10 @@ function ProjectDetailContent() {
               key={comment.id}
               comment={comment}
               showAdminActions={userIsAdmin}
+              currentUserId={user?.id}
               onMarkToxic={handleMarkCommentToxic}
+              onAppeal={handleAppealComment}
+              onReport={handleReportComment}
             />
           ))}
           <Pagination
@@ -498,12 +763,34 @@ function ProjectDetailContent() {
 function CommentItem({
   comment,
   showAdminActions,
-  onMarkToxic
+  currentUserId,
+  onMarkToxic,
+  onAppeal,
+  onReport
 }: {
   comment: Comment;
   showAdminActions: boolean;
+  currentUserId?: string;
   onMarkToxic: (commentId: string) => void;
+  onAppeal: (commentId: string) => void;
+  onReport: (commentId: string) => void;
 }) {
+  const [actionBusy, setActionBusy] = useState(false);
+  const isAuthor = currentUserId === comment.authorId;
+  const isToxic = comment.moderationStatus === "Toxic";
+  const canAppeal = isToxic && isAuthor && comment.moderatedBy === "AI" && (!comment.appealStatus || comment.appealStatus === "None");
+  const isAppealing = comment.appealStatus === "Pending";
+  const canReport = Boolean(currentUserId) && !isAuthor && !isToxic;
+
+  const runAction = async (action: (commentId: string) => void | Promise<void>) => {
+    setActionBusy(true);
+    try {
+      await action(comment.id);
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString();
@@ -518,18 +805,31 @@ function CommentItem({
         {comment.authorProfilePicturePath && (
           <ProfilePic src={userService.getProfilePicturePath(comment.authorUsername)} alt={comment.authorUsername} />
         )}
-        <CommentUserLink to={`/${comment.authorUsername}`}>
+        <CommentUserLink to={`/users/${comment.authorUsername}`}>
           {comment.authorUsername}
         </CommentUserLink>
         {comment.userScore && <SmallStars>{Array.from({ length: comment.userScore }, () => '★').join('')}</SmallStars>}
         <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
       </CommentHeader>
       <CommentText>{comment.content}</CommentText>
-      {showAdminActions && (
+      {(showAdminActions || canAppeal || canReport || isAppealing) && (
         <CommentActions>
-          <ToxicButton onClick={() => onMarkToxic(comment.id)}>
-            Mark toxic
-          </ToxicButton>
+          {showAdminActions && (
+            <ActionButton type="button" danger disabled={actionBusy} onClick={() => runAction(onMarkToxic)}>
+              Пометить токсичным
+            </ActionButton>
+          )}
+          {canAppeal && (
+            <ActionButton type="button" disabled={actionBusy} onClick={() => runAction(onAppeal)}>
+              Апелляция
+            </ActionButton>
+          )}
+          {isAppealing && <CommentStatus>Апелляция ожидает</CommentStatus>}
+          {canReport && (
+            <ActionButton type="button" disabled={actionBusy} onClick={() => runAction(onReport)}>
+              Пожаловаться
+            </ActionButton>
+          )}
         </CommentActions>
       )}
     </CommentContainer>
@@ -560,8 +860,6 @@ const ProfilePic = styled.img`
   border-radius: 50%;
   object-fit: cover;
 `;
-
-
 
 const CommentDate = styled.span`
   margin-left: auto;
@@ -596,21 +894,34 @@ const CommentText = styled.p`
 const CommentActions = styled.div`
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: ${spacing.sm};
   margin-top: ${spacing.sm};
 `;
 
-const ToxicButton = styled.button`
-  background: #dc3545;
+const ActionButton = styled.button<{ danger?: boolean }>`
+  background: ${props => props.danger ? "#dc3545" : colors.primary};
   color: ${colors.white};
   border: none;
   padding: ${spacing.xs} ${spacing.sm};
   border-radius: ${borderRadius.sm};
   cursor: pointer;
   font-weight: ${fonts.weight.semibold};
+  transition: background ${transitions.base};
 
   &:hover {
-    background: #c82333;
+    background: ${props => props.danger ? "#c82333" : colors.primaryDark};
   }
+
+  &:disabled {
+    background: ${colors.muted};
+    cursor: not-allowed;
+  }
+`;
+
+const CommentStatus = styled.span`
+  color: ${colors.textSecondary};
+  font-size: ${fonts.size.sm};
 `;
 
 const AuthorLink = styled(Link)`
@@ -687,69 +998,6 @@ const StarButton = styled.button<{ selected: boolean }>`
 
   &:hover {
     color: ${colors.primary};
-  }
-`;
-
-const EditForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: ${spacing.md};
-`;
-
-const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${spacing.xs};
-`;
-
-const Label = styled.label`
-  font-weight: ${fonts.weight.semibold};
-  color: ${colors.textPrimary};
-  font-size: ${fonts.size.sm};
-`;
-
-const Input = styled.input`
-  padding: ${spacing.sm};
-  border: 1px solid ${colors.accentBorder};
-  border-radius: ${borderRadius.sm};
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-    border-color: ${colors.primary};
-  }
-`;
-
-const FileInput = styled.input`
-  padding: ${spacing.sm};
-  border: 1px solid ${colors.accentBorder};
-  border-radius: ${borderRadius.sm};
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-    border-color: ${colors.primary};
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: ${spacing.sm};
-  justify-content: flex-end;
-`;
-
-const CancelButton = styled.button`
-  background: ${colors.muted};
-  color: ${colors.textPrimary};
-  border: none;
-  padding: ${spacing.sm} ${spacing.md};
-  border-radius: ${borderRadius.sm};
-  cursor: pointer;
-  transition: background ${transitions.base};
-  font-weight: ${fonts.weight.semibold};
-
-  &:hover {
-    background: ${colors.accentBorder};
   }
 `;
 

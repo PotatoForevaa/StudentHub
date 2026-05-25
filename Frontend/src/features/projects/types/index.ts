@@ -10,6 +10,35 @@ export type Project = {
     imagePaths?: string[];
     comments?: Comment[];
     averageRating: number;
+    categories?: CategoryDto[];
+    tags?: TagDto[];
+    criterionScores?: CriterionScoreDto[];
+}
+
+export type CategoryDto = {
+    id: string;
+    name: string;
+}
+
+export type TagDto = {
+    id: string;
+    name: string;
+}
+
+export type CriterionDto = {
+    id: string;
+    categoryId: string;
+    categoryName: string;
+    name: string;
+}
+
+export type CriterionScoreDto = {
+    criterionId: string;
+    criterionName: string;
+    score: number;
+    comment?: string;
+    teacherName: string;
+    createdAt: string;
 }
 
 export type Comment = {
@@ -26,6 +55,8 @@ export type Comment = {
     moderationStatus?: string;
     moderatedBy?: string;
     reportCount?: number;
+    appealStatus?: string;
+    appealMessage?: string;
 }
 
 export type ScoreFormData = {
@@ -36,6 +67,8 @@ export type ProjectFormData = {
     name: string;
     description: string;
     externalUrl: string;
+    categoryIds?: string[];
+    tagIds?: string[];
 }
 
 export type CommentFormData = {
@@ -47,8 +80,20 @@ export type UpdateProjectFormData = {
     description: string;
     externalUrl?: string;
     base64Images?: string[];
+    categoryIds?: string[];
+    tagIds?: string[];
 }
 
 export type FieldErrors = {
     [key: string]: string;
+}
+
+export type SubmitCriterionScoreData = {
+    criterionId: string;
+    score: number;
+    comment?: string;
+}
+
+export type SubmitCriterionScoresData = {
+    scores: SubmitCriterionScoreData[];
 }

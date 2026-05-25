@@ -36,7 +36,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     
     ports:
-      - "5432:5432"
+      - "2534:5432"
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U studenthub"]
@@ -58,6 +58,7 @@ services:
       CONNECTIONSTRING: Host=db;Database=studenthub;Username=studenthub;Password=studenthubpassword
       ASPNETCORE_URLS: "http://*:5000"
       ADMIN__PASSWORD: "P@ssw0rd"
+      TOXICFILTER__BASEURL: "http://toxic_filter:8000"
           
     depends_on:
       db:
@@ -90,7 +91,7 @@ services:
 
     depends_on:
       - backend
- 
+
     labels:
           - "traefik.enable=true"
           - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
@@ -117,6 +118,7 @@ services:
       - "traefik.docker.network=web"
     depends_on:
       - redis
+      - model_service
     networks:
       - web
       - internal
@@ -133,10 +135,24 @@ services:
     command: celery -A celery_app worker --loglevel=info -Q toxic,default --concurrency=2
     depends_on:
       - redis
+      - model_service
     networks:
       - internal
     volumes:
       - ./comment_filter/toxic_model_balanced:/app/toxic_model_balanced
+
+  model_service:
+    build:
+      context: ./comment_filter
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: uvicorn model_service:app --host 0.0.0.0 --port 8001
+    environment:
+      MODEL_PATH: toxic_model_v20260314_023157
+    networks:
+      - internal
+    volumes:
+      - ./comment_filter/toxic_model_v20260314_023157:/app/toxic_model_v20260314_023157
 
   prometheus:
     image: prom/prometheus:latest    

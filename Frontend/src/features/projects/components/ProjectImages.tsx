@@ -37,7 +37,7 @@ export const ProjectImages = ({ projectId, imagePaths, maxImages = 6 }: ProjectI
         <Image
           key={idx}
           src={projectService.getProjectImagePath(projectId, path)}
-          alt={`Project image ${idx + 1}`}
+          alt={`Изображение проекта ${idx + 1}`}
         />
       ))}
     </ImagesContainer>

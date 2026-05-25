@@ -7,6 +7,8 @@ import type { LeaderboardUser, LeaderboardType, LeaderboardPeriod } from "../typ
 import { LEADERBOARD_PERIODS, PERIOD_LABELS, TYPE_LABELS } from "../types";
 import { API_BASE_URL } from "../../../shared/services/base";
 
+const PAGE_SIZE = 10;
+
 const SectionContainer = styled.div`
   background: ${colors.white};
   border-radius: ${borderRadius.lg};
@@ -122,19 +124,47 @@ const EmptyState = styled.div`
   font-size: ${fonts.size.base};
 `;
 
+const Pager = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: ${spacing.sm};
+  margin-top: ${spacing.lg};
+`;
+
+const PageButton = styled.button`
+  border: 1px solid ${colors.accentBorderLight};
+  border-radius: ${borderRadius.md};
+  padding: ${spacing.sm} ${spacing.md};
+  background: ${colors.white};
+  color: ${colors.textPrimary};
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 interface LeaderboardSectionProps {
   type: LeaderboardType;
 }
 
 export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) => {
+  const [page, setPage] = useState(0);
+  const onPageChange = (newPage: number) => setPage(newPage);
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<LeaderboardPeriod>('weekly-current');
+  /* Page state lifted to parent component */
 
-  const fetchLeaderboard = async (period: LeaderboardPeriod) => {
+  const fetchLeaderboard = async (period: LeaderboardPeriod, pageNumber: number) => {
     setLoading(true);
     try {
-      const response = await leaderboardService.getLeaderboard(type, period);
+      const response = await leaderboardService.getLeaderboard(type, period, pageNumber, PAGE_SIZE);
       if (response.isSuccess && response.data) {
         setUsers(response.data);
       } else {
@@ -148,13 +178,14 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) 
     }
   };
 
-  useEffect(() => {
-    fetchLeaderboard(selectedPeriod);
-  }, [selectedPeriod]);
+useEffect(() => {
+  fetchLeaderboard(selectedPeriod, page);
+}, [selectedPeriod, page, type]);
 
-  const handlePeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPeriod(event.target.value as LeaderboardPeriod);
-  };
+const handlePeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  setSelectedPeriod(event.target.value as LeaderboardPeriod);
+  onPageChange(0);
+};
 
   return (
     <SectionContainer>
@@ -172,25 +203,35 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ type }) 
       {loading ? (
         <LoadingSpinner text="Загрузка рейтинга..." size="md" />
       ) : users.length > 0 ? (
-        <LeaderboardList>
-          {users.map((user, index) => (
-            <LeaderboardItem key={user.id}>
-              <Rank>{index + 1}</Rank>
-              <UserInfo>
-                <UserAvatar
-                  src={user.profilePicturePath}
-                  alt={`${user.fullName} avatar`}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = `${API_BASE_URL}/users/by-username/admin/profile-picture`;
-                  }}
-                />
-                <UserName>{user.fullName}</UserName>
-              </UserInfo>
-              <Score>{Math.round(user.score * 100) / 100}</Score>
-            </LeaderboardItem>
-          ))}
-        </LeaderboardList>
+        <>
+          <LeaderboardList>
+            {users.map((user, index) => (
+              <LeaderboardItem key={user.id}>
+                <Rank>{page * PAGE_SIZE + index + 1}</Rank>
+                <UserInfo>
+                  <UserAvatar
+                    src={user.profilePicturePath}
+                    alt={`Аватар ${user.fullName}`}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `${API_BASE_URL}/users/by-username/admin/profile-picture`;
+                    }}
+                  />
+                  <UserName>{user.fullName}</UserName>
+                </UserInfo>
+                <Score>{Math.round(user.score * 100) / 100}</Score>
+              </LeaderboardItem>
+            ))}
+          </LeaderboardList>
+          <Pager>
+<PageButton disabled={page === 0 || loading} onClick={() => onPageChange(Math.max(0, page - 1))}>
+  Назад
+</PageButton>
+<PageButton disabled={users.length < PAGE_SIZE || loading} onClick={() => onPageChange(page + 1)}>
+  Вперёд
+</PageButton>
+          </Pager>
+        </>
       ) : (
         <EmptyState>
           Нет данных для выбранного периода

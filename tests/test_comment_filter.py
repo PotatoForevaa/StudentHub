@@ -24,7 +24,6 @@ def test_health():
 
 
 def test_predict_async_linked_and_cancel():
-    # Submit a linked async job
     payload = {"text": "this is an integration test", "comment_id": "test-1"}
     r = requests.post(BASE + "/predict_async_linked", json=payload, timeout=10)
     assert r.status_code == 200
@@ -32,12 +31,10 @@ def test_predict_async_linked_and_cancel():
     assert "task_id" in data
     task_id = data["task_id"]
 
-    # Try to cancel immediately (soft cancel)
     r2 = requests.post(f"{BASE}/cancel/{task_id}", timeout=5)
     assert r2.status_code == 200
     assert r2.json().get("status") in ("cancelled", "cannot_cancel")
 
-    # Poll for a final state for up to 20 seconds
     deadline = time.time() + 20
     final = None
     while time.time() < deadline:

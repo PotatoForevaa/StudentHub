@@ -3,7 +3,7 @@ import { styled } from "styled-components";
 import { AuthContext } from "../features/auth/context/AuthContext";
 import { useContext } from "react";
 import { colors, shadows, transitions, fonts } from "../shared/styles/tokens";
-import { isAdmin } from "../shared/utils/roles";
+import { isAdmin, canModerate } from "../shared/utils/roles";
 
 const StyledHeader = styled.header`
   background: ${colors.surface};
@@ -11,7 +11,7 @@ const StyledHeader = styled.header`
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 1px solid ${colors.accentBorderLight};
+  border-bottom: 1px solid ${colors.accentBorder};
 `;
 
 const Nav = styled.nav`
@@ -174,13 +174,31 @@ export const Header = () => {
                 Пользователи
               </NavLinkStyled>
             </Li>
+            <Li>
+              <NavLinkStyled
+                to="leaderboard"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                Рейтинг
+              </NavLinkStyled>
+            </Li>
+            {canModerate(user) && (
+              <Li>
+                <NavLinkStyled
+                  to="moderation"
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  Модерация
+                </NavLinkStyled>
+              </Li>
+            )}
             {isAdmin(user) && (
               <Li>
                 <NavLinkStyled
                   to="admin"
                   className={({ isActive }) => (isActive ? "active" : "")}
                 >
-                  WebAdmin
+                  Администрирование
                 </NavLinkStyled>
               </Li>
             )}
@@ -213,7 +231,7 @@ export const Header = () => {
               <>
                 <Li>
                   <NavLinkStyled
-                    to={user?.username ? `/${user.username}` : "/"}
+                    to={user?.username ? `/users/${user.username}` : "/"}
                     className={({ isActive }) => (isActive ? "active" : "")}
                   >
                     <StyledP>

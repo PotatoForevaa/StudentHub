@@ -20,5 +20,11 @@ namespace StudentHub.Application.Interfaces.UseCases
         Task<Result> DeleteAsync(Guid id);
         Task<Result> ReplaceAssignableRoleAsync(Guid id, string role);
         Task<Result<UserDto?>> LoginWithOAuth2Async(string externalId, string username, string fullName);
+
+        // Mute operations
+        Task<Result> MuteUserAsync(Guid targetUserId, Guid actorId, string duration, string? reason);
+        Task<Result> UnmuteUserAsync(Guid targetUserId, Guid actorId);
+        Task<Result<MuteInfoDto?>> GetMuteInfoAsync(Guid userId);
+        Task<Result<List<MuteInfoDto>>> GetAllActiveMutesAsync(int page = 1, int pageSize = 20);
     }
 }

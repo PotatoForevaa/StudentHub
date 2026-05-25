@@ -16,6 +16,7 @@ const ProjectDetail = lazy(() => import("../features/projects/pages/projectDetai
 const UserList = lazy(() => import("../features/users/pages/userlist"));
 const Leaderboard = lazy(() => import("../features/leaderboard/pages/leaderboard"));
 const WebAdmin = lazy(() => import("../features/admin/pages/WebAdmin"));
+const ModerationPage = lazy(() => import("../features/moderation/pages/ModerationPage"));
 
 const GlobalStyles = createGlobalStyle`
   html, body, #root {
@@ -30,8 +31,8 @@ const GlobalStyles = createGlobalStyle`
     font-family: ${fonts.family};
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: linear-gradient(180deg, ${colors.bg} 0%, ${colors.white} 40%);
-    color: ${colors.textPrimary};
+  background: ${colors.gradientBg};
+  color: ${colors.textPrimary};
   }
 
   a { color: ${colors.primary}; }
@@ -75,9 +76,12 @@ function App() {
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/:id" element={<ProjectDetail />} />
                     <Route path="/users" element={<UserList />} />
-                    <Route path="/:username" element={<Profile />} />
+                    <Route path="/users/:username" element={<Profile />} />
                   </Route>
-                  <Route element={<PrivateRoute roles={["Admin", "Moderator"]} />}>
+                  <Route element={<PrivateRoute roles={["Admin", "Teacher"]} />}>
+                    <Route path="/moderation" element={<ModerationPage />} />
+                  </Route>
+                  <Route element={<PrivateRoute roles={["Admin"]} />}>
                     <Route path="/admin" element={<WebAdmin />} />
                   </Route>
                 </Routes>

@@ -5,7 +5,9 @@ using Serilog;
 using Serilog.Filters;
 using StudentHub.Api.Extensions;
 using StudentHub.Api.WebServices;
+using StudentHub.Application.DTOs;
 using StudentHub.Application.Interfaces.Repositories;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Interfaces.UseCases;
 using StudentHub.Application.UseCases;
 using StudentHub.Infrastructure.Data;
@@ -108,6 +110,21 @@ namespace StudentHub.Api
                 builder.Services.AddScoped<IAuthService, AuthService>();
                 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
                 builder.Services.AddScoped<IProjectUseCase, ProjectUseCase>();
+                builder.Services.AddHttpClient<IToxicFilterService, ToxicFilterService>(client =>
+                {
+                    var baseUrl = builder.Configuration.GetValue<string>("ToxicFilter:BaseUrl");
+                    if (!string.IsNullOrWhiteSpace(baseUrl))
+                    {
+                        if (!baseUrl.EndsWith('/'))
+                        {
+                            baseUrl += "/";
+                        }
+
+                        client.BaseAddress = new Uri(baseUrl);
+                    }
+                });
+                builder.Services.AddSingleton(builder.Configuration.GetSection("CommentSettings").Get<CommentSettings>() ?? new CommentSettings());
+                builder.Services.AddHostedService<CommentModerationBackgroundService>();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(options =>

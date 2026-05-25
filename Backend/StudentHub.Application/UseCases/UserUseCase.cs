@@ -202,5 +202,61 @@ namespace StudentHub.Application.UseCases
             var newUserDto = new UserDto(newUser.Id, newUser.Username, newUser.FullName, await _userRepository.GetRolesAsync(newUser.Id));
             return Result<UserDto?>.Success(newUserDto);
         }
+
+        public async Task<Result> MuteUserAsync(Guid targetUserId, Guid actorId, string duration, string? reason)
+        {
+            var userResult = await _userRepository.GetByIdAsync(targetUserId);
+            if (!userResult.IsSuccess) return Result.Failure(userResult.Errors, userResult.ErrorType);
+
+            var durationSpan = duration switch
+            {
+                "1h" => TimeSpan.FromHours(1),
+                "6h" => TimeSpan.FromHours(6),
+                "24h" => TimeSpan.FromHours(24),
+                "3d" => TimeSpan.FromDays(3),
+                "7d" => TimeSpan.FromDays(7),
+                "30d" => TimeSpan.FromDays(30),
+                _ => TimeSpan.FromHours(1)
+            };
+
+            return await _userRepository.MuteUserAsync(targetUserId, actorId, durationSpan, reason);
+        }
+
+        public async Task<Result> UnmuteUserAsync(Guid targetUserId, Guid actorId)
+        {
+            return await _userRepository.UnmuteUserAsync(targetUserId);
+        }
+
+        public async Task<Result<MuteInfoDto?>> GetMuteInfoAsync(Guid userId)
+        {
+            var muteResult = await _userRepository.GetActiveMuteAsync(userId);
+            if (!muteResult.IsSuccess || muteResult.Value == null)
+                return Result<MuteInfoDto?>.Success(new MuteInfoDto(false, null, null, null, null));
+
+            var mute = muteResult.Value;
+            return Result<MuteInfoDto?>.Success(new MuteInfoDto(
+                true,
+                mute.MutedUntil,
+                mute.Reason,
+                mute.MutedByUser?.Username,
+                mute.CreatedAt
+            ));
+        }
+
+        public async Task<Result<List<MuteInfoDto>>> GetAllActiveMutesAsync(int page = 1, int pageSize = 20)
+        {
+            var result = await _userRepository.GetAllActiveMutesAsync(page, pageSize);
+            if (!result.IsSuccess) return Result<List<MuteInfoDto>>.Failure(result.Errors, result.ErrorType);
+
+            var mutes = result.Value.Select(m => new MuteInfoDto(
+                true,
+                m.MutedUntil,
+                m.Reason,
+                m.MutedByUser?.Username,
+                m.CreatedAt
+            )).ToList();
+
+            return Result<List<MuteInfoDto>>.Success(mutes);
+        }
     }
 }

@@ -19,5 +19,12 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result> CheckPasswordAsync(string username, string password);
         Task<Result<User?>> GetByExternalIdAsync(string externalId);
         Task<Result<User?>> AddOAuth2UserAsync(string externalId, string username, string fullName);
+
+        // Mute operations
+        Task<Result<UserMute>> MuteUserAsync(Guid userId, Guid mutedByUserId, TimeSpan duration, string? reason);
+        Task<Result> UnmuteUserAsync(Guid userId);
+        Task<Result<UserMute?>> GetActiveMuteAsync(Guid userId);
+        Task<Result<List<UserMute>>> GetAllActiveMutesAsync(int page = 1, int pageSize = 20);
+        Task<int> CountActiveMutesAsync();
     }
 }

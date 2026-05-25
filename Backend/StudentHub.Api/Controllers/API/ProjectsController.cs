@@ -35,6 +35,19 @@ namespace StudentHub.Api.Controllers.API
         }
 
         [Authorize]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProjects(
+            [FromQuery] string? search,
+            [FromQuery] Guid? categoryId,
+            [FromQuery] Guid? tagId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var result = await _projectUseCase.GetFilteredProjectsAsync(search, categoryId, tagId, page, pageSize);
+            return result.ToActionResult();
+        }
+
+        [Authorize]
         [HttpGet("author/{authorId}")]
         public async Task<IActionResult> GetProjectsByAuthor([FromRoute] Guid authorId)
         {
@@ -53,7 +66,9 @@ namespace StudentHub.Api.Controllers.API
                 Description: request.Description,
                 AuthorId: userId,
                 Files: request.Files?.Select(f => f.OpenReadStream()).ToList(),
-                Url: request.ExternalUrl
+                Url: request.ExternalUrl,
+                CategoryIds: request.CategoryIds,
+                TagIds: request.TagIds
                 );
 
             var projectResult = await _projectUseCase.CreateAsync(command);
@@ -72,7 +87,9 @@ namespace StudentHub.Api.Controllers.API
                 Name: request.Name,
                 Description: request.Description,
                 ExternalUrl: request.ExternalUrl,
-                Files: request.Files?.Select(f => f.OpenReadStream()).ToList()
+                Files: request.Files?.Select(f => f.OpenReadStream()).ToList(),
+                CategoryIds: request.CategoryIds,
+                TagIds: request.TagIds
             );
 
             var result = await _projectUseCase.UpdateAsync(command);
@@ -125,10 +142,69 @@ namespace StudentHub.Api.Controllers.API
         }
 
         [Authorize]
+        [HttpPost("{projectId}/comments/{commentId}/report")]
+        public async Task<IActionResult> ReportComment([FromRoute] Guid projectId, [FromRoute] Guid commentId)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _projectUseCase.ReportCommentAsync(commentId, userId);
+            return result.ToActionResult();
+        }
+
+        [Authorize]
         [HttpGet("{id}/comments")]
         public async Task<IActionResult> GetComments([FromRoute] Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _projectUseCase.GetCommentsByProjectIdAsync(id, page, pageSize);
+            return result.ToActionResult();
+        }
+
+        // --- Categories ---
+
+        [Authorize]
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var result = await _projectUseCase.GetAllCategoriesAsync();
+            return result.ToActionResult();
+        }
+
+        // --- Tags ---
+
+        [Authorize]
+        [HttpGet("tags")]
+        public async Task<IActionResult> GetTags()
+        {
+            var result = await _projectUseCase.GetAllTagsAsync();
+            return result.ToActionResult();
+        }
+
+        // --- Criteria ---
+
+        [Authorize]
+        [HttpGet("categories/{categoryId}/criteria")]
+        public async Task<IActionResult> GetCriteriaByCategory([FromRoute] Guid categoryId)
+        {
+            var result = await _projectUseCase.GetCriteriaByCategoryIdAsync(categoryId);
+            return result.ToActionResult();
+        }
+
+        // --- Criterion Scores ---
+
+        [Authorize(Roles = "Teacher,Admin")]
+        [HttpPost("{id}/scores")]
+        public async Task<IActionResult> SubmitScores([FromRoute] Guid id, [FromBody] SubmitCriterionScoresRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var scores = request.Scores.Select(s => (s.CriterionId, s.Score, s.Comment)).ToList();
+            var result = await _projectUseCase.SubmitCriterionScoresAsync(id, userId, scores);
+            return result.ToActionResult();
+        }
+
+        [Authorize]
+        [HttpGet("{id}/scores")]
+        public async Task<IActionResult> GetScores([FromRoute] Guid id)
+        {
+            var result = await _projectUseCase.GetCriterionScoresAsync(id);
             return result.ToActionResult();
         }
     }

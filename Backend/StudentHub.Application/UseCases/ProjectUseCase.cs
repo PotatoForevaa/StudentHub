@@ -1,8 +1,10 @@
 ﻿using StudentHub.Application.DTOs;
 using StudentHub.Application.DTOs.Commands;
+using Microsoft.Extensions.Logging;
 using StudentHub.Application.DTOs.Responses;
 using StudentHub.Application.Entities;
 using StudentHub.Application.Interfaces.Repositories;
+using StudentHub.Application.Interfaces.Services;
 using StudentHub.Application.Interfaces.UseCases;
 
 namespace StudentHub.Application.UseCases
@@ -11,10 +13,17 @@ namespace StudentHub.Application.UseCases
     {
         private readonly IProjectRepository _projectRepository;
         private readonly IFileStorageService _fileService;
-        public ProjectUseCase(IProjectRepository projectRepository, IFileStorageService fileService)
+        private readonly IToxicFilterService _toxicFilterService;
+        private readonly CommentSettings _commentSettings;
+        private readonly ILogger<ProjectUseCase> _logger;
+
+        public ProjectUseCase(IProjectRepository projectRepository, IFileStorageService fileService, IToxicFilterService toxicFilterService, CommentSettings commentSettings, ILogger<ProjectUseCase> logger)
         {
             _projectRepository = projectRepository;
             _fileService = fileService;
+            _toxicFilterService = toxicFilterService;
+            _commentSettings = commentSettings;
+            _logger = logger;
         }
 
         private async Task<ProjectCommentDto> ToCommentDto(Comment comment)
@@ -34,7 +43,9 @@ namespace StudentHub.Application.UseCases
                 ProjectName: comment.Project?.Name,
                 ModerationStatus: comment.ModerationStatus.ToString(),
                 ModeratedBy: comment.ModeratedBy.ToString(),
-                ReportCount: comment.Reports?.Count ?? 0
+                ReportCount: comment.Reports?.Count ?? 0,
+                AppealStatus: comment.AppealStatus.ToString(),
+                AppealMessage: comment.AppealMessage
             );
         }
 
@@ -60,6 +71,13 @@ namespace StudentHub.Application.UseCases
             var result = await _projectRepository.AddAsync(project);
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
+
+            // Add categories and tags if provided
+            if (command.CategoryIds?.Count > 0)
+                await _projectRepository.AddProjectCategoriesAsync(project.Id, command.CategoryIds);
+            if (command.TagIds?.Count > 0)
+                await _projectRepository.AddProjectTagsAsync(project.Id, command.TagIds);
+
             var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, AuthorName: value.Author.FullName, AuthorUsername: value.Author.Username, AuthorProfilePicturePath: $"api/users/by-username/{value.Author.Username}/profile-picture", CreationDate: value.CreatedAt);
             return Result<ProjectDto?>.Success(projectDto);
         }
@@ -104,6 +122,9 @@ namespace StudentHub.Application.UseCases
                 var avgRatingResult = await GetAverageRatingAsync(p.Id);
                 double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
 
+                var categories = p.ProjectCategories?.Select(pc => new CategoryDto(pc.CategoryId, pc.Category?.Name ?? "")).ToList();
+                var tags = p.ProjectTags?.Select(pt => new TagDto(pt.TagId, pt.Tag?.Name ?? "")).ToList();
+
                 var dto = new ProjectDto(
                     Name: p.Name,
                     Description: p.Description,
@@ -113,7 +134,9 @@ namespace StudentHub.Application.UseCases
                     AuthorUsername: p.Author.Username,
                     AuthorProfilePicturePath: $"api/users/by-username/{p.Author.Username}/profile-picture",
                     CreationDate: p.CreatedAt,
-                    AverageRating: avgRating
+                    AverageRating: avgRating,
+                    Categories: categories,
+                    Tags: tags
                 );
                 dtoList.Add(dto);
             }
@@ -155,6 +178,9 @@ namespace StudentHub.Application.UseCases
                 var avgRatingResult = await GetAverageRatingAsync(p.Id);
                 double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
 
+                var categories = p.ProjectCategories?.Select(pc => new CategoryDto(pc.CategoryId, pc.Category?.Name ?? "")).ToList();
+                var tags = p.ProjectTags?.Select(pt => new TagDto(pt.TagId, pt.Tag?.Name ?? "")).ToList();
+
                 var dto = new ProjectDto(
                     Name: p.Name,
                     Description: p.Description,
@@ -164,7 +190,9 @@ namespace StudentHub.Application.UseCases
                     AuthorUsername: p.Author.Username,
                     AuthorProfilePicturePath: $"api/users/by-username/{p.Author.Username}/profile-picture",
                     CreationDate: p.CreatedAt,
-                    AverageRating: avgRating
+                    AverageRating: avgRating,
+                    Categories: categories,
+                    Tags: tags
                 );
                 dtoList.Add(dto);
             }
@@ -184,6 +212,17 @@ namespace StudentHub.Application.UseCases
             var commentsResult = await GetCommentsByProjectIdAsync(id);
             List<ProjectCommentDto>? comments = commentsResult.IsSuccess ? commentsResult.Value : null;
 
+            var categories = project.ProjectCategories?.Select(pc => new CategoryDto(pc.CategoryId, pc.Category?.Name ?? "")).ToList();
+            var tags = project.ProjectTags?.Select(pt => new TagDto(pt.TagId, pt.Tag?.Name ?? "")).ToList();
+            var criterionScores = project.CriterionScores?.Select(cs => new CriterionScoreDto(
+                cs.CriterionId,
+                cs.Criterion?.Name ?? "",
+                cs.Score,
+                cs.Comment,
+                "", // TeacherName placeholder
+                cs.CreatedAt
+            )).ToList();
+
             var projectDto = new ProjectDto(
                 Id: project.Id,
                 Name: project.Name,
@@ -194,7 +233,10 @@ namespace StudentHub.Application.UseCases
                 AuthorProfilePicturePath: $"api/users/by-username/{project.Author.Username}/profile-picture",
                 CreationDate: project.CreatedAt,
                 AverageRating: avgRating,
-                Comments: comments
+                Comments: comments,
+                Categories: categories,
+                Tags: tags,
+                CriterionScores: criterionScores
             );
 
             return Result<ProjectDto?>.Success(projectDto);
@@ -240,6 +282,20 @@ namespace StudentHub.Application.UseCases
                 project.Attachments.Add(new Attachment { Path = path, Project = project });
             }
 
+            // Update categories and tags if provided
+            if (command.CategoryIds != null)
+            {
+                await _projectRepository.ClearProjectCategoriesAsync(command.ProjectId);
+                if (command.CategoryIds.Count > 0)
+                    await _projectRepository.AddProjectCategoriesAsync(command.ProjectId, command.CategoryIds);
+            }
+
+            if (command.TagIds != null)
+            {
+                await _projectRepository.ClearProjectTagsAsync(command.ProjectId);
+                if (command.TagIds.Count > 0)
+                    await _projectRepository.AddProjectTagsAsync(command.ProjectId, command.TagIds);
+            }
 
             var updateResult = await _projectRepository.UpdateAsync(project);
             if (!updateResult.IsSuccess) return Result<ProjectDto?>.Failure(updateResult.Errors);
@@ -261,25 +317,60 @@ namespace StudentHub.Application.UseCases
             if (string.IsNullOrWhiteSpace(command.Content))
                 return Result<ProjectCommentDto>.Failure("Comment content cannot be empty", "content", ErrorType.Validation);
 
+            if (command.Content.Length < _commentSettings.MinLength)
+                return Result<ProjectCommentDto>.Failure($"Comment must be at least {_commentSettings.MinLength} characters.", "content", ErrorType.Validation);
+
+            if (command.Content.Length > _commentSettings.MaxLength)
+                return Result<ProjectCommentDto>.Failure($"Comment must be at most {_commentSettings.MaxLength} characters.", "content", ErrorType.Validation);
+
             var comment = new Comment
             {
                 ProjectId = command.ProjectId,
                 AuthorId = command.AuthorId,
                 Content = command.Content,
+                CreatedAt = DateTime.UtcNow,
+                ModerationStatus = CommentModerationStatus.Pending,
+                ModeratedBy = CommentModerationOrigin.None
+            };
+
+            var saveResult = await _projectRepository.AddCommentAsync(comment);
+            if (!saveResult.IsSuccess) return Result<ProjectCommentDto>.Failure(saveResult.Errors);
+
+            var savedComment = saveResult.Value!;
+            if (savedComment.Author == null)
+                return Result<ProjectCommentDto>.Failure("Failed to load comment author", "author", ErrorType.NotFound);
+
+            var asyncResult = await _toxicFilterService.PredictAsync(command.Content, savedComment.Id);
+            if (asyncResult.IsSuccess && !string.IsNullOrWhiteSpace(asyncResult.Value))
+            {
+                savedComment.ToxicFilterTaskId = asyncResult.Value;
+                await _projectRepository.UpdateCommentAsync(savedComment);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Failed to enqueue toxic filter task for comment {CommentId}: {Errors}",
+                    savedComment.Id,
+                    string.Join("; ", asyncResult.Errors.Select(e => e.Message)));
+            }
+
+            var commentDto = await ToCommentDto(savedComment);
+            return Result<ProjectCommentDto>.Success(commentDto);
+        }
+
+        public async Task<Result> ReportCommentAsync(Guid commentId, Guid reporterId)
+        {
+            var report = new CommentReport
+            {
+                CommentId = commentId,
+                ReporterId = reporterId,
                 CreatedAt = DateTime.UtcNow
             };
 
-            var result = await _projectRepository.AddCommentAsync(comment);
-            if (!result.IsSuccess) return Result<ProjectCommentDto>.Failure(result.Errors);
+            var result = await _projectRepository.AddCommentReportAsync(report);
+            if (!result.IsSuccess) return Result.Failure(result.Errors, result.ErrorType);
 
-            var commentEntity = result.Value;
-
-            if (commentEntity.Author == null)
-                return Result<ProjectCommentDto>.Failure("Failed to load comment author", "author", ErrorType.NotFound);
-
-            var commentDto = await ToCommentDto(commentEntity);
-
-            return Result<ProjectCommentDto>.Success(commentDto);
+            return Result.Success();
         }
 
         public async Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId)
@@ -361,9 +452,25 @@ namespace StudentHub.Application.UseCases
                     CommentModerationStatus.Toxic,
                     CommentModerationOrigin.AI);
             }
+            else if (queue == "moderator-toxic")
+            {
+                result = await _projectRepository.GetCommentsByModerationStatusAsync(
+                    CommentModerationStatus.Toxic,
+                    CommentModerationOrigin.Human,
+                    page,
+                    pageSize);
+                totalCount = await _projectRepository.CountCommentsByModerationStatusAsync(
+                    CommentModerationStatus.Toxic,
+                    CommentModerationOrigin.Human);
+            }
+            else if (queue == "appeals")
+            {
+                result = await _projectRepository.GetCommentsWithAppealPendingAsync(page, pageSize);
+                totalCount = await _projectRepository.CountCommentsWithAppealPendingAsync();
+            }
             else
             {
-                return Result<PaginatedResponse<ProjectCommentDto>>.Failure("Queue must be reported or ai-toxic", "queue", ErrorType.Validation);
+                return Result<PaginatedResponse<ProjectCommentDto>>.Failure("Queue must be reported, ai-toxic, moderator-toxic, or appeals", "queue", ErrorType.Validation);
             }
 
             if (!result.IsSuccess) return Result<PaginatedResponse<ProjectCommentDto>>.Failure(result.Errors, result.ErrorType);
@@ -406,6 +513,56 @@ namespace StudentHub.Application.UseCases
             var comment = result.Value;
             comment.ModerationStatus = CommentModerationStatus.Toxic;
             comment.ModeratedBy = CommentModerationOrigin.Human;
+
+            var updateResult = await _projectRepository.UpdateCommentAsync(comment);
+            if (!updateResult.IsSuccess) return Result<ProjectCommentDto>.Failure(updateResult.Errors, updateResult.ErrorType);
+
+            return Result<ProjectCommentDto>.Success(await ToCommentDto(comment));
+        }
+
+        public async Task<Result<ProjectCommentDto>> AppealCommentAsync(Guid commentId, Guid userId, string? message)
+        {
+            var result = await _projectRepository.GetCommentByIdAsync(commentId);
+            if (!result.IsSuccess) return Result<ProjectCommentDto>.Failure(result.Errors, result.ErrorType);
+
+            var comment = result.Value;
+            if (comment.AuthorId != userId)
+                return Result<ProjectCommentDto>.Failure("You can only appeal your own comments", "authorId", ErrorType.Unauthorized);
+
+            if (comment.ModerationStatus != CommentModerationStatus.Toxic)
+                return Result<ProjectCommentDto>.Failure("Only toxic comments can be appealed", "status", ErrorType.Validation);
+
+            if (comment.AppealStatus != CommentAppealStatus.None)
+                return Result<ProjectCommentDto>.Failure("Comment already has an appeal pending or resolved", "status", ErrorType.Conflict);
+
+            comment.AppealStatus = CommentAppealStatus.Pending;
+            comment.AppealMessage = message;
+
+            var updateResult = await _projectRepository.UpdateCommentAsync(comment);
+            if (!updateResult.IsSuccess) return Result<ProjectCommentDto>.Failure(updateResult.Errors, updateResult.ErrorType);
+
+            return Result<ProjectCommentDto>.Success(await ToCommentDto(comment));
+        }
+
+        public async Task<Result<ProjectCommentDto>> ResolveAppealAsync(Guid commentId, bool approved)
+        {
+            var result = await _projectRepository.GetCommentByIdAsync(commentId);
+            if (!result.IsSuccess) return Result<ProjectCommentDto>.Failure(result.Errors, result.ErrorType);
+
+            var comment = result.Value;
+            if (comment.AppealStatus != CommentAppealStatus.Pending)
+                return Result<ProjectCommentDto>.Failure("No pending appeal for this comment", "status", ErrorType.Validation);
+
+            if (approved)
+            {
+                comment.ModerationStatus = CommentModerationStatus.Approved;
+                comment.ModeratedBy = CommentModerationOrigin.Human;
+                comment.AppealStatus = CommentAppealStatus.Approved;
+            }
+            else
+            {
+                comment.AppealStatus = CommentAppealStatus.Rejected;
+            }
 
             var updateResult = await _projectRepository.UpdateCommentAsync(comment);
             if (!updateResult.IsSuccess) return Result<ProjectCommentDto>.Failure(updateResult.Errors, updateResult.ErrorType);
@@ -493,6 +650,138 @@ namespace StudentHub.Application.UseCases
             {
                 return await _projectRepository.GetRatingLeaderboardAsync(period, page, pageSize);
             }
+        }
+
+        // --- New methods ---
+
+        public async Task<Result<List<CategoryDto>>> GetAllCategoriesAsync()
+        {
+            var categories = await _projectRepository.GetAllCategoriesAsync();
+            var dtos = categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList();
+            return Result<List<CategoryDto>>.Success(dtos);
+        }
+
+        public async Task<Result<CategoryDto>> CreateCategoryAsync(string name)
+        {
+            var category = new Category { Name = name };
+            var result = await _projectRepository.CreateCategoryAsync(category);
+            return Result<CategoryDto>.Success(new CategoryDto(result.Id, result.Name));
+        }
+
+        public async Task<Result> DeleteCategoryAsync(Guid id)
+        {
+            await _projectRepository.DeleteCategoryAsync(id);
+            return Result.Success();
+        }
+
+        public async Task<Result<List<TagDto>>> GetAllTagsAsync()
+        {
+            var tags = await _projectRepository.GetAllTagsAsync();
+            var dtos = tags.Select(t => new TagDto(t.Id, t.Name)).ToList();
+            return Result<List<TagDto>>.Success(dtos);
+        }
+
+        public async Task<Result<TagDto>> CreateTagAsync(string name)
+        {
+            var tag = new Tag { Name = name };
+            var result = await _projectRepository.CreateTagAsync(tag);
+            return Result<TagDto>.Success(new TagDto(result.Id, result.Name));
+        }
+
+        public async Task<Result> DeleteTagAsync(Guid id)
+        {
+            await _projectRepository.DeleteTagAsync(id);
+            return Result.Success();
+        }
+
+        public async Task<Result<List<CriterionDto>>> GetCriteriaByCategoryIdAsync(Guid categoryId)
+        {
+            var criteria = await _projectRepository.GetCriteriaByCategoryIdAsync(categoryId);
+            var dtos = criteria.Select(c => new CriterionDto(c.Id, c.CategoryId, c.Category?.Name ?? "", c.Name)).ToList();
+            return Result<List<CriterionDto>>.Success(dtos);
+        }
+
+        public async Task<Result<CriterionDto>> CreateCriterionAsync(string name, Guid categoryId)
+        {
+            var category = await _projectRepository.GetCategoryByIdAsync(categoryId);
+            if (category == null)
+                return Result<CriterionDto>.Failure("Category not found", "categoryId", ErrorType.NotFound);
+
+            var criterion = new Criterion { Name = name, CategoryId = categoryId };
+            var result = await _projectRepository.CreateCriterionAsync(criterion);
+            return Result<CriterionDto>.Success(new CriterionDto(result.Id, result.CategoryId, category.Name, result.Name));
+        }
+
+        public async Task<Result> DeleteCriterionAsync(Guid id)
+        {
+            await _projectRepository.DeleteCriterionAsync(id);
+            return Result.Success();
+        }
+
+        public async Task<Result> SubmitCriterionScoresAsync(Guid projectId, Guid teacherId, List<(Guid CriterionId, int Score, string? Comment)> scores)
+        {
+            foreach (var (criterionId, score, comment) in scores)
+            {
+                var criterionScore = new CriterionScore
+                {
+                    ProjectId = projectId,
+                    CriterionId = criterionId,
+                    TeacherId = teacherId,
+                    Score = score,
+                    Comment = comment,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _projectRepository.AddCriterionScoreAsync(criterionScore);
+            }
+
+            return Result.Success();
+        }
+
+        public async Task<Result<List<CriterionScoreDto>>> GetCriterionScoresAsync(Guid projectId)
+        {
+            var scores = await _projectRepository.GetCriterionScoresByProjectIdAsync(projectId);
+            var dtos = scores.Select(s => new CriterionScoreDto(
+                s.CriterionId,
+                s.Criterion?.Name ?? "",
+                s.Score,
+                s.Comment,
+                "",
+                s.CreatedAt
+            )).ToList();
+            return Result<List<CriterionScoreDto>>.Success(dtos);
+        }
+
+        public async Task<Result<PaginatedResponse<ProjectDto>>> GetFilteredProjectsAsync(string? search, Guid? categoryId, Guid? tagId, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var (projects, totalCount) = await _projectRepository.GetFilteredProjectsAsync(search, categoryId, tagId, page, pageSize);
+            var dtos = new List<ProjectDto>();
+
+            foreach (var p in projects)
+            {
+                var avgRating = await GetAverageRatingAsync(p.Id);
+                var categories = p.ProjectCategories?.Select(pc => new CategoryDto(pc.CategoryId, pc.Category?.Name ?? "")).ToList();
+                var tags = p.ProjectTags?.Select(pt => new TagDto(pt.TagId, pt.Tag?.Name ?? "")).ToList();
+
+                dtos.Add(new ProjectDto(
+                    Id: p.Id,
+                    Name: p.Name,
+                    Description: p.Description,
+                    Files: p.Attachments.Select(a => a.Path).ToList(),
+                    AuthorName: p.Author.FullName,
+                    AuthorUsername: p.Author.Username,
+                    AuthorProfilePicturePath: $"api/users/by-username/{p.Author.Username}/profile-picture",
+                    CreationDate: p.CreatedAt,
+                    AverageRating: avgRating.IsSuccess ? avgRating.Value : null,
+                    Categories: categories,
+                    Tags: tags
+                ));
+            }
+
+            return Result<PaginatedResponse<ProjectDto>>.Success(new PaginatedResponse<ProjectDto>(
+                dtos, page, pageSize, totalCount, (int)Math.Ceiling(totalCount / (double)pageSize)));
         }
     }
 }

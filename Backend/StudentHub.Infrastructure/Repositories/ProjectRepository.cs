@@ -45,8 +45,8 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<List<Project>>> GetAllAsync(int page = 0, int pageSize = 0)
         {
             var projects = page == 0 && pageSize == 0
-                ? await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).OrderByDescending(p => p.CreatedAt).ToListAsync()
-                : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Attachments).Include(p => p.Author).ToListAsync();
+                ? await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category).Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag).OrderByDescending(p => p.CreatedAt).ToListAsync()
+                : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Attachments).Include(p => p.Author).Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category).Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag).ToListAsync();
             return Result<List<Project>>.Success(projects);
         }
 
@@ -85,6 +85,8 @@ namespace StudentHub.Infrastructure.Repositories
                 .Where(p => p.AuthorId == authorId)
                 .Include(p => p.Attachments)
                 .Include(p => p.Author)
+                .Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category)
+                .Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
             return Result<List<Project>>.Success(projects);
@@ -92,7 +94,13 @@ namespace StudentHub.Infrastructure.Repositories
 
         public async Task<Result<Project?>> GetByIdAsync(Guid id)
         {
-            var project = await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _dbContext.Projects
+                .Include(p => p.Attachments)
+                .Include(p => p.Author)
+                .Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category)
+                .Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag)
+                .Include(p => p.CriterionScores).ThenInclude(cs => cs.Criterion)
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (project == null) return Result<Project?>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             return Result<Project?>.Success(project);
         }
@@ -277,8 +285,7 @@ namespace StudentHub.Infrastructure.Repositories
                 .Include(c => c.Project)
                 .Include(c => c.Reports)
                 .Where(c => c.Reports.Any())
-                .OrderByDescending(c => c.Reports.Count)
-                .ThenByDescending(c => c.CreatedAt);
+                .OrderByDescending(c => c.CreatedAt);
 
             var comments = page <= 0 || pageSize <= 0
                 ? await query.ToListAsync()
@@ -474,6 +481,213 @@ namespace StudentHub.Infrastructure.Repositories
                 .ToList();
 
             return Result<List<LeaderboardUserDto>>.Success(leaderboard);
+        }
+
+        public async Task<Result<List<Comment>>> GetCommentsWithAppealPendingAsync(int page = 1, int pageSize = 20)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var comments = await _dbContext.Comments
+                .Include(c => c.Author)
+                .Include(c => c.Project)
+                .Include(c => c.Reports)
+                .Where(c => c.AppealStatus == CommentAppealStatus.Pending)
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Result<List<Comment>>.Success(comments);
+        }
+
+        public async Task<int> CountCommentsWithAppealPendingAsync()
+        {
+            return await _dbContext.Comments.CountAsync(c => c.AppealStatus == CommentAppealStatus.Pending);
+        }
+
+        // --- New methods for Categories, Tags, Criteria, CriterionScores, Filtering ---
+
+        public async Task<List<Category>> GetAllCategoriesAsync()
+        {
+            return await _dbContext.Categories.ToListAsync();
+        }
+
+        public async Task<Category?> GetCategoryByIdAsync(Guid id)
+        {
+            return await _dbContext.Categories.Include(c => c.Criteria).FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<Category> CreateCategoryAsync(Category category)
+        {
+            _dbContext.Categories.Add(category);
+            await _dbContext.SaveChangesAsync();
+            return category;
+        }
+
+        public async Task DeleteCategoryAsync(Guid id)
+        {
+            var category = await _dbContext.Categories.FindAsync(id);
+            if (category != null)
+            {
+                _dbContext.Categories.Remove(category);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<Tag>> GetAllTagsAsync()
+        {
+            return await _dbContext.Tags.ToListAsync();
+        }
+
+        public async Task<Tag?> GetTagByIdAsync(Guid id)
+        {
+            return await _dbContext.Tags.FindAsync(id);
+        }
+
+        public async Task<Tag> CreateTagAsync(Tag tag)
+        {
+            _dbContext.Tags.Add(tag);
+            await _dbContext.SaveChangesAsync();
+            return tag;
+        }
+
+        public async Task DeleteTagAsync(Guid id)
+        {
+            var tag = await _dbContext.Tags.FindAsync(id);
+            if (tag != null)
+            {
+                _dbContext.Tags.Remove(tag);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<Criterion>> GetCriteriaByCategoryIdAsync(Guid categoryId)
+        {
+            return await _dbContext.Criteria
+                .Include(c => c.Category)
+                .Where(c => c.CategoryId == categoryId)
+                .ToListAsync();
+        }
+
+        public async Task<Criterion?> GetCriterionByIdAsync(Guid id)
+        {
+            return await _dbContext.Criteria.Include(c => c.Category).FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<Criterion> CreateCriterionAsync(Criterion criterion)
+        {
+            _dbContext.Criteria.Add(criterion);
+            await _dbContext.SaveChangesAsync();
+            return criterion;
+        }
+
+        public async Task DeleteCriterionAsync(Guid id)
+        {
+            var criterion = await _dbContext.Criteria.FindAsync(id);
+            if (criterion != null)
+            {
+                _dbContext.Criteria.Remove(criterion);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<CriterionScore> AddCriterionScoreAsync(CriterionScore score)
+        {
+            _dbContext.CriterionScores.Add(score);
+            await _dbContext.SaveChangesAsync();
+            return score;
+        }
+
+        public async Task<List<CriterionScore>> GetCriterionScoresByProjectIdAsync(Guid projectId)
+        {
+            return await _dbContext.CriterionScores
+                .Include(cs => cs.Criterion)
+                .Where(cs => cs.ProjectId == projectId)
+                .ToListAsync();
+        }
+
+        public async Task<List<CriterionScore>> GetCriterionScoresByProjectAndTeacherAsync(Guid projectId, Guid teacherId)
+        {
+            return await _dbContext.CriterionScores
+                .Include(cs => cs.Criterion)
+                .Where(cs => cs.ProjectId == projectId && cs.TeacherId == teacherId)
+                .ToListAsync();
+        }
+
+        public async Task<(List<Project> Projects, int TotalCount)> GetFilteredProjectsAsync(string? search, Guid? categoryId, Guid? tagId, int page, int pageSize)
+        {
+            var query = _dbContext.Projects
+                .Include(p => p.Author)
+                .Include(p => p.Attachments)
+                .Include(p => p.ProjectCategories)
+                    .ThenInclude(pc => pc.Category)
+                .Include(p => p.ProjectTags)
+                    .ThenInclude(pt => pt.Tag)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToUpper();
+                query = query.Where(p =>
+                    p.Name.ToUpper().Contains(term) ||
+                    p.Description.ToUpper().Contains(term) ||
+                    p.Author.Username.ToUpper().Contains(term) ||
+                    p.Author.FullName.ToUpper().Contains(term));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.ProjectCategories.Any(pc => pc.CategoryId == categoryId.Value));
+            }
+
+            if (tagId.HasValue)
+            {
+                query = query.Where(p => p.ProjectTags.Any(pt => pt.TagId == tagId.Value));
+            }
+
+            var total = await query.CountAsync();
+            var projects = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (projects, total);
+        }
+
+        public async Task AddProjectCategoriesAsync(Guid projectId, List<Guid> categoryIds)
+        {
+            var categories = await _dbContext.Categories.Where(c => categoryIds.Contains(c.Id)).ToListAsync();
+            foreach (var category in categories)
+            {
+                _dbContext.ProjectCategories.Add(new ProjectCategory { ProjectId = projectId, CategoryId = category.Id });
+            }
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task AddProjectTagsAsync(Guid projectId, List<Guid> tagIds)
+        {
+            var tags = await _dbContext.Tags.Where(t => tagIds.Contains(t.Id)).ToListAsync();
+            foreach (var tag in tags)
+            {
+                _dbContext.ProjectTags.Add(new ProjectTag { ProjectId = projectId, TagId = tag.Id });
+            }
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task ClearProjectCategoriesAsync(Guid projectId)
+        {
+            var existing = await _dbContext.ProjectCategories.Where(pc => pc.ProjectId == projectId).ToListAsync();
+            _dbContext.ProjectCategories.RemoveRange(existing);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task ClearProjectTagsAsync(Guid projectId)
+        {
+            var existing = await _dbContext.ProjectTags.Where(pt => pt.ProjectId == projectId).ToListAsync();
+            _dbContext.ProjectTags.RemoveRange(existing);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

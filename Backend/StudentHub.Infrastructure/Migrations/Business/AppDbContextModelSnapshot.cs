@@ -43,11 +43,32 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.ToTable("Attachments", "Business");
                 });
 
+            modelBuilder.Entity("StudentHub.Application.Entities.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories", "Business");
+                });
+
             modelBuilder.Entity("StudentHub.Application.Entities.Comment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("AppealMessage")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AppealStatus")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("AuthorId")
                         .HasColumnType("uuid");
@@ -59,6 +80,9 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("LastEditedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("ModeratedBy")
                         .HasColumnType("integer");
 
@@ -67,6 +91,9 @@ namespace StudentHub.Infrastructure.Migrations.Business
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ToxicFilterTaskId")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -101,6 +128,59 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.ToTable("CommentReports", "Business");
                 });
 
+            modelBuilder.Entity("StudentHub.Application.Entities.Criterion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Criteria", "Business");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.CriterionScore", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CriterionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CriterionId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("CriterionScores", "Business");
+                });
+
             modelBuilder.Entity("StudentHub.Application.Entities.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -131,6 +211,36 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.ToTable("Projects", "Business");
                 });
 
+            modelBuilder.Entity("StudentHub.Application.Entities.ProjectCategory", b =>
+                {
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ProjectId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("ProjectCategories", "Business");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.ProjectTag", b =>
+                {
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ProjectId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("ProjectTags", "Business");
+                });
+
             modelBuilder.Entity("StudentHub.Application.Entities.Rating", b =>
                 {
                     b.Property<Guid>("Id")
@@ -154,6 +264,21 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Ratings", "Business");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags", "Business");
                 });
 
             modelBuilder.Entity("StudentHub.Application.Entities.User", b =>
@@ -180,6 +305,37 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.HasKey("Id");
 
                     b.ToTable("Users", "Business");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.UserMute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MutedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("MutedUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MutedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserMutes", "Business");
                 });
 
             modelBuilder.Entity("StudentHub.Application.Entities.Attachment", b =>
@@ -231,6 +387,36 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.Navigation("Reporter");
                 });
 
+            modelBuilder.Entity("StudentHub.Application.Entities.Criterion", b =>
+                {
+                    b.HasOne("StudentHub.Application.Entities.Category", "Category")
+                        .WithMany("Criteria")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.CriterionScore", b =>
+                {
+                    b.HasOne("StudentHub.Application.Entities.Criterion", "Criterion")
+                        .WithMany("Scores")
+                        .HasForeignKey("CriterionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentHub.Application.Entities.Project", "Project")
+                        .WithMany("CriterionScores")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Criterion");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("StudentHub.Application.Entities.Project", b =>
                 {
                     b.HasOne("StudentHub.Application.Entities.User", "Author")
@@ -240,6 +426,44 @@ namespace StudentHub.Infrastructure.Migrations.Business
                         .IsRequired();
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.ProjectCategory", b =>
+                {
+                    b.HasOne("StudentHub.Application.Entities.Category", "Category")
+                        .WithMany("ProjectCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentHub.Application.Entities.Project", "Project")
+                        .WithMany("ProjectCategories")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.ProjectTag", b =>
+                {
+                    b.HasOne("StudentHub.Application.Entities.Project", "Project")
+                        .WithMany("ProjectTags")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentHub.Application.Entities.Tag", "Tag")
+                        .WithMany("ProjectTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("StudentHub.Application.Entities.Rating", b =>
@@ -253,9 +477,40 @@ namespace StudentHub.Infrastructure.Migrations.Business
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("StudentHub.Application.Entities.UserMute", b =>
+                {
+                    b.HasOne("StudentHub.Application.Entities.User", "MutedByUser")
+                        .WithMany()
+                        .HasForeignKey("MutedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentHub.Application.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MutedByUser");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.Category", b =>
+                {
+                    b.Navigation("Criteria");
+
+                    b.Navigation("ProjectCategories");
+                });
+
             modelBuilder.Entity("StudentHub.Application.Entities.Comment", b =>
                 {
                     b.Navigation("Reports");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.Criterion", b =>
+                {
+                    b.Navigation("Scores");
                 });
 
             modelBuilder.Entity("StudentHub.Application.Entities.Project", b =>
@@ -264,7 +519,18 @@ namespace StudentHub.Infrastructure.Migrations.Business
 
                     b.Navigation("Comments");
 
+                    b.Navigation("CriterionScores");
+
+                    b.Navigation("ProjectCategories");
+
+                    b.Navigation("ProjectTags");
+
                     b.Navigation("Ratings");
+                });
+
+            modelBuilder.Entity("StudentHub.Application.Entities.Tag", b =>
+                {
+                    b.Navigation("ProjectTags");
                 });
 
             modelBuilder.Entity("StudentHub.Application.Entities.User", b =>

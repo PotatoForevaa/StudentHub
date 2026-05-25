@@ -5,6 +5,7 @@ COPY *.sln .
 COPY StudentHub.Application/*.csproj ./StudentHub.Application/
 COPY StudentHub.Infrastructure/*.csproj ./StudentHub.Infrastructure/
 COPY StudentHub.Api/*.csproj ./StudentHub.Api/
+COPY StudentHub.Tests/*.csproj ./StudentHub.Tests/
 
 RUN dotnet restore
 

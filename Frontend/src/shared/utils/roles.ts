@@ -5,8 +5,8 @@ export const hasRole = (user: User | null | undefined, role: string) =>
 
 export const isAdmin = (user: User | null | undefined) => hasRole(user, "Admin");
 
-export const isModerator = (user: User | null | undefined) =>
-  hasRole(user, "Moderator");
+export const isTeacher = (user: User | null | undefined) =>
+  hasRole(user, "Teacher");
 
 export const canModerate = (user: User | null | undefined) =>
-  isAdmin(user) || isModerator(user);
+  isAdmin(user) || isTeacher(user);

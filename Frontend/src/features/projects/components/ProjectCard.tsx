@@ -42,6 +42,33 @@ const Description = styled.p`
   word-break: break-all;
 `;
 
+const TagsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing.xs};
+  margin-top: ${spacing.xs};
+`;
+
+const CategoryBadge = styled.span`
+  background: ${colors.primaryLight || '#dbeafe'};
+  color: ${colors.primaryDark || '#1e40af'};
+  font-size: ${fonts.size.xs};
+  padding: 2px ${spacing.sm};
+  border-radius: ${borderRadius.sm};
+  font-weight: ${fonts.weight.medium};
+  white-space: nowrap;
+`;
+
+const TagBadge = styled.span`
+  background: ${colors.gray100 || '#f3f4f6'};
+  color: ${colors.textSecondary};
+  font-size: ${fonts.size.xs};
+  padding: 2px ${spacing.sm};
+  border-radius: ${borderRadius.sm};
+  font-weight: ${fonts.weight.normal};
+  white-space: nowrap;
+`;
+
 const AuthorDate = styled.div`
   font-size: ${fonts.size.xs};
   color: ${colors.muted};
@@ -117,9 +144,19 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         {project.externalUrl && project.externalUrl.trim() && (
           <ExternalUrl>
             <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-              🔗 External Link: {project.externalUrl}
+              🔗 Внешняя ссылка: {project.externalUrl}
             </a>
           </ExternalUrl>
+        )}
+        {((project.categories && project.categories.length > 0) || (project.tags && project.tags.length > 0)) && (
+          <TagsRow>
+            {project.categories?.map((cat) => (
+              <CategoryBadge key={cat.id}>{cat.name}</CategoryBadge>
+            ))}
+            {project.tags?.map((tag) => (
+              <TagBadge key={tag.id}>{tag.name}</TagBadge>
+            ))}
+          </TagsRow>
         )}
         <ProjectImages
           projectId={project.id}
@@ -127,7 +164,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           maxImages={6}
         />
         <AuthorDate>
-          <AuthorLink to={`/${project.authorUsername}`} onClick={(e) => e.stopPropagation()}>
+          <AuthorLink to={`/users/${project.authorUsername}`} onClick={(e) => e.stopPropagation()}>
             <AuthorAvatar
               src={project.authorProfilePicturePath}
               alt={`${project.authorName} avatar`}
@@ -136,9 +173,9 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
                 target.src = `${API_BASE_URL}/users/by-username/admin/profile-picture`;
               }}
             />
-            {project.authorName ? project.authorName.split(' ')[0] + ' ' + project.authorName.split(' ')[1] : 'Unknown'}
+            {project.authorName || 'Неизвестно'}
           </AuthorLink>
-          <Rating>☆ {project.averageRating?.toFixed(1) ?? 'N/A'}</Rating>
+          <Rating>☆ {project.averageRating?.toFixed(1) ?? 'Н/Д'}</Rating>
           <span>{project.creationDate && formatDate(project.creationDate)}</span>
         </AuthorDate>
     </Card>

@@ -26,6 +26,12 @@ export function useProjectForm(onSuccess?: () => void) {
       if (data.externalUrl) {
         form.append('externalUrl', data.externalUrl);
       }
+      if (data.categoryIds && data.categoryIds.length > 0) {
+        data.categoryIds.forEach(id => form.append('CategoryIds', id));
+      }
+      if (data.tagIds && data.tagIds.length > 0) {
+        data.tagIds.forEach(id => form.append('TagIds', id));
+      }
       files.forEach(file => {
         form.append('files', file);
       });

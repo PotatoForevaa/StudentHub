@@ -14,6 +14,14 @@ namespace StudentHub.Application.Entities
         Human
     }
 
+    public enum CommentAppealStatus
+    {
+        None,
+        Pending,
+        Approved,
+        Rejected
+    }
+
     public class Comment
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -23,8 +31,14 @@ namespace StudentHub.Application.Entities
         public User Author { get; set; } = null!;
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? LastEditedAt { get; set; }
         public CommentModerationStatus ModerationStatus { get; set; } = CommentModerationStatus.Pending;
         public CommentModerationOrigin ModeratedBy { get; set; } = CommentModerationOrigin.None;
+        public string? ToxicFilterTaskId { get; set; }
+        public CommentAppealStatus AppealStatus { get; set; } = CommentAppealStatus.None;
+        public string? AppealMessage { get; set; }
         public List<CommentReport> Reports { get; set; } = new();
+
+        public bool IsEditable() => ModerationStatus != CommentModerationStatus.Toxic && (DateTime.UtcNow - CreatedAt).TotalMinutes <= 60;
     }
 }

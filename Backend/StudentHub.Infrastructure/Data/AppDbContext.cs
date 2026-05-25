@@ -12,6 +12,51 @@ namespace StudentHub.Infrastructure.Data
         {
             base.OnModelCreating(builder);
             builder.HasDefaultSchema("Business");
+
+            // ProjectCategory - composite PK
+            builder.Entity<ProjectCategory>()
+                .HasKey(pc => new { pc.ProjectId, pc.CategoryId });
+
+            builder.Entity<ProjectCategory>()
+                .HasOne(pc => pc.Project)
+                .WithMany(p => p.ProjectCategories)
+                .HasForeignKey(pc => pc.ProjectId);
+
+            builder.Entity<ProjectCategory>()
+                .HasOne(pc => pc.Category)
+                .WithMany(c => c.ProjectCategories)
+                .HasForeignKey(pc => pc.CategoryId);
+
+            // ProjectTag - composite PK
+            builder.Entity<ProjectTag>()
+                .HasKey(pt => new { pt.ProjectId, pt.TagId });
+
+            builder.Entity<ProjectTag>()
+                .HasOne(pt => pt.Project)
+                .WithMany(p => p.ProjectTags)
+                .HasForeignKey(pt => pt.ProjectId);
+
+            builder.Entity<ProjectTag>()
+                .HasOne(pt => pt.Tag)
+                .WithMany(t => t.ProjectTags)
+                .HasForeignKey(pt => pt.TagId);
+
+            // Criterion
+            builder.Entity<Criterion>()
+                .HasOne(c => c.Category)
+                .WithMany(cat => cat.Criteria)
+                .HasForeignKey(c => c.CategoryId);
+
+            // CriterionScore
+            builder.Entity<CriterionScore>()
+                .HasOne(cs => cs.Project)
+                .WithMany(p => p.CriterionScores)
+                .HasForeignKey(cs => cs.ProjectId);
+
+            builder.Entity<CriterionScore>()
+                .HasOne(cs => cs.Criterion)
+                .WithMany(c => c.Scores)
+                .HasForeignKey(cs => cs.CriterionId);
         }
 
         public DbSet<Project> Projects { get; set; }
@@ -20,6 +65,13 @@ namespace StudentHub.Infrastructure.Data
         public DbSet<CommentReport> CommentReports { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<UserMute> UserMutes { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<Criterion> Criteria { get; set; }
+        public DbSet<CriterionScore> CriterionScores { get; set; }
+        public DbSet<ProjectCategory> ProjectCategories { get; set; }
+        public DbSet<ProjectTag> ProjectTags { get; set; }
 
         public override int SaveChanges()
         {
