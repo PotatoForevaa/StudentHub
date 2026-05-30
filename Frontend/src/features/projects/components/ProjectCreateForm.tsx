@@ -312,7 +312,7 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
     name: '',
     description: '',
     externalUrl: '',
-    categoryIds: [],
+    categoryId: '',
     tagIds: [],
   });
   const [files, setFiles] = useState<File[]>([]);
@@ -401,13 +401,18 @@ export const ProjectCreateForm = ({ onSuccess, onCancel }: ProjectCreateFormProp
       </FieldContainer>
 
       <FieldContainer>
-        <MultiSelect
-          label="Категории"
-          options={categories}
-          selectedIds={formData.categoryIds || []}
-          onChange={(ids) => setFormData(prev => ({ ...prev, categoryIds: ids }))}
-          error={fieldErrors.categoryids}
-        />
+        <Label>Категория *</Label>
+        <Select
+          value={formData.categoryId || ""}
+          onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
+          required
+        >
+          <option value="">-- Выберите категорию --</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </Select>
+        {fieldErrors.categoryid && <FieldError message={fieldErrors.categoryid} />}
       </FieldContainer>
 
       <FieldContainer>

@@ -6,7 +6,7 @@ import { Container } from "../../../shared/components/Container";
 import { projectService } from "../services/projectService";
 import { ProjectUpdateForm } from "../components/ProjectUpdateForm";
 import { Pagination } from "../components/Pagination";
-import type { Project, Comment, CriterionDto, CategoryDto } from "../types";
+import type { Project, Comment, CriterionDto } from "../types";
 import { colors, shadows, fonts, spacing, borderRadius, transitions } from "../../../shared/styles/tokens";
 import userService from "../../../shared/services/userService";
 import { AuthContext } from "../../auth/context/AuthContext";
@@ -215,16 +215,6 @@ const TeacherScoreForm = styled.form`
   gap: ${spacing.md};
 `;
 
-const Select = styled.select`
-  padding: ${spacing.sm};
-  border: 1px solid ${colors.accentBorder};
-  border-radius: ${borderRadius.sm};
-  font-size: ${fonts.size.sm};
-  background: ${colors.white};
-  width: 100%;
-  max-width: 300px;
-`;
-
 const CriterionScoreRow = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -292,12 +282,15 @@ function ProjectDetailContent() {
 
   // Teacher scoring state
   const [isTeacherUser, setIsTeacherUser] = useState(false);
-  const [categories, setCategories] = useState<CategoryDto[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [teacherCategoryId, setTeacherCategoryId] = useState("");
+  const [teacherCategoryName, setTeacherCategoryName] = useState("");
   const [criteria, setCriteria] = useState<CriterionDto[]>([]);
   const [scores, setScores] = useState<Record<string, { score: number; comment: string }>>({});
   const [submittingScores, setSubmittingScores] = useState(false);
   const [criterionScores, setCriterionScores] = useState<Project['criterionScores']>([]);
+
+  // For the score table category column - we now use categoryName from the backend DTO
+  // (the CriterionScoreDto now includes categoryName)
 
   const loadProject = useCallback(async () => {
     try {
@@ -344,24 +337,21 @@ function ProjectDetailContent() {
     }
   }, [id, loadProject, loadImageList, loadComments]);
 
-  // Load categories for teacher form
+  // Auto-detect category from the project (project now has exactly 1 category)
   useEffect(() => {
-    if (id && isTeacherUser) {
-      projectService.getCategories().then(result => {
-        if (result.isSuccess && result.data) {
-          setCategories(result.data);
-        }
-      });
+    if (project && project.categories && project.categories.length > 0) {
+      const cat = project.categories[0];
+      setTeacherCategoryId(cat.id);
+      setTeacherCategoryName(cat.name);
     }
-  }, [id, isTeacherUser]);
+  }, [project]);
 
-  // Load criteria when category changes
+  // Load criteria when category is detected from project
   useEffect(() => {
-    if (selectedCategoryId) {
-      projectService.getCriteriaByCategory(selectedCategoryId).then(result => {
+    if (teacherCategoryId) {
+      projectService.getCriteriaByCategory(teacherCategoryId).then(result => {
         if (result.isSuccess && result.data) {
           setCriteria(result.data);
-          // Reset scores when category changes
           setScores({});
         }
       });
@@ -369,7 +359,7 @@ function ProjectDetailContent() {
       setCriteria([]);
       setScores({});
     }
-  }, [selectedCategoryId]);
+  }, [teacherCategoryId]);
 
   useEffect(() => {
     if (user) {
@@ -462,7 +452,7 @@ function ProjectDetailContent() {
 
   const handleSubmitCriterionScores = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id || !selectedCategoryId) return;
+    if (!id || !teacherCategoryId) return;
 
     const scoresData = criteria
       .filter(c => scores[c.id] && scores[c.id].score > 0)
@@ -482,7 +472,6 @@ function ProjectDetailContent() {
       const result = await projectService.submitScores(id, { scores: scoresData });
       if (result.isSuccess) {
         await loadProject();
-        setSelectedCategoryId("");
         setScores({});
         alert('Оценки успешно сохранены');
       } else {
@@ -642,7 +631,7 @@ function ProjectDetailContent() {
                 {criterionScores.map((cs, idx) => (
                   <tr key={idx}>
                     <ScoreTd>{cs.criterionName}</ScoreTd>
-                    <ScoreTd>{cs.criterionName ? (criteria.find(c => c.id === cs.criterionId)?.categoryName || '') : ''}</ScoreTd>
+                    <ScoreTd>{cs.categoryName || ''}</ScoreTd>
                     <ScoreTd><ScoreValue>{cs.score}/10</ScoreValue></ScoreTd>
                     <ScoreTd>{cs.comment || '—'}</ScoreTd>
                     <ScoreTd>{cs.teacherName}</ScoreTd>
@@ -660,49 +649,50 @@ function ProjectDetailContent() {
         {isTeacherUser && (
           <CriteriaScoreSection>
             <SectionTitle>Выставить оценки</SectionTitle>
-            <TeacherScoreForm onSubmit={handleSubmitCriterionScores}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: colors.textSecondary, fontWeight: 500 }}>
-                  Выберите категорию
-                </label>
-                <Select value={selectedCategoryId} onChange={e => setSelectedCategoryId(e.target.value)}>
-                  <option value="">-- Выберите категорию --</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </Select>
-              </div>
+            {teacherCategoryId ? (
+              <TeacherScoreForm onSubmit={handleSubmitCriterionScores}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: colors.textSecondary, fontWeight: 500 }}>
+                    Категория
+                  </label>
+                  <div style={{ padding: '8px 12px', background: colors.white, border: `1px solid ${colors.accentBorder}`, borderRadius: borderRadius.sm, fontSize: fonts.size.sm, color: colors.textPrimary, maxWidth: '300px' }}>
+                    {teacherCategoryName}
+                  </div>
+                </div>
 
-              {selectedCategoryId && criteria.length === 0 && (
-                <EmptyScores>Нет критериев для выбранной категории.</EmptyScores>
-              )}
+                {criteria.length === 0 && (
+                  <EmptyScores>Нет критериев для этой категории.</EmptyScores>
+                )}
 
-              {criteria.map(criterion => (
-                <CriterionScoreRow key={criterion.id}>
-                  <CriterionName>{criterion.name}</CriterionName>
-                  <ScoreInput
-                    type="number"
-                    min={1}
-                    max={10}
-                    placeholder="1-10"
-                    value={scores[criterion.id]?.score || ''}
-                    onChange={e => handleCriterionScoreChange(criterion.id, e.target.value)}
-                  />
-                  <CommentInput
-                    type="text"
-                    placeholder="Комментарий (необязательно)"
-                    value={scores[criterion.id]?.comment || ''}
-                    onChange={e => handleCriterionCommentChange(criterion.id, e.target.value)}
-                  />
-                </CriterionScoreRow>
-              ))}
+                {criteria.map(criterion => (
+                  <CriterionScoreRow key={criterion.id}>
+                    <CriterionName>{criterion.name}</CriterionName>
+                    <ScoreInput
+                      type="number"
+                      min={1}
+                      max={10}
+                      placeholder="1-10"
+                      value={scores[criterion.id]?.score || ''}
+                      onChange={e => handleCriterionScoreChange(criterion.id, e.target.value)}
+                    />
+                    <CommentInput
+                      type="text"
+                      placeholder="Комментарий (необязательно)"
+                      value={scores[criterion.id]?.comment || ''}
+                      onChange={e => handleCriterionCommentChange(criterion.id, e.target.value)}
+                    />
+                  </CriterionScoreRow>
+                ))}
 
-              {selectedCategoryId && criteria.length > 0 && (
-                <Button type="submit" disabled={submittingScores}>
-                  {submittingScores ? 'Сохранение...' : 'Сохранить оценки'}
-                </Button>
-              )}
-            </TeacherScoreForm>
+                {criteria.length > 0 && (
+                  <Button type="submit" disabled={submittingScores}>
+                    {submittingScores ? 'Сохранение...' : 'Сохранить оценки'}
+                  </Button>
+                )}
+              </TeacherScoreForm>
+            ) : (
+              <EmptyScores>У проекта нет категории, по которой можно выставить оценки.</EmptyScores>
+            )}
           </CriteriaScoreSection>
         )}
 

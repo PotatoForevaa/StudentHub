@@ -7,7 +7,7 @@ namespace StudentHub.Application.DTOs.Commands
         string Description,
         string? ExternalUrl,
         List<Stream>? Files,
-        List<Guid>? CategoryIds = null,
+        Guid? CategoryId = null,
         List<Guid>? TagIds = null
     );
 }

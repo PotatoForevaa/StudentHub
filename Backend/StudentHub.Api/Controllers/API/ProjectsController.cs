@@ -67,7 +67,7 @@ namespace StudentHub.Api.Controllers.API
                 AuthorId: userId,
                 Files: request.Files?.Select(f => f.OpenReadStream()).ToList(),
                 Url: request.ExternalUrl,
-                CategoryIds: request.CategoryIds,
+                CategoryId: request.CategoryId,
                 TagIds: request.TagIds
                 );
 
@@ -88,7 +88,7 @@ namespace StudentHub.Api.Controllers.API
                 Description: request.Description,
                 ExternalUrl: request.ExternalUrl,
                 Files: request.Files?.Select(f => f.OpenReadStream()).ToList(),
-                CategoryIds: request.CategoryIds,
+                CategoryId: request.CategoryId,
                 TagIds: request.TagIds
             );
 

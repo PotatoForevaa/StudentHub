@@ -35,6 +35,7 @@ export type CriterionDto = {
 export type CriterionScoreDto = {
     criterionId: string;
     criterionName: string;
+    categoryName?: string;
     score: number;
     comment?: string;
     teacherName: string;
@@ -67,7 +68,7 @@ export type ProjectFormData = {
     name: string;
     description: string;
     externalUrl: string;
-    categoryIds?: string[];
+    categoryId?: string;
     tagIds?: string[];
 }
 
@@ -80,7 +81,7 @@ export type UpdateProjectFormData = {
     description: string;
     externalUrl?: string;
     base64Images?: string[];
-    categoryIds?: string[];
+    categoryId?: string;
     tagIds?: string[];
 }
 

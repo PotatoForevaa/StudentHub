@@ -59,6 +59,21 @@ const Textarea = styled.textarea`
   &:focus { box-shadow: 0 8px 30px rgba(37,99,235,0.08); border-color: ${colors.primaryDark} }
 `;
 
+const Select = styled.select`
+  background: ${colors.white};
+  width: 100%;
+  border-radius: ${borderRadius.md};
+  height: 44px;
+  font-size: ${fonts.size.base};
+  border: 1px solid ${colors.accentBorderDark};
+  padding: 0 0 0 ${spacing.md};
+  outline: none;
+  cursor: pointer;
+  transition: box-shadow ${transitions.fast}, border-color ${transitions.fast};
+
+  &:focus { box-shadow: 0 8px 30px rgba(37,99,235,0.08); border-color: ${colors.primaryDark} }
+`;
+
 const FileInput = styled.input`
   background: ${colors.white};
   width: 100%;
@@ -297,7 +312,7 @@ export const ProjectUpdateForm = ({ project, onSuccess, onCancel }: ProjectUpdat
     name: project.name || '',
     description: project.description || '',
     externalUrl: project.externalUrl || '',
-    categoryIds: project.categories?.map(c => c.id) || [],
+    categoryId: project.categories?.[0]?.id || '',
     tagIds: project.tags?.map(t => t.id) || [],
   });
   const [files, setFiles] = useState<File[]>([]);
@@ -358,8 +373,8 @@ export const ProjectUpdateForm = ({ project, onSuccess, onCancel }: ProjectUpdat
       if (formData.externalUrl) {
         form.append('externalUrl', formData.externalUrl);
       }
-      if (formData.categoryIds && formData.categoryIds.length > 0) {
-        formData.categoryIds.forEach(id => form.append('CategoryIds', id));
+      if (formData.categoryId) {
+        form.append('CategoryId', formData.categoryId);
       }
       if (formData.tagIds && formData.tagIds.length > 0) {
         formData.tagIds.forEach(id => form.append('TagIds', id));
@@ -432,13 +447,18 @@ export const ProjectUpdateForm = ({ project, onSuccess, onCancel }: ProjectUpdat
       </FieldContainer>
 
       <FieldContainer>
-        <MultiSelect
-          label="Категории"
-          options={categories}
-          selectedIds={formData.categoryIds}
-          onChange={(ids) => setFormData(prev => ({ ...prev, categoryIds: ids }))}
-          error={fieldErrors.categoryids}
-        />
+        <Label>Категория *</Label>
+        <Select
+          value={formData.categoryId || ""}
+          onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
+          required
+        >
+          <option value="">-- Выберите категорию --</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </Select>
+        {fieldErrors.categoryid && <FieldError message={fieldErrors.categoryid} />}
       </FieldContainer>
 
       <FieldContainer>

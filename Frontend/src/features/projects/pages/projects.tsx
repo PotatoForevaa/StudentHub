@@ -232,7 +232,7 @@ const Projects = () => {
         <FilterGroup>
           <FilterLabel>Категория</FilterLabel>
           <Select
-            value=""
+            value={selectedCategoryId || ""}
             onChange={(e) => setSelectedCategoryId(e.target.value || undefined)}
           >
             <option value="">Все категории</option>
@@ -245,7 +245,7 @@ const Projects = () => {
         <FilterGroup>
           <FilterLabel>Тег</FilterLabel>
           <Select
-            value=""
+            value={selectedTagId || ""}
             onChange={(e) => setSelectedTagId(e.target.value || undefined)}
           >
             <option value="">Все теги</option>

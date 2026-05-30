@@ -100,6 +100,7 @@ namespace StudentHub.Infrastructure.Repositories
                 .Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category)
                 .Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag)
                 .Include(p => p.CriterionScores).ThenInclude(cs => cs.Criterion)
+                .Include(p => p.CriterionScores).ThenInclude(cs => cs.Teacher)
                 .FirstOrDefaultAsync(p => p.Id == id);
             if (project == null) return Result<Project?>.Failure($"Проект {id} не найден", "id", ErrorType.NotFound);
             return Result<Project?>.Success(project);
@@ -603,6 +604,8 @@ namespace StudentHub.Infrastructure.Repositories
         {
             return await _dbContext.CriterionScores
                 .Include(cs => cs.Criterion)
+                    .ThenInclude(c => c.Category)
+                .Include(cs => cs.Teacher)
                 .Where(cs => cs.ProjectId == projectId)
                 .ToListAsync();
         }
@@ -611,6 +614,8 @@ namespace StudentHub.Infrastructure.Repositories
         {
             return await _dbContext.CriterionScores
                 .Include(cs => cs.Criterion)
+                    .ThenInclude(c => c.Category)
+                .Include(cs => cs.Teacher)
                 .Where(cs => cs.ProjectId == projectId && cs.TeacherId == teacherId)
                 .ToListAsync();
         }

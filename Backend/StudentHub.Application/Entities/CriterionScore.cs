@@ -8,6 +8,7 @@ namespace StudentHub.Application.Entities
         public Guid CriterionId { get; set; }
         public Criterion Criterion { get; set; } = null!;
         public Guid TeacherId { get; set; }
+        public User Teacher { get; set; } = null!;
         public int Score { get; set; }
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

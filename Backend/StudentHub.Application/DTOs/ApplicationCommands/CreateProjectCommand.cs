@@ -6,6 +6,6 @@
         Guid AuthorId,
         List<Stream>? Files,
         string? Url,
-        List<Guid>? CategoryIds = null,
+        Guid? CategoryId = null,
         List<Guid>? TagIds = null);
 }

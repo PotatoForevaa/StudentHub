@@ -72,9 +72,9 @@ namespace StudentHub.Application.UseCases
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
 
-            // Add categories and tags if provided
-            if (command.CategoryIds?.Count > 0)
-                await _projectRepository.AddProjectCategoriesAsync(project.Id, command.CategoryIds);
+            // Add category and tags if provided
+            if (command.CategoryId.HasValue)
+                await _projectRepository.AddProjectCategoriesAsync(project.Id, new List<Guid> { command.CategoryId.Value });
             if (command.TagIds?.Count > 0)
                 await _projectRepository.AddProjectTagsAsync(project.Id, command.TagIds);
 
@@ -217,9 +217,10 @@ namespace StudentHub.Application.UseCases
             var criterionScores = project.CriterionScores?.Select(cs => new CriterionScoreDto(
                 cs.CriterionId,
                 cs.Criterion?.Name ?? "",
+                cs.Criterion?.Category?.Name ?? "",
                 cs.Score,
                 cs.Comment,
-                "", // TeacherName placeholder
+                cs.Teacher?.FullName ?? "",
                 cs.CreatedAt
             )).ToList();
 
@@ -282,12 +283,11 @@ namespace StudentHub.Application.UseCases
                 project.Attachments.Add(new Attachment { Path = path, Project = project });
             }
 
-            // Update categories and tags if provided
-            if (command.CategoryIds != null)
+            // Update category and tags if provided
+            if (command.CategoryId.HasValue)
             {
                 await _projectRepository.ClearProjectCategoriesAsync(command.ProjectId);
-                if (command.CategoryIds.Count > 0)
-                    await _projectRepository.AddProjectCategoriesAsync(command.ProjectId, command.CategoryIds);
+                await _projectRepository.AddProjectCategoriesAsync(command.ProjectId, new List<Guid> { command.CategoryId.Value });
             }
 
             if (command.TagIds != null)
@@ -743,9 +743,10 @@ namespace StudentHub.Application.UseCases
             var dtos = scores.Select(s => new CriterionScoreDto(
                 s.CriterionId,
                 s.Criterion?.Name ?? "",
+                s.Criterion?.Category?.Name ?? "",
                 s.Score,
                 s.Comment,
-                "",
+                s.Teacher?.FullName ?? "",
                 s.CreatedAt
             )).ToList();
             return Result<List<CriterionScoreDto>>.Success(dtos);
