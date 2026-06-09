@@ -12,12 +12,17 @@ export interface UseProfileReturn {
 }
 
 export function useProfile(username?: string): UseProfileReturn {
-  const { user: currentUser, picture } = useContext(AuthContext);
+  const { user: currentUser, picture: authPicture } = useContext(AuthContext);
+
   const [targetUser, setTargetUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [targetPicture, setTargetPicture] = useState<string | null>(null);
   const [pictureLoading, setPictureLoading] = useState(false);
+
+  const isOwnProfile =
+    !!currentUser && !!username && currentUser.username === username;
 
   useEffect(() => {
     setLoading(true);
@@ -37,8 +42,8 @@ export function useProfile(username?: string): UseProfileReturn {
               setTargetUser(null);
             }
           })
-          .catch(error => {
-            console.error('Failed to fetch user data:', error);
+          .catch(err => {
+            console.error('Failed to fetch user data:', err);
             setError('Ошибка загрузки профиля');
             setTargetUser(null);
           })
@@ -54,37 +59,41 @@ export function useProfile(username?: string): UseProfileReturn {
 
   const user = targetUser;
 
-
   useEffect(() => {
-    if (user && user !== currentUser) {
-      setPictureLoading(true);
-      userService.getProfilePicture(user.username)
-        .then(response => {
-          if (response.ok) {
-            response.blob().then(blob => {
-              const url = URL.createObjectURL(blob);
-              setTargetPicture(url);
-            });
-          } else {
-            setTargetPicture(null);
-          }
-        })
-        .catch(error => {
-          console.error('Failed to fetch profile picture', error);
-          setTargetPicture(null);
-        })
-        .finally(() => {
-          setPictureLoading(false);
-        });
-    } else {
+    if (!user) return;
+
+    if (isOwnProfile) {
       setTargetPicture(null);
       setPictureLoading(false);
+      return;
     }
-  }, [user, currentUser]);
+
+    setPictureLoading(true);
+
+    userService.getProfilePicture(user.username)
+      .then(response => {
+        if (response.ok) {
+          return response.blob();
+        }
+        throw new Error('No picture');
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        setTargetPicture(url);
+      })
+      .catch(err => {
+        console.error('Failed to fetch profile picture', err);
+        setTargetPicture(null);
+      })
+      .finally(() => {
+        setPictureLoading(false);
+      });
+
+  }, [user, isOwnProfile]);
 
   return {
     user,
-    picture: user === currentUser ? (picture || null) : targetPicture,
+    picture: isOwnProfile ? (authPicture || null) : targetPicture,
     loading,
     error,
     pictureLoading
