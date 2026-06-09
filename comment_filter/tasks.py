@@ -17,7 +17,6 @@ def toxic_task(self, text: str, comment_id: str | None = None):
         result = r.json()
     except requests.RequestException as exc:
         LOGGER.exception("Model request failed")
-        # Let Celery record the exception as task failure
         raise
 
     return {"comment_id": comment_id, "result": result}

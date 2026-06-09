@@ -140,7 +140,7 @@ const PageButton = styled.button`
   cursor: pointer;
 
   &:hover {
-    border-color: ${colors.primary};
+    border-color: ${colors.primary};f
   }
 
   &:disabled {

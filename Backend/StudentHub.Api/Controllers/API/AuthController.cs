@@ -95,7 +95,10 @@ namespace StudentHub.Api.Controllers.API
             }
             else
             {
-                return Unauthorized(new ApiResponse<StudentHub.Application.DTOs.Responses.UserDto> { IsSuccess = false, Errors = result.Errors.Select(e => new ApiError { Message = e.Message, Field = e.Field }).ToList(), ErrorType = result.ErrorType.ToString() });
+                return Unauthorized(new ApiResponse<StudentHub.Application.DTOs.Responses.UserDto> {
+                    IsSuccess = false, 
+                    Errors = result.Errors.Select(e => new ApiError { Message = e.Message, Field = e.Field }).ToList(), 
+                    ErrorType = result.ErrorType.ToString() });
             }
         }
 

@@ -17,8 +17,8 @@ namespace StudentHub.Application.Interfaces.Repositories
         Task<Result<double>> AddRatingAsync(Rating rating);
         Task<Result<double>> GetAverageRatingAsync(Guid projectId);
         Task<Result<Comment>> AddCommentAsync(Comment comment);
-        Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId, int page = 0, int pageSize = 0, bool onlyApproved = true);
-        Task<int> CountCommentsByProjectIdAsync(Guid projectId, bool onlyApproved = true);
+        Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId, int page = 0, int pageSize = 0, bool onlyApproved = true, Guid? currentUserId = null);
+        Task<int> CountCommentsByProjectIdAsync(Guid projectId, bool onlyApproved = true, Guid? currentUserId = null);
         Task<Result<List<Comment>>> GetCommentsByAuthorIdAsync(Guid authorId, int page = 0, int pageSize = 0, bool onlyApproved = true);
         Task<Result<List<Comment>>> GetCommentsByModerationStatusAsync(CommentModerationStatus status, CommentModerationOrigin? origin = null, int page = 0, int pageSize = 0);
         Task<int> CountCommentsByModerationStatusAsync(CommentModerationStatus status, CommentModerationOrigin? origin = null);

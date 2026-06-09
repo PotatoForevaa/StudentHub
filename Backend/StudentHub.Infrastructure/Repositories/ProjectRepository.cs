@@ -45,8 +45,24 @@ namespace StudentHub.Infrastructure.Repositories
         public async Task<Result<List<Project>>> GetAllAsync(int page = 0, int pageSize = 0)
         {
             var projects = page == 0 && pageSize == 0
-                ? await _dbContext.Projects.Include(p => p.Attachments).Include(p => p.Author).Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category).Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag).OrderByDescending(p => p.CreatedAt).ToListAsync()
-                : await _dbContext.Projects.Skip((page - 1) * pageSize).Take(pageSize).Include(p => p.Attachments).Include(p => p.Author).Include(p => p.ProjectCategories).ThenInclude(pc => pc.Category).Include(p => p.ProjectTags).ThenInclude(pt => pt.Tag).ToListAsync();
+                ? await _dbContext.Projects
+                .Include(p => p.Attachments)
+                .Include(p => p.Author)
+                .Include(p => p.ProjectCategories)
+                .ThenInclude(pc => pc.Category)
+                .Include(p => p.ProjectTags)
+                .ThenInclude(pt => pt.Tag)
+                .OrderByDescending(p => p.CreatedAt).ToListAsync()
+                : await _dbContext.Projects
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(p => p.Attachments)
+                .Include(p => p.Author)
+                .Include(p => p.ProjectCategories)
+                .ThenInclude(pc => pc.Category)
+                .Include(p => p.ProjectTags)
+                .ThenInclude(pt => pt.Tag)
+                .ToListAsync();
             return Result<List<Project>>.Success(projects);
         }
 
@@ -172,7 +188,7 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<Comment>.Success(commentWithAuthor ?? comment);
         }
 
-        public async Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId, int page = 0, int pageSize = 0, bool onlyApproved = true)
+        public async Task<Result<List<Comment>>> GetCommentsByProjectIdAsync(Guid projectId, int page = 0, int pageSize = 0, bool onlyApproved = true, Guid? currentUserId = null)
         {
             var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null) return Result<List<Comment>>.Failure($"Проект {projectId} не найден", "projectId", ErrorType.NotFound);
@@ -185,8 +201,8 @@ namespace StudentHub.Infrastructure.Repositories
             if (onlyApproved)
             {
                 query = query.Where(c =>
-                    c.ModerationStatus == CommentModerationStatus.Approved &&
-                    !c.Reports.Any());
+                    c.ModerationStatus != CommentModerationStatus.Toxic ||
+                    (currentUserId != null && c.AuthorId == currentUserId.Value));
             }
 
             query = query.OrderByDescending(c => c.CreatedAt);
@@ -198,7 +214,7 @@ namespace StudentHub.Infrastructure.Repositories
             return Result<List<Comment>>.Success(comments);
         }
 
-        public async Task<int> CountCommentsByProjectIdAsync(Guid projectId, bool onlyApproved = true)
+        public async Task<int> CountCommentsByProjectIdAsync(Guid projectId, bool onlyApproved = true, Guid? currentUserId = null)
         {
             var query = _dbContext.Comments
                 .Include(c => c.Reports)
@@ -207,8 +223,8 @@ namespace StudentHub.Infrastructure.Repositories
             if (onlyApproved)
             {
                 query = query.Where(c =>
-                    c.ModerationStatus == CommentModerationStatus.Approved &&
-                    !c.Reports.Any());
+                    c.ModerationStatus != CommentModerationStatus.Toxic ||
+                    (currentUserId != null && c.AuthorId == currentUserId.Value));
             }
 
             return await query.CountAsync();

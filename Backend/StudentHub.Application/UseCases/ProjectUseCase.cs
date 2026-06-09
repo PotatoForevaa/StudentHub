@@ -72,13 +72,14 @@ namespace StudentHub.Application.UseCases
             if (!result.IsSuccess) return Result<ProjectDto?>.Failure(result.Errors);
             var value = result.Value;
 
-            // Add category and tags if provided
             if (command.CategoryId.HasValue)
                 await _projectRepository.AddProjectCategoriesAsync(project.Id, new List<Guid> { command.CategoryId.Value });
             if (command.TagIds?.Count > 0)
                 await _projectRepository.AddProjectTagsAsync(project.Id, command.TagIds);
 
-            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, filePaths, AuthorName: value.Author.FullName, AuthorUsername: value.Author.Username, AuthorProfilePicturePath: $"api/users/by-username/{value.Author.Username}/profile-picture", CreationDate: value.CreatedAt);
+            var projectDto = new ProjectDto(value.Id, value.Name, value.Description, 
+            filePaths, AuthorName: value.Author.FullName, AuthorUsername: value.Author.Username, 
+            AuthorProfilePicturePath: $"api/users/by-username/{value.Author.Username}/profile-picture", CreationDate: value.CreatedAt);
             return Result<ProjectDto?>.Success(projectDto);
         }
 
@@ -200,7 +201,7 @@ namespace StudentHub.Application.UseCases
             return Result<List<ProjectDto>>.Success(dtoList);
         }
 
-        public async Task<Result<ProjectDto?>> GetByIdAsync(Guid id)
+        public async Task<Result<ProjectDto?>> GetByIdAsync(Guid id, Guid? currentUserId = null)
         {
             var projectResult = await _projectRepository.GetByIdAsync(id);
             if (!projectResult.IsSuccess) return Result<ProjectDto?>.Failure(projectResult.Errors);
@@ -209,7 +210,7 @@ namespace StudentHub.Application.UseCases
             var avgRatingResult = await GetAverageRatingAsync(id);
             double? avgRating = avgRatingResult.IsSuccess ? avgRatingResult.Value : null;
 
-            var commentsResult = await GetCommentsByProjectIdAsync(id);
+            var commentsResult = await GetCommentsByProjectIdAsync(id, currentUserId);
             List<ProjectCommentDto>? comments = commentsResult.IsSuccess ? commentsResult.Value : null;
 
             var categories = project.ProjectCategories?.Select(pc => new CategoryDto(pc.CategoryId, pc.Category?.Name ?? "")).ToList();
@@ -373,9 +374,9 @@ namespace StudentHub.Application.UseCases
             return Result.Success();
         }
 
-        public async Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId)
+        public async Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, Guid? currentUserId = null)
         {
-            var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId);
+            var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId, currentUserId: currentUserId);
             if (!result.IsSuccess) return Result<List<ProjectCommentDto>>.Failure(result.Errors);
 
             var comments = result.Value;
@@ -389,12 +390,12 @@ namespace StudentHub.Application.UseCases
             return Result<List<ProjectCommentDto>>.Success(commentDtos);
         }
 
-        public async Task<Result<PaginatedResponse<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, int page, int pageSize)
+        public async Task<Result<PaginatedResponse<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, int page, int pageSize, Guid? currentUserId = null)
         {
             page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId, page, pageSize);
+            var result = await _projectRepository.GetCommentsByProjectIdAsync(projectId, page, pageSize, currentUserId: currentUserId);
             if (!result.IsSuccess) return Result<PaginatedResponse<ProjectCommentDto>>.Failure(result.Errors, result.ErrorType);
 
             var commentDtos = new List<ProjectCommentDto>();
@@ -403,7 +404,7 @@ namespace StudentHub.Application.UseCases
                 commentDtos.Add(await ToCommentDto(comment));
             }
 
-            var totalCount = await _projectRepository.CountCommentsByProjectIdAsync(projectId);
+            var totalCount = await _projectRepository.CountCommentsByProjectIdAsync(projectId, currentUserId: currentUserId);
             return Result<PaginatedResponse<ProjectCommentDto>>.Success(new PaginatedResponse<ProjectCommentDto>(
                 commentDtos,
                 page,

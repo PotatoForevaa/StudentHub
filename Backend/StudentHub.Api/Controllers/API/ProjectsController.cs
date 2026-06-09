@@ -22,7 +22,8 @@ namespace StudentHub.Api.Controllers.API
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProject([FromRoute] Guid id)
         {
-            var projectResult = await _projectUseCase.GetByIdAsync(id);
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var projectResult = await _projectUseCase.GetByIdAsync(id, userId);
             return projectResult.ToActionResult();
         }
 
@@ -154,7 +155,8 @@ namespace StudentHub.Api.Controllers.API
         [HttpGet("{id}/comments")]
         public async Task<IActionResult> GetComments([FromRoute] Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _projectUseCase.GetCommentsByProjectIdAsync(id, page, pageSize);
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _projectUseCase.GetCommentsByProjectIdAsync(id, page, pageSize, userId);
             return result.ToActionResult();
         }
 

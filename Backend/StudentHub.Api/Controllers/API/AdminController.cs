@@ -112,7 +112,6 @@ namespace StudentHub.Api.Controllers.API
                 return result.ToActionResult();
             }
             
-            // If no category filter, return all (could be added later)
             return Ok();
         }
 

@@ -770,6 +770,8 @@ function CommentItem({
   const isToxic = comment.moderationStatus === "Toxic";
   const canAppeal = isToxic && isAuthor && comment.moderatedBy === "AI" && (!comment.appealStatus || comment.appealStatus === "None");
   const isAppealing = comment.appealStatus === "Pending";
+  const appealRejected = comment.appealStatus === "Rejected";
+  const appealApproved = comment.appealStatus === "Approved";
   const canReport = Boolean(currentUserId) && !isAuthor && !isToxic;
 
   const runAction = async (action: (commentId: string) => void | Promise<void>) => {
@@ -801,8 +803,13 @@ function CommentItem({
         {comment.userScore && <SmallStars>{Array.from({ length: comment.userScore }, () => '★').join('')}</SmallStars>}
         <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
       </CommentHeader>
+      {isToxic && isAuthor && (
+        <ToxicBadge>
+          ⚠️ Комментарий помечен как токсичный. Отправьте апелляцию, если считаете это ошибкой.
+        </ToxicBadge>
+      )}
       <CommentText>{comment.content}</CommentText>
-      {(showAdminActions || canAppeal || canReport || isAppealing) && (
+      {(showAdminActions || canAppeal || canReport || isAppealing || appealRejected || appealApproved) && (
         <CommentActions>
           {showAdminActions && (
             <ActionButton type="button" danger disabled={actionBusy} onClick={() => runAction(onMarkToxic)}>
@@ -811,10 +818,12 @@ function CommentItem({
           )}
           {canAppeal && (
             <ActionButton type="button" disabled={actionBusy} onClick={() => runAction(onAppeal)}>
-              Апелляция
+              Отправить апелляцию
             </ActionButton>
           )}
-          {isAppealing && <CommentStatus>Апелляция ожидает</CommentStatus>}
+          {isAppealing && <CommentStatus>⏳ Апелляция на рассмотрении</CommentStatus>}
+          {appealRejected && <CommentStatus status="rejected">❌ Апелляция отклонена</CommentStatus>}
+          {appealApproved && <CommentStatus status="approved">✅ Апелляция одобрена</CommentStatus>}
           {canReport && (
             <ActionButton type="button" disabled={actionBusy} onClick={() => runAction(onReport)}>
               Пожаловаться
@@ -909,9 +918,21 @@ const ActionButton = styled.button<{ danger?: boolean }>`
   }
 `;
 
-const CommentStatus = styled.span`
-  color: ${colors.textSecondary};
+const ToxicBadge = styled.div`
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  border-radius: ${borderRadius.sm};
+  padding: ${spacing.sm} ${spacing.md};
+  margin-bottom: ${spacing.sm};
   font-size: ${fonts.size.sm};
+  font-weight: ${fonts.weight.medium};
+`;
+
+const CommentStatus = styled.span<{ status?: string }>`
+  color: ${props => props.status === 'approved' ? '#155724' : props.status === 'rejected' ? '#721c24' : colors.textSecondary};
+  font-size: ${fonts.size.sm};
+  font-weight: ${props => props.status ? fonts.weight.semibold : fonts.weight.normal};
 `;
 
 const AuthorLink = styled(Link)`

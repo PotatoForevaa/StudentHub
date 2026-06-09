@@ -6,7 +6,7 @@ namespace StudentHub.Application.Interfaces.UseCases
 {
     public interface IProjectUseCase
     {
-        Task<Result<ProjectDto?>> GetByIdAsync(Guid id);
+        Task<Result<ProjectDto?>> GetByIdAsync(Guid id, Guid? currentUserId = null);
         Task<Result<List<ProjectDto>>> GetAllAsync(int page = 0, int pageSize = 0);
         Task<Result<PaginatedResponse<AdminProjectDto>>> SearchProjectsAsync(string? search, int page, int pageSize);
         Task<Result<List<ProjectDto>>> GetProjectsByAuthorIdAsync(Guid authorId);
@@ -18,8 +18,8 @@ namespace StudentHub.Application.Interfaces.UseCases
         Task<Result<double>> AddScoreAsync(AddProjectScoreCommand command);
         Task<Result<double>> GetAverageRatingAsync(Guid projectId);
         Task<Result<ProjectCommentDto>> AddCommentAsync(CreateProjectCommentCommand command);
-        Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId);
-        Task<Result<PaginatedResponse<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, int page, int pageSize);
+        Task<Result<List<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, Guid? currentUserId = null);
+        Task<Result<PaginatedResponse<ProjectCommentDto>>> GetCommentsByProjectIdAsync(Guid projectId, int page, int pageSize, Guid? currentUserId = null);
         Task<Result<List<ProjectCommentDto>>> GetCommentsByAuthorIdAsync(Guid authorId);
         Task<Result> ReportCommentAsync(Guid commentId, Guid reporterId);
         Task<Result<PaginatedResponse<ProjectCommentDto>>> GetModerationCommentsAsync(string queue, int page, int pageSize);
